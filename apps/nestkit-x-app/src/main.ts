@@ -3,24 +3,8 @@
  * This is only a minimal backend to get started.
  */
 
-import { Logger } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import { IAppConfig } from '@nestkit-x/kernel';
-import { createValidate } from 'typia';
+import { Kernel } from '@nestkit-x/kernel';
 
 import { AppModule } from './app/app.module';
 
-const bootstrap = async (): Promise<void> => {
-  const app = await NestFactory.create(AppModule);
-  const globalPrefix = 'api';
-
-  app.setGlobalPrefix(globalPrefix);
-  const port = process.env['PORT'] ?? 3000;
-
-  await app.listen(port);
-  Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
-
-  Logger.log(`Typia test`, createValidate<IAppConfig>());
-};
-
-void bootstrap();
+Kernel.create(AppModule);
