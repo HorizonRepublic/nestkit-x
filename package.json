@@ -1,0 +1,11 @@
+{
+  "name": "nestkit-x",
+  "version": "0.0.1",
+  "description": "Plug-and-play modules for NestJS",
+  "main": "index.js",
+  "scripts": {},
+  "devDependencies": {
+    "nx": "21.2.0"
+  },
+  "nx": {}
+}
