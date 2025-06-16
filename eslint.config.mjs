@@ -242,6 +242,15 @@ export default [
       '@typescript-eslint/method-signature-style': ['error', 'method'],
       '@typescript-eslint/naming-convention': [
         'error',
+        {
+          filter: {
+            match: true,
+            regex: '^[A-Z][A-Z0-9_]*(_TOKEN|_KEY|_CONFIG)?$'
+          },
+          format: ['UPPER_CASE', 'camelCase'],
+          modifiers: ['const'],
+          selector: 'variable'
+        },
         { format: ['camelCase'], selector: 'variableLike' },
         { format: ['camelCase'], selector: 'memberLike' },
         { format: ['PascalCase'], selector: 'typeLike' },
