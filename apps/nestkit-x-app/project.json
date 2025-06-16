@@ -6,14 +6,19 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "nx:run-commands",
+      "executor": "@nx/js:tsc",
       "options": {
-        "command": "webpack-cli build",
-        "args": ["node-env=production"]
+        "outputPath": "dist/apps/nestkit-x-app",
+        "main": "apps/nestkit-x-app/src/main.ts",
+        "tsConfig": "apps/nestkit-x-app/tsconfig.app.json",
+        "assets": ["apps/nestkit-x-app/src/assets"]
       },
       "configurations": {
+        "production": {
+          "sourceMap": false
+        },
         "development": {
-          "args": ["node-env=development"]
+          "watch": true
         }
       }
     },

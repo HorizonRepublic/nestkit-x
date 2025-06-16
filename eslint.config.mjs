@@ -39,7 +39,10 @@ export default [
       '@nx/enforce-module-boundaries': [
         'error',
         {
-          allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
+          allow: [
+            '^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$',
+            "@nestkit-x/core/**"
+          ],
           depConstraints: [
             {
               onlyDependOnLibsWithTags: ['*'],
@@ -169,7 +172,6 @@ export default [
       'prefer-template': 'error',
       // Prettier integration
       'prettier/prettier': ['error'],
-
       'template-curly-spacing': ['error', 'never'],
     },
   },
@@ -245,10 +247,11 @@ export default [
         { format: ['PascalCase'], selector: 'typeLike' },
         { format: ['PascalCase'], selector: 'enumMember' },
         { format: ['PascalCase'], prefix: ['I'], selector: 'interface' },
-        { format: ['PascalCase'], selector: 'typeAlias', suffix: ['Type'] },
+        { format: ['PascalCase'], selector: 'typeAlias' },
       ],
       '@typescript-eslint/no-confusing-void-expression': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-namespace': 'off',
       '@typescript-eslint/no-non-null-assertion': 'error',
       '@typescript-eslint/no-redundant-type-constituents': 'error',
       '@typescript-eslint/no-unnecessary-condition': 'error',
@@ -256,13 +259,12 @@ export default [
       '@typescript-eslint/no-useless-empty-export': 'error',
       '@typescript-eslint/prefer-nullish-coalescing': 'error',
       '@typescript-eslint/prefer-optional-chain': 'error',
-
       '@typescript-eslint/prefer-readonly': 'error',
       '@typescript-eslint/prefer-string-starts-ends-with': 'error',
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
 
       camelcase: 'off',
-
+      
       // Disable base rules that conflict with TS equivalents
       'comma-dangle': 'off',
 
