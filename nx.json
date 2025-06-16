@@ -26,5 +26,17 @@
         "targetName": "test"
       }
     }
-  ]
+  ],
+  "targetDefaults": {
+    "@nx/js:tsc": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["default", "^default"]
+    }
+  },
+  "release": {
+    "version": {
+      "preVersionCommand": "pnpm dlx nx run-many -t build"
+    }
+  }
 }
