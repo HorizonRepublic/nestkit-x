@@ -8,15 +8,17 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "target": "es2015",
-    "module": "esnext",
-    "lib": ["es2020", "dom"],
+    "target": "ES2024",
+    "module": "ES2022",
+    "lib": ["ES2024"],
     "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {},
     "noImplicitAny": true,
-    "strict": true
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "exactOptionalPropertyTypes": true
   },
   "exclude": ["node_modules", "tmp"]
 }
