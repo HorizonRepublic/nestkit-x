@@ -1,203 +1,178 @@
 import nx from '@nx/eslint-plugin';
 import eslintConfigPrettier from 'eslint-config-prettier';
-import eslintPluginPrettier from 'eslint-plugin-prettier';
-import importPlugin from 'eslint-plugin-import';
-import tseslint from 'typescript-eslint';
+import jsdoc from 'eslint-plugin-jsdoc';
+import perfectionist from 'eslint-plugin-perfectionist';
 import preferArrowPlugin from 'eslint-plugin-prefer-arrow';
+import eslintPluginPrettier from 'eslint-plugin-prettier';
+import unusedImports from 'eslint-plugin-unused-imports';
+import tseslint from 'typescript-eslint';
 
 export default [
+  // Base configurations from Nx and TypeScript
+  eslintConfigPrettier,
   ...nx.configs['flat/base'],
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],
   ...tseslint.configs.recommended,
-  eslintConfigPrettier,
+  jsdoc.configs['flat/recommended-typescript'],
+  perfectionist.configs['recommended-natural'],
+
+  // Ignored paths
   {
     ignores: ['**/dist', '**/node_modules', '**/coverage'],
   },
+
+  // Rules for all JS/TS/JSX/TSX files
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     plugins: {
       '@nx': nx,
-      prettier: eslintPluginPrettier,
-      import: importPlugin,
+      jsdoc,
       'prefer-arrow': preferArrowPlugin,
+      prettier: eslintPluginPrettier,
+      'unused-imports': unusedImports,
     },
     rules: {
+      // Nx-specific rules
       '@nx/enforce-module-boundaries': [
         'error',
         {
-          enforceBuildableLibDependency: true,
           allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
           depConstraints: [
             {
-              sourceTag: '*',
               onlyDependOnLibsWithTags: ['*'],
+              sourceTag: '*',
             },
           ],
+          enforceBuildableLibDependency: true,
         },
       ],
-      'prettier/prettier': [
-        'error',
+
+      'array-bracket-spacing': ['error', 'never'],
+
+      'arrow-spacing': 'error',
+      // Naming conventions
+      camelcase: ['error', { ignoreDestructuring: false, properties: 'never' }],
+      'comma-dangle': ['error', 'always-multiline'],
+      complexity: ['warn', 10],
+      // Function structure rules
+      'function-call-argument-newline': ['error', 'consistent'],
+      'jsdoc/check-alignment': 'error',
+      'jsdoc/check-indentation': 'error',
+      'jsdoc/check-line-alignment': ['error', 'never'],
+      'jsdoc/check-param-names': 'error',
+      'jsdoc/check-property-names': 'error',
+      'jsdoc/check-tag-names': 'error',
+      'jsdoc/check-types': 'off',
+      'jsdoc/no-undefined-types': 'off',
+      // JSDoc rules (adapted for NestJS-style code)
+      'jsdoc/require-description': 'error',
+      'jsdoc/require-description-complete-sentence': 'error',
+
+      'jsdoc/require-example': [
+        'warn',
         {
-          singleQuote: true,
-          trailingComma: 'all',
-          printWidth: 100,
-          tabWidth: 2,
-          useTabs: false,
-          semi: true,
-          bracketSpacing: true,
-          bracketSameLine: false,
-          arrowParens: 'always',
-          endOfLine: 'lf',
+          contexts: ['ClassDeclaration', 'MethodDefinition[kind="method"]'],
         },
       ],
-      // Padding and formatting rules
-      'padding-line-between-statements': [
-        'error',
+      'jsdoc/require-hyphen-before-param-description': ['error', 'never'],
+      'jsdoc/require-jsdoc': [
+        'off', // TODO: enable later
         {
-          blankLine: 'always',
-          prev: ['const', 'let', 'var'],
-          next: '*',
-        },
-        {
-          blankLine: 'any',
-          prev: ['const', 'let', 'var'],
-          next: ['const', 'let', 'var'],
-        },
-        {
-          blankLine: 'always',
-          prev: 'import',
-          next: '*',
-        },
-        {
-          blankLine: 'any',
-          prev: 'import',
-          next: 'import',
-        },
-        {
-          blankLine: 'always',
-          prev: '*',
-          next: 'function',
-        },
-        {
-          blankLine: 'always',
-          prev: '*',
-          next: 'class',
-        },
-        {
-          blankLine: 'always',
-          prev: '*',
-          next: 'export',
-        },
-        {
-          blankLine: 'always',
-          prev: 'block-like',
-          next: '*',
+          contexts: ['PropertyDefinition', 'TSPropertySignature'],
+          publicOnly: true,
+          require: {
+            ArrowFunctionExpression: true,
+            ClassDeclaration: true,
+            FunctionDeclaration: true,
+            MethodDefinition: true,
+          },
         },
       ],
+      'jsdoc/require-param-description': 'error',
+      'jsdoc/require-returns-description': 'error',
+      'jsdoc/require-throws': 'error',
+
+      'jsdoc/tag-lines': ['error', 'any', { startLines: 1 }],
+
       'lines-between-class-members': [
         'error',
         {
           enforce: [
-            { blankLine: 'always', prev: 'method', next: 'method' },
-            { blankLine: 'always', prev: 'field', next: 'method' },
+            { blankLine: 'always', next: 'method', prev: 'method' },
+            { blankLine: 'always', next: 'method', prev: 'field' },
           ],
         },
         {
           exceptAfterSingleLine: true,
         },
       ],
-      'no-multiple-empty-lines': [
-        'error',
-        {
-          max: 1,
-          maxBOF: 0,
-          maxEOF: 1,
-        },
-      ],
-      'object-curly-spacing': ['error', 'always'],
-      'array-bracket-spacing': ['error', 'never'],
-      'comma-dangle': ['error', 'always-multiline'],
+      'max-depth': ['warn', 4],
 
-      // Import sorting and grouping rules
-      'sort-imports': [
+      'max-params': ['warn', 4],
+      'no-alert': 'error',
+      // General code quality
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-debugger': 'error',
+      'no-duplicate-imports': 'error',
+      'no-multiple-empty-lines': ['error', { max: 1, maxBOF: 0, maxEOF: 1 }],
+      'no-useless-constructor': 'error',
+      'no-useless-return': 'error',
+      'no-var': 'error',
+      'object-curly-spacing': ['error', 'always'],
+      // Code formatting & padding
+      'padding-line-between-statements': [
         'error',
-        {
-          ignoreCase: true,
-          ignoreDeclarationSort: true,
-          ignoreMemberSort: false,
-          allowSeparatedGroups: true,
-          memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
-        },
+        { blankLine: 'always', next: '*', prev: ['const', 'let', 'var'] },
+        { blankLine: 'any', next: ['const', 'let', 'var'], prev: ['const', 'let', 'var'] },
+        { blankLine: 'always', next: '*', prev: 'import' },
+        { blankLine: 'any', next: 'import', prev: 'import' },
+        { blankLine: 'always', next: 'function', prev: '*' },
+        { blankLine: 'always', next: 'class', prev: '*' },
+        { blankLine: 'always', next: 'export', prev: '*' },
+        { blankLine: 'always', next: '*', prev: 'block-like' },
       ],
-      'import/order': [
+      // Replaced import sorting with perfectionist
+      'perfectionist/sort-imports': [
         'error',
         {
           groups: [
-            'builtin', // Node.js built-in modules
-            'external', // npm packages
-            'internal', // Absolute imports
-            'parent', // ../
-            'sibling', // ./
-            'index', // ./index
+            'builtin',
+            'external',
+            'internal',
+            'parent',
+            'sibling',
+            'index',
+            'object',
+            'type',
+            'unknown',
           ],
-          pathGroups: [
-            {
-              pattern: '@nestjs/**',
-              group: 'external',
-              position: 'before',
-            },
-            {
-              pattern: './app/**',
-              group: 'sibling',
-              position: 'after',
-            },
-          ],
-          pathGroupsExcludedImportTypes: ['builtin'],
-          'newlines-between': 'always',
-          alphabetize: {
-            order: 'asc',
-            caseInsensitive: true,
-          },
+          order: 'asc',
+          type: 'natural',
         },
       ],
-      'import/newline-after-import': ['error', { count: 1 }],
-      'import/no-duplicates': 'error',
 
-      // Code quality rules
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
-      'no-debugger': 'error',
-      'no-alert': 'error',
-      'no-var': 'error',
-      'prefer-const': 'error',
       'prefer-arrow-callback': 'error',
-      'arrow-spacing': 'error',
-      'no-duplicate-imports': 'error',
-      'no-useless-constructor': 'error',
-      'no-useless-return': 'error',
-      'prefer-template': 'error',
-      'template-curly-spacing': ['error', 'never'],
 
-      // Naming conventions
-      camelcase: ['error', { properties: 'never', ignoreDestructuring: false }],
-
-      // Function rules
-      'function-call-argument-newline': ['error', 'consistent'],
-      'max-params': ['warn', 4],
-      'max-depth': ['warn', 4],
-      complexity: ['warn', 10],
-
-      // Prefer Arrow Functions rules
+      // Prefer arrow functions
       'prefer-arrow/prefer-arrow-functions': [
         'error',
         {
+          classPropertiesAllowed: false,
           disallowPrototype: true,
           singleReturnOnly: false,
-          classPropertiesAllowed: false,
         },
       ],
+      'prefer-const': 'error',
+      'prefer-template': 'error',
+      // Prettier integration
+      'prettier/prettier': ['error'],
+
+      'template-curly-spacing': ['error', 'never'],
     },
   },
+
+  // Rules specifically for TypeScript files
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
@@ -208,86 +183,36 @@ export default [
       },
     },
     rules: {
-      // Access modifier rules
+      '@typescript-eslint/array-type': ['error', { default: 'array' }],
+      '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
+      '@typescript-eslint/explicit-function-return-type': [
+        'error',
+        {
+          allowConciseArrowFunctionExpressionsStartingWithVoid: false,
+          allowDirectConstAssertionInArrowFunctions: true,
+          allowExpressions: false,
+          allowHigherOrderFunctions: true,
+          allowTypedFunctionExpressions: true,
+        },
+      ],
       '@typescript-eslint/explicit-member-accessibility': [
         'error',
         {
           accessibility: 'explicit',
           overrides: {
-            constructors: 'explicit',
             accessors: 'explicit',
+            constructors: 'explicit',
             methods: 'explicit',
-            properties: 'explicit',
             parameterProperties: 'off',
+            properties: 'explicit',
           },
         },
       ],
-      // Explicit function return type rules
-      '@typescript-eslint/explicit-function-return-type': [
-        'error',
-        {
-          allowExpressions: false,
-          allowTypedFunctionExpressions: true,
-          allowHigherOrderFunctions: true,
-          allowDirectConstAssertionInArrowFunctions: true,
-          allowConciseArrowFunctionExpressionsStartingWithVoid: false,
-        },
-      ],
-      // Additional TypeScript rules
       '@typescript-eslint/explicit-module-boundary-types': 'error',
-      '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unused-vars': ['warn'],
-      '@typescript-eslint/prefer-nullish-coalescing': 'error',
-      '@typescript-eslint/prefer-optional-chain': 'error',
-      '@typescript-eslint/no-unnecessary-condition': 'error',
-      '@typescript-eslint/no-non-null-assertion': 'error',
-      '@typescript-eslint/prefer-readonly': 'error',
-      '@typescript-eslint/array-type': ['error', { default: 'array' }],
-      '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
-      '@typescript-eslint/method-signature-style': ['error', 'method'],
-      '@typescript-eslint/no-confusing-void-expression': 'error',
-      '@typescript-eslint/no-redundant-type-constituents': 'error',
-      '@typescript-eslint/no-useless-empty-export': 'error',
-      '@typescript-eslint/prefer-string-starts-ends-with': 'error',
-      '@typescript-eslint/switch-exhaustiveness-check': 'error',
-
-      // TypeScript naming conventions
-      '@typescript-eslint/naming-convention': [
-        'error',
-        {
-          selector: 'variableLike',
-          format: ['camelCase'],
-        },
-        {
-          selector: 'memberLike',
-          format: ['camelCase'],
-        },
-        {
-          selector: 'typeLike',
-          format: ['PascalCase'],
-        },
-        {
-          selector: 'enumMember',
-          format: ['PascalCase'],
-        },
-        {
-          selector: 'interface',
-          format: ['PascalCase'],
-          prefix: ['I'],
-        },
-        {
-          selector: 'typeAlias',
-          format: ['PascalCase'],
-          suffix: ['Type'],
-        },
-      ],
-
-      // Class member ordering rules
       '@typescript-eslint/member-ordering': [
         'error',
         {
           default: [
-            // Fields
             'public-static-field',
             'protected-static-field',
             'private-static-field',
@@ -296,11 +221,9 @@ export default [
             'private-instance-field',
             'public-abstract-field',
             'protected-abstract-field',
-            // Constructors
             'public-constructor',
             'protected-constructor',
             'private-constructor',
-            // Methods
             'public-static-method',
             'protected-static-method',
             'private-static-method',
@@ -312,12 +235,54 @@ export default [
           ],
         },
       ],
-      // Disable base rules for TypeScript files to avoid conflicts
-      'comma-dangle': 'off',
-      semi: 'off',
-      'no-useless-constructor': 'off',
-      'no-duplicate-imports': 'off',
+      '@typescript-eslint/method-signature-style': ['error', 'method'],
+      '@typescript-eslint/naming-convention': [
+        'error',
+        { format: ['camelCase'], selector: 'variableLike' },
+        { format: ['camelCase'], selector: 'memberLike' },
+        { format: ['PascalCase'], selector: 'typeLike' },
+        { format: ['PascalCase'], selector: 'enumMember' },
+        { format: ['PascalCase'], prefix: ['I'], selector: 'interface' },
+        { format: ['PascalCase'], selector: 'typeAlias', suffix: ['Type'] },
+      ],
+      '@typescript-eslint/no-confusing-void-expression': 'error',
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'error',
+      '@typescript-eslint/no-redundant-type-constituents': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-useless-empty-export': 'error',
+      '@typescript-eslint/prefer-nullish-coalescing': 'error',
+      '@typescript-eslint/prefer-optional-chain': 'error',
+
+      '@typescript-eslint/prefer-readonly': 'error',
+      '@typescript-eslint/prefer-string-starts-ends-with': 'error',
+      '@typescript-eslint/switch-exhaustiveness-check': 'error',
+
       camelcase: 'off',
+
+      // Disable base rules that conflict with TS equivalents
+      'comma-dangle': 'off',
+
+      'jsdoc/no-types': 'error',
+      'jsdoc/require-param-type': 'off',
+      'jsdoc/require-returns-type': 'off',
+
+      'no-duplicate-imports': 'off',
+      'no-unused-vars': 'off',
+      'no-useless-constructor': 'off',
+      semi: 'off',
+      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-vars': [
+        'error',
+        {
+          args: 'after-used',
+          argsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+          vars: 'all',
+          varsIgnorePattern: '^_',
+        },
+      ],
     },
   },
 ];
