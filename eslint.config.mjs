@@ -4,6 +4,7 @@ import jsdoc from 'eslint-plugin-jsdoc';
 import perfectionist from 'eslint-plugin-perfectionist';
 import preferArrowPlugin from 'eslint-plugin-prefer-arrow';
 import eslintPluginPrettier from 'eslint-plugin-prettier';
+import sonarjs from 'eslint-plugin-sonarjs';
 import unusedImports from 'eslint-plugin-unused-imports';
 import tseslint from 'typescript-eslint';
 
@@ -16,6 +17,7 @@ export default [
   ...tseslint.configs.recommended,
   jsdoc.configs['flat/recommended-typescript'],
   perfectionist.configs['recommended-natural'],
+  sonarjs.configs.recommended,
 
   // Ignored paths
   {
@@ -77,7 +79,7 @@ export default [
       ],
       'jsdoc/require-hyphen-before-param-description': ['error', 'never'],
       'jsdoc/require-jsdoc': [
-        'off', // TODO: enable later
+        'off', // enable later
         {
           contexts: ['PropertyDefinition', 'TSPropertySignature'],
           publicOnly: true,
