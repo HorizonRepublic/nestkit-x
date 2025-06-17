@@ -13,9 +13,7 @@ export class KernelProvider {
     private readonly appStateService: IAppStateService,
     private readonly configService: ConfigService,
   ) {
-    const config = this.configService.get<IAppConfig>(APP_CONFIG);
-
-    if (!config) return;
+    const config = this.configService.getOrThrow<IAppConfig>(APP_CONFIG);
 
     this.appStateService.onListening(() => {
       this.logger.log(`Application is listening on http://${config.host}:${config.port}`);

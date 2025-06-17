@@ -1,8 +1,8 @@
-import { constants, Env } from '@nestkit-x/core';
+import { constants, Environment } from '@nestkit-x/core';
 import { tags } from 'typia';
 
 export interface IAppConfig {
-  readonly env: Env;
+  readonly env: Environment;
 
   readonly host: string & tags.Default<typeof constants.network.host>;
 

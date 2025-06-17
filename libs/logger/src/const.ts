@@ -1,0 +1,75 @@
+const baseRedactedPaths = [
+  'password',
+  'secret',
+  'token',
+  'authorization',
+  'bearer',
+  'apiKey',
+  'accessToken',
+  'refreshToken',
+  'sessionToken',
+  'clientSecret',
+  'privateKey',
+  'publicKey',
+  'signingKey',
+  'encryptionKey',
+  'csrfToken',
+  'sessionId',
+  'jwt',
+
+  'email',
+  'phone',
+  'ssn',
+  'passport',
+  'driverLicense',
+  'taxId',
+  'nationalId',
+  'dateOfBirth',
+  'firstName',
+  'lastName',
+  'fullName',
+
+  'creditCard',
+  'cardNumber',
+  'cvv',
+  'bankAccount',
+  'accountNumber',
+  'routingNumber',
+  'iban',
+  'swift',
+
+  'cookie',
+  'setCookie',
+
+  'connectionString',
+  'databaseUrl',
+  'dbPassword',
+
+  'key',
+  'apiKey',
+  'apiToken',
+  'apiSecret',
+  'keys',
+  'auth',
+  'credentials',
+  'sensitive',
+  'confidential',
+];
+
+const toSnakeCase = (str: string): string =>
+  str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+
+export const redactedPaths: string[] = [
+  ...baseRedactedPaths,
+  ...baseRedactedPaths.map(toSnakeCase),
+
+  'auth.*',
+  'user.*',
+  'body.*',
+  'headers.*',
+  'req.headers.*',
+  'res.headers.*',
+  'config.*',
+  'env.*',
+  'credentials.*',
+];

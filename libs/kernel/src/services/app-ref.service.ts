@@ -10,7 +10,9 @@ export class AppRefService implements IAppRefService {
 
   public get(): INestApplication {
     if (!this.appRef) {
-      throw new RuntimeException(`AppRefService.getApp() has not been called yet.`);
+      throw new RuntimeException(
+        `AppRefService.getApp() has not been called yet. Ensure that you trying to get in .onCreated() state`,
+      );
     }
 
     return this.appRef;
