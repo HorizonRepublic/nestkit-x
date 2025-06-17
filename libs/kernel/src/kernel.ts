@@ -1,7 +1,6 @@
 import { Logger, Type } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { RuntimeException } from '@nestjs/core/errors/exceptions';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { defer, from, map, Observable, shareReplay, switchMap, tap } from 'rxjs';
 import { v7 } from 'uuid';
@@ -11,17 +10,17 @@ import { createAppConfig } from './helpers/create-app-config';
 import { KernelModule } from './kernel.module';
 import { IAppConfig, IAppRefService, IAppStateService } from './types';
 
-export class Kernel {
-  private static bootstrapResult$?: Observable<Kernel>;
-  private static instance?: Kernel;
+export class NestKitKernel {
+  private static bootstrapResult$?: Observable<NestKitKernel>;
+  private static instance?: NestKitKernel;
 
   private appRef!: IAppRefService;
   private appState!: IAppStateService;
 
-  private readonly logger = new Logger(Kernel.name);
+  private readonly logger = new Logger(NestKitKernel.name);
 
-  public static init(module: Type<unknown>, cfg: IAppConfig): Observable<Kernel> {
-    const kernel = (this.instance ??= new Kernel());
+  public static init(module: Type<unknown>, cfg: IAppConfig): Observable<NestKitKernel> {
+    const kernel = (this.instance ??= new NestKitKernel());
 
     if (this.bootstrapResult$) return this.bootstrapResult$;
 
@@ -49,7 +48,10 @@ export class Kernel {
         disableRequestLogging: true,
         genReqId: (): string => v7(),
       }),
-      { autoFlushLogs: true, bufferLogs: false },
+      {
+        autoFlushLogs: true,
+        bufferLogs: true,
+      },
     );
 
     return defer(() => from(appFactory)).pipe(
@@ -69,9 +71,7 @@ export class Kernel {
   private listen$(): Observable<void> {
     return defer(() => {
       const app = this.appRef.get();
-      const cfg = app.get(ConfigService).get<IAppConfig>(APP_CONFIG);
-
-      if (!cfg) throw new RuntimeException('Config is not defined.');
+      const cfg = app.get(ConfigService).getOrThrow<IAppConfig>(APP_CONFIG);
 
       return from(app.listen(cfg.port, cfg.host)).pipe(
         switchMap(() => this.appState.setState$(AppState.Listening)),

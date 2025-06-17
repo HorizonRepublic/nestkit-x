@@ -15,7 +15,8 @@
     "baseUrl": ".",
     "paths": {
       "@nestkit-x/core": ["libs/core/src/index.ts"],
-      "@nestkit-x/kernel": ["libs/kernel/src/index.ts"]
+      "@nestkit-x/kernel": ["libs/kernel/src/index.ts"],
+      "@nestkit-x/logger": ["libs/logger/src/index.ts"]
     },
     "noImplicitAny": true,
     "strict": true,

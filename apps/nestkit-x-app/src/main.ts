@@ -1,11 +1,6 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
-import { Kernel } from '@nestkit-x/kernel';
+import { NestKitKernel } from '@nestkit-x/kernel';
 
 import { AppModule } from './app/app.module';
 import { appConfig } from './configs/app.config';
 
-Kernel.init(AppModule, appConfig);
+NestKitKernel.init(AppModule, appConfig);
