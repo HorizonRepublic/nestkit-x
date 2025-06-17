@@ -15,9 +15,6 @@
     "baseUrl": ".",
     "paths": {
       "@nestkit-x/core": ["libs/core/src/index.ts"],
-      "@nestkit-x/core/types": ["libs/core/src/types/index.ts"],
-      "@nestkit-x/core/enums": ["libs/core/src/enums/index.ts"],
-      "@nestkit-x/core/constants": ["libs/core/src/constants/index.ts"],
       "@nestkit-x/kernel": ["libs/kernel/src/index.ts"]
     },
     "noImplicitAny": true,

@@ -8,4 +8,6 @@ import { AppService } from './app.service';
   imports: [],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  public constructor() {}
+}

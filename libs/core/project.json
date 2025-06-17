@@ -19,10 +19,6 @@
         "generateExportsField": true,
         "generateLockfile": true,
         "generatePackageJson": true,
-        "additionalEntryPoints": [
-          "libs/core/src/types/index.ts",
-          "libs/core/src/constants/index.ts"
-        ],
         "outputPath": "dist/libs/core",
         "tsConfig": "libs/core/tsconfig.lib.json",
         "packageJson": "libs/core/package.json",
@@ -30,6 +26,7 @@
         "assets": ["libs/core/*.md"]
       }
     },
+    
     "nx-release-publish": {
       "options": {
         "packageRoot": "dist/{projectRoot}"

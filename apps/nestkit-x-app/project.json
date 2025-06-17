@@ -11,7 +11,13 @@
         "outputPath": "dist/apps/nestkit-x-app",
         "main": "apps/nestkit-x-app/src/main.ts",
         "tsConfig": "apps/nestkit-x-app/tsconfig.app.json",
-        "assets": ["apps/nestkit-x-app/src/assets"]
+        "assets": [
+          {
+            "input": "src/assets",
+            "glob": "**/*",
+            "output": "assets"
+          }
+        ]
       },
       "configurations": {
         "production": {
@@ -23,7 +29,6 @@
       }
     },
     "serve": {
-      "continuous": true,
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
       "dependsOn": ["build"],
@@ -33,10 +38,10 @@
       },
       "configurations": {
         "development": {
-          "buildTarget": "nestkit-x-app:build:development"
+          "buildTarget": "nestkit-x-app:build:development",
         },
         "production": {
-          "buildTarget": "nestkit-x-app:build:production"
+          "buildTarget": "nestkit-x-app:build:production",
         }
       }
     },
