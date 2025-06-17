@@ -1,12 +1,23 @@
-import { constants } from '@nestkit-x/core/constants';
-import { Env } from '@nestkit-x/core/enums';
-import { numbers } from '@nestkit-x/core/types';
+import { constants, Env } from '@nestkit-x/core';
 import { tags } from 'typia';
 
 export interface IAppConfig {
-  env: Env;
-  host: string & tags.Default<typeof constants.network.host>;
-  name: string & tags.Pattern<typeof constants.patterns.kebabPattern>;
-  port: numbers.Port & tags.Default<typeof constants.network.ports.nest>;
-  version: string & tags.Default<'0.0.1'> & tags.Pattern<typeof constants.patterns.semverPattern>;
+  readonly env: Env;
+
+  readonly host: string & tags.Default<typeof constants.network.host>;
+
+  readonly name: string &
+    tags.MaxLength<20> &
+    tags.MinLength<3> &
+    tags.Pattern<typeof constants.patterns.kebabPattern>;
+
+  readonly port: number &
+    tags.Default<typeof constants.network.ports.nest> &
+    tags.Maximum<typeof constants.network.ports.maximal> &
+    tags.Minimum<typeof constants.network.ports.minimal> &
+    tags.Type<'uint32'>;
+
+  readonly version: string &
+    tags.Default<'0.0.1'> &
+    tags.Pattern<typeof constants.patterns.semverPattern>;
 }

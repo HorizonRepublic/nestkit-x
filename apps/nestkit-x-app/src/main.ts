@@ -6,5 +6,6 @@
 import { Kernel } from '@nestkit-x/kernel';
 
 import { AppModule } from './app/app.module';
+import { appConfig } from './configs/app.config';
 
-Kernel.create(AppModule);
+Kernel.init(AppModule, appConfig);

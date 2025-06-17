@@ -1,4 +1,4 @@
-import { INestApplication, Injectable } from '@nestjs/common';
+import { INestApplication, Injectable, Logger } from '@nestjs/common';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
 
 import { IAppRefService } from '../types/app-ref-service.interface';
@@ -6,6 +6,7 @@ import { IAppRefService } from '../types/app-ref-service.interface';
 @Injectable()
 export class AppRefService implements IAppRefService {
   protected appRef: INestApplication | null = null;
+  protected readonly logger = new Logger(AppRefService.name);
 
   public get(): INestApplication {
     if (!this.appRef) {
@@ -17,7 +18,9 @@ export class AppRefService implements IAppRefService {
 
   public set(app: INestApplication): this {
     if (this.appRef) {
-      throw new RuntimeException(`AppRefService.setApp() has already been called.`);
+      this.logger.warn(`AppRefService.setApp() has already been called.`);
+
+      return this;
     }
 
     this.appRef = app;
