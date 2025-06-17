@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { defer, from, map, Observable, shareReplay, switchMap, tap } from 'rxjs';
+import { v7 } from 'uuid';
 
 import { APP_CONFIG, APP_REF_SERVICE, APP_STATE_SERVICE, AppState } from './const';
 import { createAppConfig } from './helpers/create-app-config';
@@ -44,8 +45,11 @@ export class Kernel {
 
     const appFactory = NestFactory.create<NestFastifyApplication>(
       KernelModule.forRoot(module, configFactory),
-      new FastifyAdapter(),
-      { bufferLogs: false },
+      new FastifyAdapter({
+        disableRequestLogging: true,
+        genReqId: (): string => v7(),
+      }),
+      { autoFlushLogs: true, bufferLogs: false },
     );
 
     return defer(() => from(appFactory)).pipe(
