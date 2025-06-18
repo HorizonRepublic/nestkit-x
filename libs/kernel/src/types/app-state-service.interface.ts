@@ -60,7 +60,7 @@ export interface IAppStateService {
    * Range: -Infinity to +Infinity.
    *
    * @example
-   * ```typescript
+   * ```TypeScript
    * // Critical check (executes first)
    * appState.onListening(() => healthCheck(), -100);
    *
