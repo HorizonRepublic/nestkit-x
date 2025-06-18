@@ -49,10 +49,10 @@ export class NestKitKernel {
     const appFactory = NestFactory.create<NestFastifyApplication>(
       KernelModule.forRoot(module, cfg),
       new FastifyAdapter({
-        disableRequestLogging: true,
         genReqId: (): string => v7(),
       }),
       {
+        abortOnError: false,
         autoFlushLogs: true,
         bufferLogs: true,
       },

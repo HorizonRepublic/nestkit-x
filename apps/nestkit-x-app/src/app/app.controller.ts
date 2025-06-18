@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { BadRequestException, Controller, Get } from '@nestjs/common';
 
 import { AppService } from './app.service';
 
@@ -8,6 +8,8 @@ export class AppController {
 
   @Get()
   public getData(): { message: string } {
+    throw new Error(`Test exception`);
+
     return this.appService.getData();
   }
 }
