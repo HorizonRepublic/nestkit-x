@@ -17,9 +17,10 @@ export class LoggerConfigFactory {
   public get(): PinoParams {
     const isProduction = this.config.env === 'production';
 
-    const baseConfig = {
-      level: isProduction ? 'info' : 'debug',
-      quietReqLogger: true,
+    const baseConfig: PinoParams['pinoHttp'] = {
+      autoLogging: false,
+      level: isProduction ? 'warn' : 'debug', // add logg level env
+      name: this.config.name,
       redact: {
         censor: '**HIDDEN**',
         paths: redactedPaths,

@@ -31,17 +31,19 @@
     "serve": {
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "options": {
         "buildTarget": "nestkit-x-app:build",
         "runBuildTargetDependencies": false
       },
       "configurations": {
         "development": {
-          "buildTarget": "nestkit-x-app:build:development",
+          "buildTarget": "nestkit-x-app:build:development"
         },
         "production": {
-          "buildTarget": "nestkit-x-app:build:production",
+          "buildTarget": "nestkit-x-app:build:production"
         }
       }
     },

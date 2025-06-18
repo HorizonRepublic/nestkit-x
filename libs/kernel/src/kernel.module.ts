@@ -27,7 +27,7 @@ export class KernelModule {
     return {
       exports: providers,
       global: true,
-      imports: [ConfigModule.forRoot({ cache: true, load: [appConfig] }), module],
+      imports: [ConfigModule.forRoot({ cache: true, isGlobal: true, load: [appConfig] }), module],
       module: KernelModule,
       providers: [...providers, KernelProvider],
     };
