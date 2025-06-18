@@ -1,4 +1,6 @@
 import 'reflect-metadata';
+import { Type } from '@nestjs/common';
+import { ConfigFactory, ConfigFactoryKeyHost, registerAs } from '@nestjs/config';
 
 import { ENV_METADATA_KEY } from '../constants';
 import { EnumType, EnvTypeConstructor, IEnvFieldMetadata, IEnvOptions } from '../types/env.types';
@@ -106,7 +108,7 @@ export const Env =
  * console.log(config.port); // 3000 or value from PORT env var
  * ```
  */
-export const initializeEnvConfig = <T extends object>(configClass: new () => T): T => {
+const initializeEnvConfig = <T extends object>(configClass: new () => T): T => {
   const instance = new configClass();
   const metadata: IEnvFieldMetadata[] = Reflect.getMetadata(ENV_METADATA_KEY, instance) ?? [];
 
@@ -132,4 +134,15 @@ export const initializeEnvConfig = <T extends object>(configClass: new () => T):
   }
 
   return instance;
+};
+
+export const registerConfig = <T extends object>(
+  token: symbol,
+  configInstance: Type<T>,
+  validator: (config: T) => T,
+): ConfigFactory & ConfigFactoryKeyHost<T> => {
+  const instance = initializeEnvConfig(configInstance);
+  const validatedConfig = validator(instance);
+
+  return registerAs(token, () => validatedConfig);
 };

@@ -1,5 +1,5 @@
 import { DynamicModule, Module, Provider, Type } from '@nestjs/common';
-import { ConfigFactoryKeyHost, ConfigModule } from '@nestjs/config';
+import { ConfigFactory, ConfigFactoryKeyHost, ConfigModule } from '@nestjs/config';
 
 import { APP_REF_SERVICE, APP_STATE_SERVICE } from './const';
 import { KernelProvider } from './providers/kernel.provider';
@@ -22,7 +22,7 @@ const providers: [Provider<IAppRefService>, Provider<IAppStateService>] = [
 export class KernelModule {
   public static forRoot(
     module: Type<unknown>,
-    appConfig: (() => IAppConfig) & ConfigFactoryKeyHost<IAppConfig>,
+    appConfig: ConfigFactory & ConfigFactoryKeyHost<IAppConfig>,
   ): DynamicModule {
     return {
       exports: providers,

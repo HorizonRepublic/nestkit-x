@@ -1,13 +1,12 @@
 import 'reflect-metadata';
 import { Logger, Type } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ConfigFactory, ConfigFactoryKeyHost, ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { defer, from, map, Observable, shareReplay, switchMap, tap } from 'rxjs';
 import { v7 } from 'uuid';
 
 import { APP_CONFIG, APP_REF_SERVICE, APP_STATE_SERVICE, AppState } from './const';
-import { createAppConfig } from './helpers/create-app-config';
 import { KernelModule } from './kernel.module';
 import { IAppConfig, IAppRefService, IAppStateService } from './types';
 
@@ -20,7 +19,10 @@ export class NestKitKernel {
 
   private readonly logger = new Logger(NestKitKernel.name);
 
-  public static init(module: Type<unknown>, cfg: IAppConfig): Observable<NestKitKernel> {
+  public static init(
+    module: Type<unknown>,
+    cfg: ConfigFactory & ConfigFactoryKeyHost<IAppConfig>,
+  ): Observable<NestKitKernel> {
     const kernel = (this.instance ??= new NestKitKernel());
 
     if (this.bootstrapResult$) return this.bootstrapResult$;
@@ -40,11 +42,12 @@ export class NestKitKernel {
     return this.bootstrapResult$;
   }
 
-  private bootstrap$(module: Type<unknown>, cfg: IAppConfig): Observable<void> {
-    const configFactory = createAppConfig(cfg);
-
+  private bootstrap$(
+    module: Type<unknown>,
+    cfg: ConfigFactory & ConfigFactoryKeyHost<IAppConfig>,
+  ): Observable<void> {
     const appFactory = NestFactory.create<NestFastifyApplication>(
-      KernelModule.forRoot(module, configFactory),
+      KernelModule.forRoot(module, cfg),
       new FastifyAdapter({
         disableRequestLogging: true,
         genReqId: (): string => v7(),
@@ -73,8 +76,6 @@ export class NestKitKernel {
     return defer(() => {
       const app = this.appRef.get();
       const cfg = app.get(ConfigService).getOrThrow<IAppConfig>(APP_CONFIG);
-
-      console.log('LOADED CFG', cfg);
 
       return from(app.listen(cfg.port, cfg.host)).pipe(
         switchMap(() => this.appState.setState$(AppState.Listening)),
