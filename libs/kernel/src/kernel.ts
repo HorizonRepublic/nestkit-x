@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { Logger, Type } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -72,6 +73,8 @@ export class NestKitKernel {
     return defer(() => {
       const app = this.appRef.get();
       const cfg = app.get(ConfigService).getOrThrow<IAppConfig>(APP_CONFIG);
+
+      console.log('LOADED CFG', cfg);
 
       return from(app.listen(cfg.port, cfg.host)).pipe(
         switchMap(() => this.appState.setState$(AppState.Listening)),
