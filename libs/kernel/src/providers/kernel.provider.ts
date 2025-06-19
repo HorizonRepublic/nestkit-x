@@ -14,6 +14,7 @@ export class KernelProvider {
     const config = this.configService.getOrThrow<IAppConfig>(APP_CONFIG);
 
     this.appStateService.onListening(() => {
+      this.logger.debug(`Node version: ${process.version}`);
       this.logger.log(`Application is listening on http://${config.host}:${config.port}`);
     });
   }

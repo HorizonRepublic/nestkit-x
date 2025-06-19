@@ -1,8 +1,7 @@
 import 'reflect-metadata';
 import { Type } from '@nestjs/common';
 import { ConfigFactory, ConfigFactoryKeyHost, ConfigService } from '@nestjs/config';
-import { NestFactory } from '@nestjs/core';
-import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
+import { AbstractHttpAdapter, NestFactory } from '@nestjs/core';
 import {
   APP_CONFIG,
   APP_REF_SERVICE,
@@ -12,8 +11,9 @@ import {
   IAppRefService,
   IAppStateService,
 } from '@nestkit-x/core';
+import { UltimateExpressAdapter } from '@stigma.io/nestjs-ultimate-express';
 import { defer, from, map, Observable, shareReplay, switchMap, tap } from 'rxjs';
-import { v7 } from 'uuid';
+import * as UltimateExpress from 'ultimate-express';
 
 import { KernelModule } from './kernel.module';
 
@@ -51,17 +51,17 @@ export class NestKitKernel {
     appModule: Type<unknown>,
     cfg: ConfigFactory & ConfigFactoryKeyHost<IAppConfig>,
   ): Observable<void> {
-    const appFactory = NestFactory.create<NestFastifyApplication>(
-      KernelModule.forRoot(appModule, cfg),
-      new FastifyAdapter({
-        genReqId: (): string => v7(),
-      }),
-      {
-        abortOnError: false,
-        autoFlushLogs: true,
-        bufferLogs: true,
-      },
-    );
+    const ultimateExpressInstance = UltimateExpress({
+      threads: 0,
+    });
+
+    const adapter = new UltimateExpressAdapter(ultimateExpressInstance) as AbstractHttpAdapter;
+
+    const appFactory = NestFactory.create(KernelModule.forRoot(appModule, cfg), adapter, {
+      abortOnError: false,
+      autoFlushLogs: true,
+      bufferLogs: true,
+    });
 
     return defer(() => from(appFactory)).pipe(
       tap((app) => {
