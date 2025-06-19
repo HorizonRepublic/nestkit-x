@@ -12,6 +12,7 @@ export class NestKitLoggerModule {
     return {
       exports: [],
       imports: [
+        ConfigModule,
         PinoModule.forRootAsync({
           imports: [ConfigModule],
           inject: [LoggerConfigFactory],

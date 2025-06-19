@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { AppState, IAppStateService, IPrioritizedCallback, IStateCallback } from '@nestkit-x/core';
 import {
   catchError,
   concatMap,
@@ -10,9 +11,6 @@ import {
   of,
   toArray,
 } from 'rxjs';
-
-import { AppState } from '../const/index';
-import { IAppStateService, IPrioritizedCallback, IStateCallback } from '../types';
 
 /**
  * Default implementation of IAppStateService.

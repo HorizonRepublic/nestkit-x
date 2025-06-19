@@ -8,8 +8,7 @@ import {
   Logger,
   NestInterceptor,
 } from '@nestjs/common';
-import { Environment } from '@nestkit-x/core';
-import { IAppConfig } from '@nestkit-x/kernel';
+import { Environment, IAppConfig } from '@nestkit-x/core';
 import { LevelWithSilent } from 'pino';
 import { catchError, Observable, throwError } from 'rxjs';
 
@@ -46,7 +45,7 @@ type HttpLogLevel = Extract<LevelWithSilent, 'error' | 'silent' | 'warn'>;
  * - **Skip in dev**: Some errors are silenced (404, etc.).
  *
  * @example
- * ```typescript
+ * ```TypeScript
  * // Register globally
  * @Module({
  *   providers: [
@@ -110,7 +109,7 @@ export class HttpLogInterceptor implements NestInterceptor {
    * @param ctx Execution context containing request information.
    * @param next Call handler to proceed with request processing.
    * @returns Observable that catches and logs errors while re-throwing them.
-   * @example
+   * @example -
    */
   public intercept(ctx: ExecutionContext, next: CallHandler): Observable<unknown> {
     if (ctx.getType() !== 'http') return next.handle();
@@ -154,7 +153,7 @@ export class HttpLogInterceptor implements NestInterceptor {
    * @param status HTTP status code.
    * @param err The error object (used for suspicious pattern detection).
    * @returns Log level: 'error', 'warn', or 'silent'.
-   * @example
+   * @example -
    */
   private getLogLevel(status: number, err: unknown): HttpLogLevel {
     if (status >= 500) return 'error';
@@ -175,9 +174,9 @@ export class HttpLogInterceptor implements NestInterceptor {
    * - Generic errors with status/statusCode properties
    * - Fallback to 500 for unknown errors.
    *
-   * @param err Error object of unknown type.
+   * @param err Error object of an unknown type.
    * @returns HTTP status code (defaults to 500).
-   * @example
+   * @example -
    */
   private getStatusCode(err: unknown): number {
     if (err instanceof HttpException) return err.getStatus();
@@ -196,11 +195,11 @@ export class HttpLogInterceptor implements NestInterceptor {
    * Type guard to identify Axios errors.
    *
    * Axios errors have a specific structure with `isAxiosError: true`
-   * and optional response object containing status information.
+   * and an optional response object containing status information.
    *
    * @param err Error object to check.
    * @returns True if error is from Axios.
-   * @example
+   * @example -
    */
   private isAxiosError(
     err: unknown,
@@ -223,8 +222,8 @@ export class HttpLogInterceptor implements NestInterceptor {
    * - Other malicious patterns.
    *
    * @param err Error object to analyze.
-   * @returns True if error message matches suspicious patterns.
-   * @example
+   * @returns True if an error message matches suspicious patterns.
+   * @example -
    */
   private isSuspicious(err: unknown): boolean {
     const message = (err as { message?: string }).message?.toLowerCase() ?? '';

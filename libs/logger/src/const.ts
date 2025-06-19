@@ -89,7 +89,10 @@ export const CRITICAL_CLIENT_ERRORS = new Set<number>([
   HttpStatus.URI_TOO_LONG,
 ]);
 
-export const SKIP_IN_DEV = new Set<number>([HttpStatus.BAD_REQUEST, HttpStatus.UNPROCESSABLE_ENTITY]);
+export const SKIP_IN_DEV = new Set<number>([
+  HttpStatus.BAD_REQUEST,
+  HttpStatus.UNPROCESSABLE_ENTITY,
+]);
 
 export const SUSPICIOUS_PATTERNS = [
   /sql/i,
@@ -102,3 +105,5 @@ export const SUSPICIOUS_PATTERNS = [
   /javascript:/i,
   /on\w+\s*=/i,
 ];
+
+export const REDACTED_MSG = '***REDACTED***' as const;

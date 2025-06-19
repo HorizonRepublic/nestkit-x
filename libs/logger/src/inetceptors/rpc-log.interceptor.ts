@@ -95,7 +95,7 @@ export class RpcLogInterceptor implements NestInterceptor {
    * @param ctx Execution context containing RPC information.
    * @param next Call handler to proceed with message processing.
    * @returns Observable that catches and logs errors while re-throwing them.
-   * @example
+   * @example -
    */
   public intercept(ctx: ExecutionContext, next: CallHandler): Observable<unknown> {
     if (ctx.getType() !== 'rpc') return next.handle();
