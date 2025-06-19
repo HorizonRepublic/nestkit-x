@@ -7,7 +7,7 @@ import {
   IAppConfig,
   IAppRefService,
   IAppStateService,
-} from '@nestkit-x/kernel';
+} from '@nestkit-x/core';
 import { Logger } from 'nestjs-pino';
 
 import { HttpLogInterceptor } from './inetceptors/http-log.interceptor';
@@ -18,6 +18,7 @@ export class LoggerProvider {
   public constructor(
     @Inject(APP_REF_SERVICE)
     private readonly appRef: IAppRefService,
+
     @Inject(APP_STATE_SERVICE)
     private readonly appStateService: IAppStateService,
     private readonly configService: ConfigService,

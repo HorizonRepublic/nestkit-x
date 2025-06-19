@@ -1,7 +1,6 @@
 import { INestApplication, Injectable, Logger } from '@nestjs/common';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
-
-import { IAppRefService } from '../types/app-ref-service.interface';
+import { IAppRefService } from '@nestkit-x/core';
 
 @Injectable()
 export class AppRefService implements IAppRefService {

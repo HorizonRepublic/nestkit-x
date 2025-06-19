@@ -1,8 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-
-import { APP_CONFIG, APP_STATE_SERVICE } from '../const/index';
-import { IAppConfig, IAppStateService } from '../types';
+import { APP_CONFIG, APP_STATE_SERVICE, IAppConfig, IAppStateService } from '@nestkit-x/core';
 
 @Injectable()
 export class KernelProvider {

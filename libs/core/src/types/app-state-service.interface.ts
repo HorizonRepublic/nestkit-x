@@ -1,6 +1,5 @@
+import { AppState } from '@nestkit-x/core';
 import { Observable } from 'rxjs';
-
-import { AppState } from '../const';
 
 /**
  * Service for managing application lifecycle states and executing callbacks

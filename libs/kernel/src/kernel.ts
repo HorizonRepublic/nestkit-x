@@ -1,14 +1,21 @@
 import 'reflect-metadata';
-import { Logger, Type } from '@nestjs/common';
+import { Type } from '@nestjs/common';
 import { ConfigFactory, ConfigFactoryKeyHost, ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
+import {
+  APP_CONFIG,
+  APP_REF_SERVICE,
+  APP_STATE_SERVICE,
+  AppState,
+  IAppConfig,
+  IAppRefService,
+  IAppStateService,
+} from '@nestkit-x/core';
 import { defer, from, map, Observable, shareReplay, switchMap, tap } from 'rxjs';
 import { v7 } from 'uuid';
 
-import { APP_CONFIG, APP_REF_SERVICE, APP_STATE_SERVICE, AppState } from './const';
 import { KernelModule } from './kernel.module';
-import { IAppConfig, IAppRefService, IAppStateService } from './types';
 
 export class NestKitKernel {
   private static bootstrapResult$?: Observable<NestKitKernel>;
@@ -17,17 +24,15 @@ export class NestKitKernel {
   private appRef!: IAppRefService;
   private appState!: IAppStateService;
 
-  private readonly logger = new Logger(NestKitKernel.name);
-
   public static init(
-    module: Type<unknown>,
+    appModule: Type<unknown>,
     cfg: ConfigFactory & ConfigFactoryKeyHost<IAppConfig>,
   ): Observable<NestKitKernel> {
     const kernel = (this.instance ??= new NestKitKernel());
 
     if (this.bootstrapResult$) return this.bootstrapResult$;
 
-    this.bootstrapResult$ = kernel.bootstrap$(module, cfg).pipe(
+    this.bootstrapResult$ = kernel.bootstrap$(appModule, cfg).pipe(
       map(() => kernel),
       shareReplay(1),
     );
@@ -43,11 +48,11 @@ export class NestKitKernel {
   }
 
   private bootstrap$(
-    module: Type<unknown>,
+    appModule: Type<unknown>,
     cfg: ConfigFactory & ConfigFactoryKeyHost<IAppConfig>,
   ): Observable<void> {
     const appFactory = NestFactory.create<NestFastifyApplication>(
-      KernelModule.forRoot(module, cfg),
+      KernelModule.forRoot(appModule, cfg),
       new FastifyAdapter({
         genReqId: (): string => v7(),
       }),

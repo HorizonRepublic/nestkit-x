@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { APP_CONFIG, IAppConfig } from '@nestkit-x/kernel';
+import { APP_CONFIG, Environment, IAppConfig } from '@nestkit-x/core';
 import { Params as PinoParams } from 'nestjs-pino/params';
 import * as pino from 'pino';
 
-import { redactedPaths } from './const';
+import { REDACTED_MSG, redactedPaths } from './const';
 
 @Injectable()
 export class LoggerConfigFactory {
@@ -15,14 +15,14 @@ export class LoggerConfigFactory {
   }
 
   public get(): PinoParams {
-    const isProduction = this.config.env === 'production';
+    const isProduction = this.config.env === Environment.Prod;
 
     const baseConfig: PinoParams['pinoHttp'] = {
       autoLogging: false,
-      level: isProduction ? 'warn' : 'debug', // add logg level env
+      level: isProduction ? 'warn' : 'debug', // add log level to env (optional)
       name: this.config.name,
       redact: {
-        censor: '**HIDDEN**',
+        censor: REDACTED_MSG,
         paths: redactedPaths,
       },
       serializers: {
