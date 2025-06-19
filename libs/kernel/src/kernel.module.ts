@@ -8,6 +8,7 @@ import {
   IAppStateService,
 } from '@nestkit-x/core';
 
+import { CompressionProvider } from './providers/compression.provider';
 import { EnvExampleProvider } from './providers/env-example.provider';
 import { KernelProvider } from './providers/kernel.provider';
 import { AppRefService } from './services/app-ref.service';
@@ -44,7 +45,7 @@ export class KernelModule {
         appModule,
       ],
       module: KernelModule,
-      providers: [...sharedServices, KernelProvider, EnvExampleProvider],
+      providers: [...sharedServices, KernelProvider, EnvExampleProvider, CompressionProvider],
     };
   }
 }

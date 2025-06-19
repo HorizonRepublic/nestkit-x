@@ -51,9 +51,7 @@ export class NestKitKernel {
     appModule: Type<unknown>,
     cfg: ConfigFactory & ConfigFactoryKeyHost<IAppConfig>,
   ): Observable<void> {
-    const ultimateExpressInstance = UltimateExpress({
-      threads: 0,
-    });
+    const ultimateExpressInstance = UltimateExpress({ threads: 0 });
 
     const adapter = new UltimateExpressAdapter(ultimateExpressInstance) as AbstractHttpAdapter;
 
