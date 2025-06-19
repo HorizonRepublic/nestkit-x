@@ -20,7 +20,7 @@ interface ICompressionOptions {
 }
 
 /**
- * High-performance compression middleware using gzip with optimized settings
+ * High-performance compression middleware using zstd with optimized settings
  * Automatically compresses responses when client supports it and response size exceeds threshold.
  *
  * Features:
@@ -38,8 +38,8 @@ const createCompressionMiddleware = (options: Partial<ICompressionOptions> = {})
   return (req: Request, res: Response, next: NextFunction): void => {
     const acceptEncoding = req.headers['accept-encoding'] ?? '';
 
-    // Skip compression if client doesn't support gzip
-    if (!acceptEncoding.includes('gzip')) {
+    // Skip compression if client doesn't support zstd
+    if (!acceptEncoding.includes('zstd')) {
       next();
       return;
     }
@@ -166,17 +166,17 @@ const createCompressionMiddleware = (options: Partial<ICompressionOptions> = {})
 
         // Set compression headers
         res.removeHeader('Content-Length'); // Will be set by compression stream
-        res.setHeader('Content-Encoding', 'gzip');
+        res.setHeader('Content-Encoding', 'zstd');
         res.setHeader('Vary', 'Accept-Encoding');
         areHeadersSent = true;
 
         // Create a high-speed zstd compressor
-        const gzipCompressor = createZstdCompress({
+        const zstdCompressor = createZstdCompress({
           chunkSize: 1024, // Small chunks for better streaming performance
         });
 
         // Stream compressed data to client
-        gzipCompressor.on('data', (compressedChunk: Buffer) => {
+        zstdCompressor.on('data', (compressedChunk: Buffer) => {
           try {
             originalWrite(compressedChunk);
           } catch (writeError) {
@@ -185,7 +185,7 @@ const createCompressionMiddleware = (options: Partial<ICompressionOptions> = {})
         });
 
         // Finalize response when compression is complete
-        gzipCompressor.on('end', () => {
+        zstdCompressor.on('end', () => {
           restoreOriginalMethods();
 
           if (finalCallback) {
@@ -196,12 +196,12 @@ const createCompressionMiddleware = (options: Partial<ICompressionOptions> = {})
         });
 
         // Handle compression errors gracefully
-        gzipCompressor.on('error', (compressionError: Error) => {
+        zstdCompressor.on('error', (compressionError: Error) => {
           handleCompressionError(compressionError);
         });
 
         // Start compression process
-        gzipCompressor.end(responseBody);
+        zstdCompressor.end(responseBody);
 
         return res;
       } catch (error) {
@@ -219,7 +219,7 @@ const createCompressionMiddleware = (options: Partial<ICompressionOptions> = {})
  * to all routes in the application.
  *
  * Configuration:
- * - Uses gzip compression with level 1 (fastest) for maximum throughput
+ * - Uses zstd compression with level 1 (fastest) for maximum throughput
  * - Only compresses responses larger than 1KB to avoid unnecessary CPU usage
  * - Automatically falls back to uncompressed responses on errors.
  *
@@ -241,7 +241,7 @@ export class CompressionProvider {
       // Apply ultra-fast compression middleware globally
       app.use(
         createCompressionMiddleware({
-          threshold: 3072, // 3KB minimum size
+          threshold: 1, // 3KB minimum size
         }),
       );
     });
