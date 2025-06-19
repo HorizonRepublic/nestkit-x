@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Get } from '@nestjs/common';
+import { Controller, Get, UnauthorizedException } from '@nestjs/common';
 
 import { AppService } from './app.service';
 
@@ -8,7 +8,7 @@ export class AppController {
 
   @Get()
   public getData(): { message: string } {
-    throw new Error(`Test exception`);
+    throw new UnauthorizedException(`Test exception`);
 
     return this.appService.getData();
   }
