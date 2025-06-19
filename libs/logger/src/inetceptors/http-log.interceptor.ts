@@ -14,7 +14,7 @@ import { catchError, Observable, throwError } from 'rxjs';
 
 import { CRITICAL_CLIENT_ERRORS, SKIP_IN_DEV, SUSPICIOUS_PATTERNS } from '../const';
 
-type HttpLogLevel = Extract<LevelWithSilent, 'error' | 'silent' | 'warn'>;
+type HttpLogLevel = Extract<LevelWithSilent, 'debug' | 'error' | 'silent'>;
 
 /**
  * HTTP Error Logging Interceptor.
@@ -121,21 +121,24 @@ export class HttpLogInterceptor implements NestInterceptor {
       catchError((err: Error) => {
         const status = this.getStatusCode(err);
         const level = this.getLogLevel(status, err);
+        const shouldIncludeStack = level === 'error' && status >= 500;
+        const stack = shouldIncludeStack ? err.stack : undefined;
 
         if (level !== 'silent') {
           const logData = {
             http: { method, reqId: requestId, statusCode: status, url },
+            msg: err.message,
           };
 
           switch (level) {
-            case 'error':
-              this.logger.error(logData, err.stack);
+            case 'debug':
+              this.logger.debug(logData, stack);
               break;
-            case 'warn':
-              this.logger.warn(logData, err.stack);
+            case 'error':
+              this.logger.error(logData, stack);
               break;
             default:
-              this.logger.error(logData, err.stack);
+              this.logger.error(logData, stack);
           }
         }
 
@@ -152,7 +155,7 @@ export class HttpLogInterceptor implements NestInterceptor {
    *
    * @param status HTTP status code.
    * @param err The error object (used for suspicious pattern detection).
-   * @returns Log level: 'error', 'warn', or 'silent'.
+   * @returns Log level: 'error', 'debug', or 'silent'.
    * @example -
    */
   private getLogLevel(status: number, err: unknown): HttpLogLevel {
@@ -162,7 +165,7 @@ export class HttpLogInterceptor implements NestInterceptor {
       return CRITICAL_CLIENT_ERRORS.has(status) || this.isSuspicious(err) ? 'error' : 'silent';
     }
 
-    return SKIP_IN_DEV.has(status) ? 'silent' : 'warn';
+    return SKIP_IN_DEV.has(status) ? 'silent' : 'debug';
   }
 
   /**
@@ -226,8 +229,15 @@ export class HttpLogInterceptor implements NestInterceptor {
    * @example -
    */
   private isSuspicious(err: unknown): boolean {
-    const message = (err as { message?: string }).message?.toLowerCase() ?? '';
+    // Тільки для 4xx в prod
+    if (!this.isProd || !err) return false;
 
-    return SUSPICIOUS_PATTERNS.some((re) => re.test(message));
+    const message = (err as { message?: string }).message;
+
+    if (!message || message.length > 500) return false; // skip big messages
+
+    const lowerMessage = message.toLowerCase();
+
+    return SUSPICIOUS_PATTERNS.some((re) => re.test(lowerMessage));
   }
 }
