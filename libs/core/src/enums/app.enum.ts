@@ -25,14 +25,12 @@ export enum AppState {
  * feature toggles, or other environment-dependent behaviors.
  *
  * Enum members:
- * - Dev: Represents the development environment.
  * - Local: Represents a local testing or development environment.
  * - Prod: Represents the production environment.
  * - Stage: Represents the staging environment, often used for pre-production testing.
  * - Test: Represents the testing environment, typically used for automated tests.
  */
 export enum Environment {
-  Dev = 'development',
   Local = 'local',
   Prod = 'production',
   Stage = 'stage',

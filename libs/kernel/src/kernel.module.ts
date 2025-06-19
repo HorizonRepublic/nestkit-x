@@ -8,11 +8,12 @@ import {
   IAppStateService,
 } from '@nestkit-x/core';
 
+import { EnvExampleProvider } from './providers/env-example.provider';
 import { KernelProvider } from './providers/kernel.provider';
 import { AppRefService } from './services/app-ref.service';
 import { AppStateService } from './services/app-state.service';
 
-const providers: [Provider<IAppRefService>, Provider<IAppStateService>] = [
+const sharedServices: [Provider<IAppRefService>, Provider<IAppStateService>] = [
   {
     provide: APP_REF_SERVICE,
     useClass: AppRefService,
@@ -30,7 +31,7 @@ export class KernelModule {
     appConfig: ConfigFactory & ConfigFactoryKeyHost<IAppConfig>,
   ): DynamicModule {
     return {
-      exports: providers,
+      exports: sharedServices,
       global: true,
       imports: [
         ConfigModule.forRoot({
@@ -43,7 +44,7 @@ export class KernelModule {
         appModule,
       ],
       module: KernelModule,
-      providers: [...providers, KernelProvider],
+      providers: [...sharedServices, KernelProvider, EnvExampleProvider],
     };
   }
 }

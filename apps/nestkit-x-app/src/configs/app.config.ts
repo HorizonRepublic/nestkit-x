@@ -2,7 +2,7 @@ import { APP_CONFIG, Env, Environment, IAppConfig, registerConfig } from '@nestk
 import typia from 'typia';
 
 class AppConfig implements IAppConfig {
-  @Env('APP_ENV', { default: Environment.Dev, type: Environment })
+  @Env('APP_ENV', { default: Environment.Local, type: Environment })
   public env!: Environment;
 
   @Env('APP_HOST', { default: '0.0.0.0' })
