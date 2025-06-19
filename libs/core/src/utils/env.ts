@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { Type } from '@nestjs/common';
 import { ConfigFactory, ConfigFactoryKeyHost, registerAs } from '@nestjs/config';
 
-import { ENV_METADATA_KEY } from '../constants';
+import { ENV_METADATA_KEY } from '../tokens';
 import { EnumType, EnvTypeConstructor, IEnvFieldMetadata, IEnvOptions } from '../types/env.types';
 
 /**

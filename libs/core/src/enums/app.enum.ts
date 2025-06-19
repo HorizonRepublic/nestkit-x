@@ -38,3 +38,15 @@ export enum Environment {
   Stage = 'stage',
   Test = 'test',
 }
+
+export enum LoadPriority {
+  /**
+   * Domain errors module, if connected, should register in top but always after logger.
+   */
+  Errors = -9_999,
+
+  /**
+   * Logger should be loaded as soon as possible to log the original error.
+   */
+  Logger = -10_000,
+}
