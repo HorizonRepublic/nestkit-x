@@ -1,0 +1,56 @@
+{
+  "name": "nestkit-x-app",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/nestkit-x-app/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "options": {
+        "outputPath": "dist/apps/nestkit-x-app",
+        "main": "apps/nestkit-x-app/src/main.ts",
+        "tsConfig": "apps/nestkit-x-app/tsconfig.app.json",
+        "assets": [
+          {
+            "input": "src/assets",
+            "glob": "**/*",
+            "output": "assets"
+          }
+        ]
+      },
+      "configurations": {
+        "production": {
+          "sourceMap": false
+        },
+        "development": {
+          "watch": true
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": [
+        "build"
+      ],
+      "options": {
+        "buildTarget": "nestkit-x-app:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "nestkit-x-app:build:development"
+        },
+        "production": {
+          "buildTarget": "nestkit-x-app:build:production"
+        }
+      }
+    },
+    "test": {
+      "options": {
+        "passWithNoTests": true
+      }
+    }
+  }
+}

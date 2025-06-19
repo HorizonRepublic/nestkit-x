@@ -19,11 +19,10 @@ yarn-error.log*
 package-lock.json
 yarn.lock
 
-# NestJS
-/dist
-/build
+# env
 /*.env
 /*.env.*
+config.yaml
 
 # Nx
 /.nx/cache
@@ -59,3 +58,7 @@ logs
 *.swp
 *.swo
 *~
+
+.nx/workspace-data
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
