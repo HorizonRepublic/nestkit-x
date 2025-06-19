@@ -1,5 +1,4 @@
-import { Env, Environment, registerConfig } from '@nestkit-x/core';
-import { APP_CONFIG, IAppConfig } from '@nestkit-x/kernel';
+import { APP_CONFIG, Env, Environment, IAppConfig, registerConfig } from '@nestkit-x/core';
 import typia from 'typia';
 
 class AppConfig implements IAppConfig {
