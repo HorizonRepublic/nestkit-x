@@ -1,0 +1,22 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "automerge": true,
+  "labels": ["dependencies"],
+  "dependencyDashboard": true,
+  "commitMessagePrefix": "chore",
+  "automergeStrategy": "squash",
+  "rebaseWhen": "conflicted",
+  "baseBranches": ["dev"],
+  "branchPrefix": "renovate/",
+  "osvVulnerabilityAlerts": true,
+  "assignees": ["@themaiby"],
+  "reviewers": ["@themaiby"],
+  "addLabels": ["automated-pr"],
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^@horizon-republic/", "^@nx/", "^nx"],
+      "enabled": false
+    }
+  ]
+}
