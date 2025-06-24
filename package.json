@@ -1,10 +1,9 @@
 {
   "name": "nestkit-x",
   "version": "0.0.1",
-  "description": "Ultra-performance oriented modules kit for NestJS",
+  "description": "Ultra-performant modules kit for NestJS",
   "scripts": {
-    "prepare": "ts-patch install",
-    "serve": " nx serve nestkit-x-app"
+    "prepare": "ts-patch install"
   },
   "devDependencies": {
     "@darraghor/eslint-plugin-nestjs-typed": "^6.6.4",

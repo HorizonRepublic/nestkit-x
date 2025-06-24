@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
-import { AppState } from '@nestkit-x/core';
 import { Observable } from 'rxjs';
+
+import { AppState } from '../enums';
 
 /**
  * Service for managing application lifecycle states and executing callbacks
@@ -104,4 +105,52 @@ export interface IPrioritizedCallback {
   readonly priority: number;
 }
 
+/**
+ * Type definition for application state callback functions.
+ *
+ * This callback type is used throughout the application lifecycle management system
+ * to define functions that execute during key application state transitions.
+ *
+ * The callback receives a NestJS application instance and can return:
+ * - `void` for synchronous operations
+ * - `Promise<void>` for asynchronous operations
+ * - `Observable<void>` for reactive operations.
+ *
+ * @param app The NestJS application instance, fully configured and ready for use.
+ *
+ * @returns One of:
+ * - `void` - For immediate synchronous execution
+ * - `Promise<void>` - For asynchronous operations (async/await compatible)
+ * - `Observable<void>` - For reactive programming patterns using RxJS.
+ *
+ * @example
+ * ```TypeScript
+ * // Synchronous callback
+ * const syncCallback: IStateCallback = (app) => {
+ *   console.log('Application ready');
+ * };
+ *
+ * // Asynchronous callback with Promise
+ * const asyncCallback: IStateCallback = async (app) => {
+ *   await initializeDatabase();
+ *   console.log('Database initialized');
+ * };
+ *
+ * // Observable-based callback
+ * const observableCallback: IStateCallback = (app) => {
+ *   return from(setupHealthChecks()).pipe(
+ *     tap(() => console.log('Health checks configured'))
+ *   );
+ * };
+ *
+ * // Usage with AppStateService
+ * appStateService.onCreated(syncCallback);
+ * appStateService.onListening(asyncCallback, -10); // High priority
+ * ```
+ *
+ * @see IAppStateService - Service that uses these callbacks
+ * @see AppState - Application states during which callbacks execute
+ *
+ * @since 1.0.0
+ */
 export type IStateCallback = (app: INestApplication) => Observable<void> | Promise<void> | void;
