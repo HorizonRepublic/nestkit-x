@@ -1,3 +1,4 @@
+import { INestApplication } from '@nestjs/common';
 import { AppState } from '@nestkit-x/core';
 import { Observable } from 'rxjs';
 
@@ -41,7 +42,7 @@ export interface IAppStateService {
    * appState.onCreated(() => logInitComplete(), 100);
    * ```
    */
-  onCreated(cb: () => IStateCallback, priority?: number): void;
+  onCreated(cb: IStateCallback, priority?: number): void;
 
   /**
    * Register a callback to execute when the application is ready
@@ -70,7 +71,7 @@ export interface IAppStateService {
    * appState.onListening(() => startCronJobs(), 50);
    * ```
    */
-  onListening(cb: () => IStateCallback, priority?: number): void;
+  onListening(cb: IStateCallback, priority?: number): void;
 
   /**
    * Transition the application to a new state and execute all
@@ -98,9 +99,9 @@ export interface IAppStateService {
 }
 
 export interface IPrioritizedCallback {
-  callback(): IStateCallback;
+  callback: IStateCallback;
 
   readonly priority: number;
 }
 
-export type IStateCallback = Observable<void> | Promise<void> | void;
+export type IStateCallback = (app: INestApplication) => Observable<void> | Promise<void> | void;

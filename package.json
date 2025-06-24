@@ -65,6 +65,7 @@
     "axios": "^1.10.0",
     "common-constants": "^4.1.0",
     "get-root-path": "^3.0.1",
+    "helmet": "^8.1.0",
     "luxon": "^3.6.1",
     "nestjs-pino": "^4.4.0",
     "npm": "^11.4.2",

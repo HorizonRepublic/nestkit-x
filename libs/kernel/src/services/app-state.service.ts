@@ -1,5 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { AppState, IAppStateService, IPrioritizedCallback, IStateCallback } from '@nestkit-x/core';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  APP_REF_SERVICE,
+  AppState,
+  IAppRefService,
+  IAppStateService,
+  IPrioritizedCallback,
+  IStateCallback,
+} from '@nestkit-x/core';
 import {
   catchError,
   concatMap,
@@ -29,7 +36,12 @@ export class AppStateService implements IAppStateService {
   private readonly listeningCbs: IPrioritizedCallback[] = [];
   private readonly logger = new Logger(AppStateService.name);
 
-  public onCreated(cb: () => IStateCallback, priority = 0): void {
+  public constructor(
+    @Inject(APP_REF_SERVICE)
+    private readonly appRef: IAppRefService,
+  ) {}
+
+  public onCreated(cb: IStateCallback, priority = 0): void {
     const prioritizedCb: IPrioritizedCallback = { callback: cb, priority };
 
     this.insertByPriority(this.createdCbs, prioritizedCb);
@@ -40,7 +52,7 @@ export class AppStateService implements IAppStateService {
     }
   }
 
-  public onListening(cb: () => IStateCallback, priority = 0): void {
+  public onListening(cb: IStateCallback, priority = 0): void {
     const prioritizedCb: IPrioritizedCallback = { callback: cb, priority };
 
     this.insertByPriority(this.listeningCbs, prioritizedCb);
@@ -84,9 +96,10 @@ export class AppStateService implements IAppStateService {
     }
   }
 
-  private runCb$(cb: () => IStateCallback): Observable<void> {
+  private runCb$(cb: IStateCallback): Observable<void> {
     return defer(() => {
-      const result = cb();
+      const app = this.appRef.get();
+      const result = cb(app);
 
       // Handle void return (undefined)
       if (!result) return of(void 0);

@@ -2,12 +2,7 @@ import { WithImplicitCoercion } from 'node:buffer';
 import { createZstdCompress } from 'node:zlib';
 
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  APP_REF_SERVICE,
-  APP_STATE_SERVICE,
-  IAppRefService,
-  IAppStateService,
-} from '@nestkit-x/core';
+import { APP_STATE_SERVICE, IAppStateService } from '@nestkit-x/core';
 
 import type { NextFunction, Request, Response } from 'express';
 
@@ -230,14 +225,10 @@ const createCompressionMiddleware = (options: Partial<ICompressionOptions> = {})
 @Injectable()
 export class CompressionProvider {
   public constructor(
-    @Inject(APP_REF_SERVICE)
-    private readonly appRef: IAppRefService,
     @Inject(APP_STATE_SERVICE)
     private readonly appStateService: IAppStateService,
   ) {
-    this.appStateService.onCreated(() => {
-      const app = this.appRef.get();
-
+    this.appStateService.onCreated((app) => {
       // Apply ultra-fast compression middleware globally
       app.use(
         createCompressionMiddleware({

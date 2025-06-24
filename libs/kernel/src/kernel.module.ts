@@ -14,17 +14,6 @@ import { KernelProvider } from './providers/kernel.provider';
 import { AppRefService } from './services/app-ref.service';
 import { AppStateService } from './services/app-state.service';
 
-const sharedServices: [Provider<IAppRefService>, Provider<IAppStateService>] = [
-  {
-    provide: APP_REF_SERVICE,
-    useClass: AppRefService,
-  },
-  {
-    provide: APP_STATE_SERVICE,
-    useClass: AppStateService,
-  },
-];
-
 @Module({})
 export class KernelModule {
   public static forRoot(
@@ -32,7 +21,17 @@ export class KernelModule {
     appConfig: ConfigFactory & ConfigFactoryKeyHost<IAppConfig>,
   ): DynamicModule {
     return {
-      exports: sharedServices,
+      exports: [
+        {
+          provide: APP_REF_SERVICE,
+          useClass: AppRefService,
+        } satisfies Provider<IAppRefService>,
+
+        {
+          provide: APP_STATE_SERVICE,
+          useClass: AppStateService,
+        } satisfies Provider<IAppStateService>,
+      ],
       global: true,
       imports: [
         ConfigModule.forRoot({
@@ -45,7 +44,21 @@ export class KernelModule {
         appModule,
       ],
       module: KernelModule,
-      providers: [...sharedServices, KernelProvider, EnvExampleProvider, CompressionProvider],
+      providers: [
+        {
+          provide: APP_STATE_SERVICE,
+          useClass: AppStateService,
+        } satisfies Provider<IAppStateService>,
+
+        {
+          provide: APP_REF_SERVICE,
+          useClass: AppRefService,
+        } satisfies Provider<IAppRefService>,
+
+        KernelProvider,
+        EnvExampleProvider,
+        CompressionProvider,
+      ],
     };
   }
 }

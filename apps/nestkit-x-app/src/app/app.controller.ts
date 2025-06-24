@@ -1,5 +1,6 @@
 import { TypedRoute } from '@nestia/core';
-import { Controller, Logger } from '@nestjs/common';
+import { Controller, Inject, Logger } from '@nestjs/common';
+import { APP_STATE_SERVICE, IAppStateService } from '@nestkit-x/core';
 import typia from 'typia';
 
 import { AppService } from './app.service';
@@ -13,7 +14,25 @@ interface ITestUser {
 @Controller()
 export class AppController {
   private readonly logger = new Logger(AppController.name);
-  public constructor(private readonly appService: AppService) {}
+
+  public constructor(
+    @Inject(APP_STATE_SERVICE)
+    private readonly appStateService: IAppStateService,
+    private readonly appService: AppService,
+  ) {
+    // extract as example
+    this.appStateService.onCreated((app) => {
+      this.logger.log('App created #3');
+    }, 3);
+
+    this.appStateService.onCreated((app) => {
+      this.logger.log('App created #2');
+    }, 2);
+
+    this.appStateService.onCreated((app) => {
+      this.logger.log('App created #1');
+    }, 1);
+  }
 
   @TypedRoute.Get()
   public getData(): ITestUser {
