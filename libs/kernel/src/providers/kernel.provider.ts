@@ -15,7 +15,7 @@ export class KernelProvider {
     const config = this.configService.getOrThrow<IAppConfig>(APP_CONFIG);
 
     this.appStateService.onCreated((app) => {
-      app.use(helmet()); // make optional feature?
+      app.use(helmet()); // make optional feature (!)
       app.enableCors();
     });
 

@@ -15,8 +15,8 @@
   "addLabels": ["automated-pr"],
   "packageRules": [
     {
-      "matchPackagePatterns": ["^@horizon-republic/", "^@nx/", "^nx"],
-      "enabled": false
+      "enabled": false,
+      "matchPackagePatterns": ["^@nestkit-x/", "^@nx/", "^nx"]
     }
   ]
 }

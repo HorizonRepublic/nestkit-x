@@ -4,7 +4,7 @@ import { createZstdCompress } from 'node:zlib';
 import { Inject, Injectable } from '@nestjs/common';
 import { APP_STATE_SERVICE, IAppStateService } from '@nestkit-x/core';
 
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'ultimate-express';
 
 /**
  * Configuration options for the compression middleware.
@@ -195,7 +195,7 @@ const createCompressionMiddleware = (options: Partial<ICompressionOptions> = {})
           handleCompressionError(compressionError);
         });
 
-        // Start compression process
+        // Start the compression process
         zstdCompressor.end(responseBody);
 
         return res;
@@ -230,6 +230,7 @@ export class CompressionProvider {
   ) {
     this.appStateService.onCreated((app) => {
       // Apply ultra-fast compression middleware globally
+      // make it optional
       app.use(
         createCompressionMiddleware({
           threshold: 1, // 3KB minimum size
