@@ -16,7 +16,7 @@
   "packageRules": [
     {
       "enabled": false,
-      "matchPackagePatterns": ["^@nestkit-x/", "^@nx/", "^nx"]
+      "matchPackageNames": ["/^@nestkit-x//", "/^@nx//", "/^nx/"]
     }
   ]
 }
