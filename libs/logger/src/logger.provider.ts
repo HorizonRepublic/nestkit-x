@@ -2,10 +2,8 @@ import { INestApplication, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   APP_CONFIG,
-  APP_REF_SERVICE,
   APP_STATE_SERVICE,
   IAppConfig,
-  IAppRefService,
   IAppStateService,
   LoadPriority,
 } from '@nestkit-x/core';
@@ -17,13 +15,11 @@ import { RpcLogInterceptor } from './inetceptors/rpc-log.interceptor';
 @Injectable()
 export class LoggerProvider {
   public constructor(
-    @Inject(APP_REF_SERVICE) private readonly appRef: IAppRefService,
-    @Inject(APP_STATE_SERVICE) private readonly appStateService: IAppStateService,
+    @Inject(APP_STATE_SERVICE)
+    private readonly appStateService: IAppStateService,
     private readonly configService: ConfigService,
   ) {
-    this.appStateService.onCreated(() => {
-      const app = this.appRef.get();
-
+    this.appStateService.onCreated((app) => {
       this.registerLogger(app);
       this.registerInterceptors(app);
     }, LoadPriority.Logger);

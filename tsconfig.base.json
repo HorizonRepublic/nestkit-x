@@ -11,7 +11,7 @@
     "target": "ES2024",
     "module": "ES2022",
     "lib": ["ES2024"],
-    "skipLibCheck": false,
+    "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
       "@nestkit-x/core": ["libs/core/src/index.ts"],
