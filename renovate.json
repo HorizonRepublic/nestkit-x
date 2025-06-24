@@ -4,7 +4,7 @@
   "automerge": true,
   "labels": ["dependencies"],
   "dependencyDashboard": true,
-  "commitMessagePrefix": "chore",
+  "commitMessagePrefix": "chore(deps):",
   "automergeStrategy": "squash",
   "rebaseWhen": "conflicted",
   "baseBranches": ["dev"],
@@ -15,8 +15,8 @@
   "addLabels": ["automated-pr"],
   "packageRules": [
     {
-      "enabled": false,
-      "matchPackagePatterns": ["^@nestkit-x/", "^@nx/", "^nx"]
+      "enabled": true,
+      "matchPackageNames": ["^@nestkit-x/", "^@nx/", "^nx"]
     }
   ]
 }
