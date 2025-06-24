@@ -54,10 +54,11 @@ const config: Config = {
   tagline: 'Powerful NestJS toolkit for enterprise applications',
 
   themeConfig: {
+    
     // Color mode
     colorMode: {
       defaultMode: 'dark',
-      disableSwitch: false,
+      disableSwitch: true,
       respectPrefersColorScheme: true,
     },
 

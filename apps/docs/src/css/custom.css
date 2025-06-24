@@ -1,30 +1,368 @@
-/**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
- */
+/* ================================================================
+   Glass/Liquid-Glass Theme for Docusaurus – v1.6 (2025-06-24)
+   Author: Kiril
+   Description: Modern glass morphism theme with backdrop blur effects
+   License: MIT
+   ================================================================ */
 
-/* You can override the default Infima variables here. */
+/* ===============================================
+   CSS CUSTOM PROPERTIES (LIGHT MODE)
+   =============================================== */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
+  /* Primary Color Palette */
+  --ifm-color-primary: #4f46e5;
+  --ifm-color-primary-dark: #4338ca;
+  --ifm-color-primary-darker: #3730a3;
+  --ifm-color-primary-darkest: #312e81;
+  --ifm-color-primary-light: #6366f1;
+  --ifm-color-primary-lighter: #818cf8;
+  --ifm-color-primary-lightest: #a5b4fc;
+
+  /* Links Configuration */
+  --ifm-link-color: var(--ifm-color-primary);
+  --ifm-link-hover-color: var(--ifm-color-primary-light);
+  --ifm-link-decoration: none;
+  --ifm-link-hover-decoration: underline;
+
+  /* Menu & Sidebar */
+  --ifm-menu-color: #ffffff;
+  --ifm-menu-color-active: var(--ifm-color-primary);
+  --ifm-menu-color-background-active: rgba(99, 102, 241, 0.1);
+  --ifm-menu-color-background-hover: rgba(99, 102, 241, 0.05);
+
+  /* Navigation Bar */
+  --ifm-navbar-link-color: var(--ifm-color-primary);
+  --ifm-navbar-link-hover-color: var(--ifm-color-primary-light);
+  --ifm-navbar-background-color: #1b1b1d;
+
+  /* Buttons */
+  --ifm-button-color: #ffffff;
+  --ifm-button-background-color: var(--ifm-color-primary);
+  --ifm-button-border-color: var(--ifm-color-primary);
+
+  /* Tabs */
+  --ifm-tabs-color-active: var(--ifm-color-primary);
+  --ifm-tabs-color-active-border: var(--ifm-color-primary);
+
+  /* Code Blocks */
+  --ifm-code-background: rgba(99, 102, 241, 0.1);
   --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --docusaurus-highlighted-code-line-bg: rgba(116, 116, 116, 0.08);
+
+  /* Breadcrumbs */
+  --ifm-breadcrumb-item-background-active: rgba(99, 102, 241, 0.1);
+
+  /* Pagination */
+  --ifm-pagination-nav-color-hover: var(--ifm-color-primary-light);
+
+  /* Glass Design Tokens */
+  --glass-brand: #3aa8ff;
+  --glass-navbar-bg: rgba(255, 255, 255, 0.42);
+  --glass-chip-bg: rgba(255, 255, 255, 0.22);
+  --glass-outline: rgba(70, 177, 255, 0.55);
+
+  /* Hero Section Colors */
+  --hero-title: #0d1218;
+  --hero-subtitle: #4a5a6c;
+
+  /* Background Gradient */
+  --page-bg: radial-gradient(circle at 50% 110%, #b3dcff, transparent 65%);
+
+  /* Call-to-Action Button */
+  --cta-bg: rgba(255, 255, 255, 0.28);
+  --cta-border: rgba(255, 255, 255, 0.38);
+  --cta-text: #0d1218;
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
+/* ===============================================
+   DARK MODE THEME OVERRIDES
+   =============================================== */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-color-primary: rgb(145, 145, 255);
+  --ifm-color-primary-dark: #4338ca;
+  --ifm-color-primary-darker: #3730a3;
+  --ifm-color-primary-darkest: #312e81;
+  --ifm-color-primary-light: #6366f1;
+  --ifm-color-primary-lighter: #818cf8;
+  --ifm-color-primary-lightest: #a5b4fc;
+  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.08);
+
+  /* Dark Mode Glass Tokens */
+  --glass-navbar-bg: rgba(10, 14, 24, 0.6);
+  --glass-chip-bg: rgba(255, 255, 255, 0.06);
+  --glass-outline: rgba(80, 185, 255, 0.35);
+
+  /* Dark Mode Hero Colors */
+  --hero-title: #f5f8ff;
+  --hero-subtitle: #9fb6d8;
+
+  /* Dark Mode Background */
+  --page-bg: radial-gradient(circle 2000px at 50% 40%, rgba(6, 30, 66, 0.9), transparent 70%);
+
+  /* Dark Mode CTA Button */
+  --cta-bg: rgba(255, 255, 255, 0.1);
+  --cta-border: rgba(255, 255, 255, 0.18);
+  --cta-text: #f5f8ff;
+}
+
+/* ===============================================
+   GLOBAL LAYOUT & BACKGROUND
+   =============================================== */
+html,
+body {
+  height: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+  background: var(--page-bg);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size:
+    4000px 3000px,
+    3600px 2700px,
+    3200px 2400px,
+    100% 100%;
+}
+
+/* Remove default backgrounds from main content areas */
+.main-wrapper,
+.docMainContainer,
+.docs-wrapper,
+.theme-doc-markdown {
+  background: transparent !important;
+}
+
+/* ===============================================
+   BREADCRUMBS GLASS EFFECT
+   =============================================== */
+.breadcrumbs__item--active .breadcrumbs__link {
+  background: rgba(99, 102, 241, 0.08);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgb(171, 171, 186);
+  border-radius: 8px;
+  padding: 4px 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  color: ghostwhite;
+}
+
+.breadcrumbs__item .breadcrumbs__link:hover {
+  background: rgba(99, 102, 241, 0.38);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* ===============================================
+   CODE BLOCKS GLASS MORPHISM
+   =============================================== */
+.theme-code-block {
+  background: rgba(255, 255, 255, 0.03) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.theme-code-block:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(24px);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Code Block Titles */
+.theme-code-block .codeBlockTitle_node_modules {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Copy Button Glass Effect */
+.theme-code-block .copyButton_node_modules {
+  background: rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+}
+
+.theme-code-block .copyButton_node_modules:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(16px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Remove background from all code elements */
+.theme-code-block * {
+  background-color: transparent !important;
+}
+
+/* Inline Code Styling */
+code {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  backdrop-filter: blur(8px);
+  padding: 2px 6px;
+}
+
+/* ===============================================
+   NAVIGATION BAR GLASS EFFECT
+   =============================================== */
+.navbar.navbar--fixed-top {
+  backdrop-filter: blur(24px) saturate(160%);
+  background: var(--glass-navbar-bg);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  box-shadow:
+    0 6px 16px -6px rgba(0, 0, 0, 0.32),
+    0 0 0 1.25px var(--glass-outline);
+  margin: 8px 12px;
+  padding: 0 1rem;
+  transition: all 0.25s ease;
+}
+
+.navbar.navbar--fixed-top:hover {
+  box-shadow:
+    0 10px 22px -4px rgba(0, 0, 0, 0.38),
+    0 0 0 1.75px var(--glass-outline);
+}
+
+/* Responsive navbar adjustments */
+@media (max-width: 996px) {
+  .navbar.navbar--fixed-top {
+    border-radius: 0;
+    margin: 0;
+  }
+}
+
+/* Navigation Links Styling */
+.navbar__brand,
+.navbar__link,
+.dropdown__link {
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.16);
+}
+
+[data-theme='dark'] .navbar__brand,
+[data-theme='dark'] .navbar__link,
+[data-theme='dark'] .dropdown__link {
+  color: #f5f8ff;
+}
+
+.navbar__link--active,
+.navbar__link:hover,
+.dropdown__link:hover {
+  background: var(--glass-chip-bg);
+  border-radius: 10px;
+  color: var(--glass-brand);
+}
+
+/* ===============================================
+   HERO SECTION STYLING
+   =============================================== */
+.hero.hero--primary,
+[class*='heroBanner_'] {
+  background: transparent !important;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  gap: 1.25rem;
+  padding: 4rem 1rem !important;
+}
+
+.hero .hero__title {
+  color: var(--hero-title);
+  font-size: clamp(2.5rem, 6vw, 3.5rem);
+  font-weight: 700;
+}
+
+.hero .hero__subtitle {
+  color: var(--hero-subtitle);
+  font-size: 1.25rem;
+}
+
+/* Call-to-Action Button */
+.hero .button.button--secondary.button--lg {
+  backdrop-filter: blur(22px);
+  background: var(--cta-bg);
+  border: 1px solid var(--cta-border);
+  border-radius: 14px;
+  color: var(--cta-text);
+  padding: 0.85rem 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.25s ease;
+}
+
+.hero .button.button--secondary.button--lg:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+}
+
+/* ===============================================
+   GLASS FEATURE CARDS
+   =============================================== */
+.feature-item {
+  backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+  height: 100%;
+}
+
+.feature-item:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme='dark'] .feature-item {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .feature-item {
+    padding: 1.25rem;
+  }
+}
+
+/* ===============================================
+   FOOTER GLASS STYLING
+   =============================================== */
+.footer.footer--dark {
+  background: rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 -8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Footer Links */
+.footer--dark .footer__link-item {
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.2s ease;
+}
+
+.footer--dark .footer__link-item:hover {
+  color: rgba(255, 255, 255, 1);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+/* Footer Section Titles */
+.footer--dark .footer__title {
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Footer Copyright */
+.footer--dark .footer__copyright {
+  font-size: 0.7em;
 }

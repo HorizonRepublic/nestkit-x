@@ -21,7 +21,14 @@ export default [
 
   // Ignored paths
   {
-    ignores: ['**/dist', '**/node_modules', '**/coverage'],
+    ignores: [
+      '**/dist',
+      '**/node_modules',
+      '**/coverage',
+      'docs/**/*', // Exclude entire docs folder
+      '**/*.md',
+      '**/*.mdx'
+    ],
   },
 
   // Rules for all JS/TS/JSX/TSX files

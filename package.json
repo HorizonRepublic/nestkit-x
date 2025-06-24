@@ -7,6 +7,7 @@
   },
   "devDependencies": {
     "@darraghor/eslint-plugin-nestjs-typed": "^6.6.4",
+    "@docusaurus/eslint-plugin": "^3.8.1",
     "@docusaurus/module-type-aliases": "3.4.0",
     "@docusaurus/tsconfig": "3.4.0",
     "@docusaurus/types": "3.4.0",
