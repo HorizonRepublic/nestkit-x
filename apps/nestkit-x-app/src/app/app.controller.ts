@@ -3,8 +3,6 @@ import { Controller, Inject, Logger } from '@nestjs/common';
 import { APP_STATE_SERVICE, IAppStateService } from '@nestkit-x/core';
 import typia from 'typia';
 
-import { AppService } from './app.service';
-
 interface ITestUser {
   firstName: string;
   id: string & typia.tags.Format<'uuid'>;
@@ -18,7 +16,6 @@ export class AppController {
   public constructor(
     @Inject(APP_STATE_SERVICE)
     private readonly appStateService: IAppStateService,
-    private readonly appService: AppService,
   ) {
     // extract as example
     this.appStateService.onCreated((app) => {
@@ -35,9 +32,7 @@ export class AppController {
   }
 
   @TypedRoute.Get()
-  public getData(): ITestUser {
-    this.logger.log('Info log');
-
-    return this.appService.getData();
+  public getData(): void {
+    return void 0;
   }
 }

@@ -22,24 +22,24 @@ const config: Config = {
     [
       'classic',
       {
-        blog: {
-          blogDescription: 'Latest updates and tutorials for NestKit X',
-          blogTitle: 'NestKit X Blog',
-          editUrl: 'https://github.com/HorizonRepublic/nestkit-x/tree/main/apps/docs/',
-          feedOptions: {
-            copyright: `Copyright © ${new Date().getFullYear()} HorizonRepublic`,
-            description: 'Stay updated with NestKit X developments',
-            language: 'en',
-            title: 'NestKit X Blog',
-            type: ['rss', 'atom'],
-          },
-          postsPerPage: 'ALL',
-          showReadingTime: true,
-        },
+        // blog: {
+        //   blogDescription: 'Latest updates and tutorials for NestKit X',
+        //   blogTitle: 'NestKit X Blog',
+        //   editUrl: 'https://github.com/HorizonRepublic/nestkit-x/tree/main/apps/docs/',
+        //   feedOptions: {
+        //     copyright: `Copyright © ${new Date().getFullYear()} HorizonRepublic`,
+        //     description: 'Stay updated with NestKit X developments',
+        //     language: 'en',
+        //     title: 'NestKit X Blog',
+        //     type: ['rss', 'atom'],
+        //   },
+        //   postsPerPage: 'ALL',
+        //   showReadingTime: true,
+        // },
         docs: {
           editUrl: 'https://github.com/HorizonRepublic/nestkit-x/tree/main/apps/docs/',
           routeBasePath: 'docs',
-          showLastUpdateAuthor: true,
+          showLastUpdateAuthor: false,
           showLastUpdateTime: true,
           sidebarPath: './sidebars.ts',
         },

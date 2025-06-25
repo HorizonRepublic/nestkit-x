@@ -1,5 +1,7 @@
-import { constants, Environment } from '@nestkit-x/core';
 import { tags } from 'typia';
+
+import { constants } from '../constants/index';
+import { Environment } from '../enums';
 
 export interface IAppConfig {
   readonly env: Environment;

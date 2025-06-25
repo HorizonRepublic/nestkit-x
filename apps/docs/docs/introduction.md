@@ -4,139 +4,131 @@ sidebar_position: 1
 
 # Introduction
 
-Welcome to the **NestKit-X** documentation - a powerful collection of libraries for building modern Node.js applications with NestJS.
+Welcome to **NestKit-X** - a comprehensive ecosystem designed to streamline NestJS application development by
+eliminating repetitive boilerplate code and providing seamless integration between modules.
 
-## Overview
+## Motivation
 
-NestKit-X consists of three core modules, each addressing specific development needs:
+As developers working with NestJS, we've all been there - spinning up new instances, writing the same boilerplate code
+for every project, and copying configurations from previous services. Even small microservices require substantial
+setup: configuring Swagger, setting up middleware, creating application hooks, and writing lengthy `main.ts` files.
 
-### 🏗️ Core Library
+Most boilerplates end up being discarded or heavily modified because they either include unnecessary features or lack
+specific requirements. Instead of creating yet another template that would gather dust, we decided to build something
+different.
 
-The foundational library containing essential utilities, types, and shared functionality across the ecosystem.
+**NestKit-X** was born from the frustration of writing the same modular code repeatedly. Rather than copying and pasting
+from previous projects, we created an ecosystem that reduces most configurations and module integrations to simple
+package installations.
 
-**Key Features:**
+## What is NestKit-X?
 
-- Type definitions and interfaces
-- Utility functions and helpers
-- Constants and enums
-- Dependency injection tokens
-- Common abstractions
+NestKit-X can be technically described as a **framework** - it provides a comprehensive ecosystem of well-integrated
+modules that are pre-configured and work seamlessly together out of the box.
 
-**Structure:**
+### Key Benefits
 
-- `types/` - TypeScript type definitions
-- `utils/` - Utility functions and helpers
-- `enums/` - Enumeration definitions
-- `tokens/` - Dependency injection tokens
-- `constants/` - Application constants
-
-### ⚡ Kernel Library
-
-The architectural foundation providing core system functionality and lifecycle management.
-
-**Key Features:**
-
-- Application kernel management
-- Service providers and factories
-- Module system architecture
-- Lifecycle hooks and events
-- System-level abstractions
-
-**Structure:**
-
-- `kernel.ts` - Main kernel implementation
-- `kernel.module.ts` - NestJS module definition
-- `services/` - Core services
-- `providers/` - Service providers
-
-### 📝 Logger Library
-
-A specialized logging library with advanced features and integrations.
-
-**Key Features:**
-
-- Structured logging
-- HTTP request/response interceptors
-- Configurable log levels
-- Multiple transport support
-- Context-aware logging
-
-**Structure:**
-
-- `logger.module.ts` - NestJS module definition
-- `logger.provider.ts` - Logger service provider
-- `logger-config-factory.service.ts` - Configuration factory
-- `interceptors/` - HTTP logging interceptors
-- `const.ts` - Logger constants
+- **Zero Boilerplate**: Forget about massive `main.ts` files filled with Swagger configurations
+- **No More Copy-Paste**: Stop copying middleware and application hooks between projects
+- **Dependency Injection for Everything**: Use DI patterns for all framework configurations
+- **Microservice Ready**: Create new services without domain-specific dependencies
+- **Pre-integrated Ecosystem**: All modules work together without additional configuration
 
 ## Quick Start
 
-```bash
-# Install the core package
-npm install @nestkit-x/core
-# Install additional modules as needed
-npm install @nestkit-x/kernel @nestkit-x/logger
-```
+Getting started with NestKit-X is incredibly simple. The framework is built around a custom kernel that requires minimal
+setup in your main application file.
 
-### Basic Usage
+### Basic Configuration
+
+Create your application configuration class. The `IAppConfig` interface and `APP_CONFIG` token are already provided by
+`@nestkit-x/core`:
 
 ```typescript
-import { Module } from '@nestjs/common';
-import { KernelModule } from '@nestkit-x/kernel';
-import { LoggerModule } from '@nestkit-x/logger';
+import { IAppConfig } from '@nestkit-x/core';
 
-@Module({
-  imports: [
-    KernelModule.forRoot(),
-    LoggerModule.forRoot({
-      level: 'info', // Additional configuration
-    }),
-  ],
-})
-export class AppModule {}
+class AppConfig implements IAppConfig {
+  // Implement the required properties
+  readonly env: Environment;
+  readonly host: string;
+  readonly name: string;
+  readonly port: number;
+  readonly version: string;
+}
 ```
 
+Then register your configuration. NestKit-X comes with `@nestjs/config` built-in, so you can register your config in
+several ways:
 
-## Architecture Principles
+:::info Configuration Registration
 
-NestKit-X is designed with the following principles in mind:
+You can register your configuration using the standard NestJS approach or the enhanced NestKit-X way:
 
-- **Modularity** - Each library can be used independently
-- **Type Safety** - Full TypeScript support with strict typing
-- **Extensibility** - Easy to extend and customize
-- **Performance** - Optimized for production workloads
-- **Testing** - Comprehensive test coverage
-- **Documentation** - Well-documented APIs and examples
+**Standard NestJS approach:**
 
-## Requirements
+```typescript
+import { APP_CONFIG } from '@nestkit-x/core';
+import { registerAs } from '@nestjs/config';
 
-- **Node.js**: >= 18.0.0
-- **TypeScript**: >= 5.0.0
-- **NestJS**: >= 10.0.0
+export const appConfig = registerAs(APP_CONFIG, () => new AppConfig());
+```
 
-## Technology Stack
+**NestKit-X enhanced approach (with validation):**
 
-Built with modern technologies:
-- TypeScript 5.8.3
-- NestJS 11.x
-- Jest for testing
-- ESLint for code quality
-- Nx for monorepo management
+```typescript
+import { APP_CONFIG, registerConfig } from '@nestkit-x/core';
 
-## Next Steps
+export const appConfig = registerConfig(APP_CONFIG, AppConfig, (c) => typia.assertEquals(c));
+// or your own validator. typia is not must-have
+```
 
-Explore the documentation for each library:
+The NestKit-X approach provides additional features like validation and enhanced type safety if you uses typia.
+Details about configuration options will be covered in the [Config section](./overview/config.md).
+:::
 
-- [Core Library](./core/overview.md) - Essential utilities and types
-- [Kernel Library](./kernel/overview.md) - System architecture and lifecycle
-- [Logger Library](./logger/overview.md) - Advanced logging capabilities
+Later you can access this config via token `APP_CONFIG`
 
-Or check out the [examples](./examples/index.md) to get started quickly.
+### Application Bootstrap
 
-## Contributing
+Finally, bootstrap your application in a single line:
 
-We welcome contributions! Please see our [Contributing Guide](./contributing.md) for details on how to get started.
+```typescript
+// main.ts
+import { NestKitKernel } from '@nestkit-x/kernel';
+import { AppModule } from './app/app.module';
+import { appConfig } from './configs/app.config';
 
-## License
+NestKitKernel.init(AppModule, appConfig);
+```
 
-This project is licensed under the MIT License - see the [LICENSE](./license.md) file for details.
+That's it! Your service is configured, running, and ready for development.
+
+## Architecture Overview
+
+The system is built around the custom [**Kernel**](./overview/kernel.md) - the core engine that extends standard NestJS
+capabilities
+and makes the framework more flexible and powerful.
+
+### The Kernel System
+
+The kernel serves as:
+
+- **Bootstrap Engine**: Handles application initialization and lifecycle management
+- **Module Coordinator**: Manages integration between different NestKit-X modules
+- **State Management**: Provides StateService for controlling application lifecycle and bootstrap phases
+- **Service Registry**: Maintains references to core application services
+
+Beyond simple application startup, the kernel provides additional capabilities and serves as the foundation for all
+other NestKit-X modules. It's important to distinguish the kernel from the core package - while `@nestkit-x/core`
+contains constants and types, the kernel is the actual system engine that powers the entire ecosystem.
+
+## What's Next?
+
+This introduction provides a high-level overview of NestKit-X and its benefits. To dive deeper:
+
+- Explore the [`@nestkit-x/kernel`](./overview/kernel.md) documentation to understand the core system
+- Check out individual **Module** guides for specific integrations
+- Review **Configuration** options for customizing your application
+- See **Examples** for real-world implementation patterns
+
+Welcome to a more efficient way of building NestJS applications!
