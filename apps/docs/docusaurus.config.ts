@@ -1,23 +1,29 @@
-import { themes as prismThemes } from 'prism-react-renderer';
-
 import type * as Preset from '@docusaurus/preset-classic';
 import type { Config } from '@docusaurus/types';
+
+import { themes as prismThemes } from 'prism-react-renderer';
 
 const config: Config = {
   baseUrl: '/',
   favicon: 'logo/favicon.png',
 
-  // Internationalization (можете розширити пізніше)
+  // Internationalization
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
   },
+
+  markdown: {
+    mermaid: true,
+  },
+
   onBrokenLinks: 'throw',
 
   onBrokenMarkdownLinks: 'warn',
 
   // GitHub pages deployment config
   organizationName: 'HorizonRepublic',
+
   presets: [
     [
       'classic',
@@ -49,12 +55,10 @@ const config: Config = {
       } satisfies Preset.Options,
     ],
   ],
+  projectName: 'NestKit-X',
 
-  projectName: 'nestkit-x',
-  tagline: 'Powerful NestJS toolkit for enterprise applications',
-
+  tagline: 'Powerful modular NestJS toolkit',
   themeConfig: {
-    
     // Color mode
     colorMode: {
       defaultMode: 'dark',
@@ -68,8 +72,8 @@ const config: Config = {
         {
           items: [
             {
-              label: 'Getting Started',
-              to: '/docs/intro',
+              label: 'Quick Start',
+              to: '/docs/overview/kernel#quick-start',
             },
             {
               label: 'API Reference',
@@ -116,14 +120,9 @@ const config: Config = {
       style: 'dark',
     },
 
-    // Social card for sharing
-    image: 'logo/nestkit-x-social-card.jpg',
-
     // Metadata
     metadata: [
-      { content: 'nestjs, typescript, framework, toolkit, enterprise', name: 'keywords' },
-      { content: 'summary_large_image', name: 'twitter:card' },
-      { content: '@HorizonRepublic', name: 'twitter:site' },
+      { content: 'nestjs, typescript, framework, toolkit', name: 'keywords' },
       { content: 'website', name: 'og:type' },
     ],
 
@@ -181,6 +180,8 @@ const config: Config = {
       theme: prismThemes.github,
     },
   } satisfies Preset.ThemeConfig,
+
+  themes: ['@docusaurus/theme-mermaid'],
 
   title: 'NestKit X',
 

@@ -105,7 +105,7 @@ That's it! Your service is configured, running, and ready for development.
 
 ## Architecture Overview
 
-The system is built around the custom [**Kernel**](./overview/kernel.md) - the core engine that extends standard NestJS
+The system is built around the custom [**Kernel**](overview/01-kernel.md) - the core engine that extends standard NestJS
 capabilities
 and makes the framework more flexible and powerful.
 
@@ -126,7 +126,7 @@ contains constants and types, the kernel is the actual system engine that powers
 
 This introduction provides a high-level overview of NestKit-X and its benefits. To dive deeper:
 
-- Explore the [`@nestkit-x/kernel`](./overview/kernel.md) documentation to understand the core system
+- Explore the [`@nestkit-x/kernel`](overview/01-kernel.md) documentation to understand the core system
 - Check out individual **Module** guides for specific integrations
 - Review **Configuration** options for customizing your application
 - See **Examples** for real-world implementation patterns
