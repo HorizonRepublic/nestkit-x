@@ -6,6 +6,7 @@ import preferArrowPlugin from 'eslint-plugin-prefer-arrow';
 import eslintPluginPrettier from 'eslint-plugin-prettier';
 import sonarjs from 'eslint-plugin-sonarjs';
 import unusedImports from 'eslint-plugin-unused-imports';
+import jsoncParser from 'jsonc-eslint-parser';
 import tseslint from 'typescript-eslint';
 
 export default [
@@ -17,7 +18,11 @@ export default [
   ...tseslint.configs.recommended,
   jsdoc.configs['flat/recommended-typescript'],
   perfectionist.configs['recommended-natural'],
-  sonarjs.configs.recommended,
+
+  {
+    ...sonarjs.configs.recommended,
+    files: ['**/*.{js,jsx,ts,tsx}'],
+  },
 
   // Ignored paths
   {
@@ -27,8 +32,22 @@ export default [
       '**/coverage',
       'docs/**/*', // Exclude entire docs folder
       '**/*.md',
-      '**/*.mdx'
+      '**/*.mdx',
     ],
+  },
+
+  // JSON files - dependency checks
+  {
+    files: ['**/package.json', '**/project.json'],
+    languageOptions: {
+      parser: jsoncParser,
+    },
+    plugins: {
+      '@nx': nx,
+    },
+    rules: {
+      '@nx/dependency-checks': 'error',
+    },
   },
 
   // Rules for all JS/TS/JSX/TSX files
@@ -42,14 +61,12 @@ export default [
       'unused-imports': unusedImports,
     },
     rules: {
+      '@nx/dependency-checks': 'error',
       // Nx-specific rules
       '@nx/enforce-module-boundaries': [
         'error',
         {
-          allow: [
-            '^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$',
-            "@nestkit-x/core/**"
-          ],
+          allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$', '@nestkit-x/core/**'],
           depConstraints: [
             {
               onlyDependOnLibsWithTags: ['*'],
@@ -252,11 +269,11 @@ export default [
         {
           filter: {
             match: true,
-            regex: '^[A-Z][A-Z0-9_]*(_TOKEN|_KEY|_CONFIG)?$'
+            regex: '^[A-Z][A-Z0-9_]*(_TOKEN|_KEY|_CONFIG)?$',
           },
           format: ['UPPER_CASE', 'camelCase'],
           modifiers: ['const'],
-          selector: 'variable'
+          selector: 'variable',
         },
         { format: ['camelCase'], selector: 'variableLike' },
         { format: ['camelCase'], selector: 'memberLike' },
@@ -280,7 +297,7 @@ export default [
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
 
       camelcase: 'off',
-      
+
       // Disable base rules that conflict with TS equivalents
       'comma-dangle': 'off',
 
