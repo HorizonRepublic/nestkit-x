@@ -1,17 +1,16 @@
 import { createHash } from 'crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import * as fs from 'fs/promises';
 import { dirname } from 'path';
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  APP_CONFIG,
-  ENV_METADATA_KEY,
-  Environment,
-  IAppConfig,
-  IEnvFieldMetadata,
-} from '@nestkit-x/core';
+import { APP_CONFIG, Environment, IAppConfig } from '@nestkit-x/core';
 import { rootPath } from 'get-root-path';
+import { catchError, defer, EMPTY, from, map, Observable, of, switchMap, tap } from 'rxjs';
+
+import { CONFIG_MODULE_OPTIONS, ENV_METADATA_KEY } from '../const';
+import { IEnvFieldMetadata } from '../types';
+import { IConfigModuleOptions } from '../types/i-config-module.options';
 
 /**
  * Environment Example File Generator.
@@ -66,13 +65,18 @@ export class EnvExampleProvider implements OnModuleInit {
   private static readonly templateHeader = `###
 #
 # This is auto generated file based on all config registered. Do not edit it manually.
-# If some of configs are not presented here, it means that they are not used @Env() decorator.
+# If some of configs are not presented here, it means that they are not used @Env() decorator or 
+# not registered with ConfigBuilder.
 #
 ###` as const;
 
   private readonly logger = new Logger(EnvExampleProvider.name);
 
-  public constructor(private readonly configService: ConfigService) {}
+  public constructor(
+    @Inject(CONFIG_MODULE_OPTIONS)
+    private readonly options: IConfigModuleOptions,
+    private readonly configService: ConfigService,
+  ) {}
 
   /**
    * Lifecycle hook that runs after module initialization.
@@ -89,37 +93,21 @@ export class EnvExampleProvider implements OnModuleInit {
    * @throws {Error} When configuration cannot be retrieved or a file cannot be written.
    * @example -
    */
-  public async onModuleInit(): Promise<void> {
-    try {
-      const appConfig = this.getAppConfiguration();
-
-      if (!this.shouldGenerateExamples(appConfig.env)) return;
-
-      const configSections = this.extractConfigurationSections();
-      const templateContent = this.buildTemplate(configSections);
-      const outputPath = this.buildOutputPath(appConfig.name);
-
-      const shouldUpdate = await this.shouldUpdateFile(outputPath, templateContent);
-
-      if (!shouldUpdate) return;
-
-      await this.writeExampleFile(outputPath, templateContent);
-
-      this.logger.log({
-        file: outputPath,
-        msg: 'Environment example file generated successfully',
-        sections: configSections.length,
-        size: templateContent.length,
-      });
-    } catch (error) {
-      this.logger.error(
-        {
-          error: error instanceof Error ? error.message : 'Unknown error',
-          msg: 'Failed to generate environment example file',
-        },
-        error instanceof Error ? error.stack : undefined,
-      );
-    }
+  public onModuleInit(): void {
+    this.generateEnvironmentExample()
+      .pipe(
+        catchError((error) => {
+          this.logger.error(
+            {
+              error: error instanceof Error ? error.message : 'Unknown error',
+              msg: 'Failed to generate environment example file',
+            },
+            error instanceof Error ? error.stack : undefined,
+          );
+          return EMPTY;
+        }),
+      )
+      .subscribe();
   }
 
   /**
@@ -145,7 +133,7 @@ export class EnvExampleProvider implements OnModuleInit {
   private buildTemplate(sections: string[]): string {
     const sectionsContent = sections.join('\n\n');
 
-    return `${EnvExampleProvider.templateHeader}\n\n${sectionsContent}`;
+    return `${EnvExampleProvider.templateHeader}\n\n${sectionsContent}\n`;
   }
 
   /**
@@ -167,17 +155,27 @@ export class EnvExampleProvider implements OnModuleInit {
    * Ensures the target directory exists, creating it if necessary.
    *
    * @param filePath Target file path.
-   * @throws {Error} When directory creation fails.
+   * @returns Observable that handles directory creation.
    * @example -
    */
-  private async ensureDirectoryExists(filePath: string): Promise<void> {
+  private ensureDirectoryExists$(filePath: string): Observable<void> {
     const targetDirectory = dirname(filePath);
 
-    if (existsSync(targetDirectory)) return;
+    const checkAccess$ = from(fs.access(targetDirectory));
+    const createDirectory$ = from(fs.mkdir(targetDirectory, { recursive: true }));
+    const logCreation$ = of(void 0).pipe(
+      tap(() => {
+        this.logger.debug({
+          directory: targetDirectory,
+          msg: 'Created output directory',
+        });
+      }),
+    );
 
-    mkdirSync(targetDirectory, { recursive: true });
-
-    this.logger.debug({ directory: targetDirectory, msg: 'Created output directory' });
+    return checkAccess$.pipe(
+      catchError(() => createDirectory$.pipe(switchMap(() => logCreation$))),
+      map(() => void 0),
+    );
   }
 
   /**
@@ -275,14 +273,36 @@ export class EnvExampleProvider implements OnModuleInit {
   }
 
   /**
-   * Retrieves the application configuration.
+   * Main generation pipeline using .
    *
-   * @returns The application configuration object.
-   * @throws {Error} When APP_CONFIG is not registered or cannot be retrieved.
+   * @returns Observable that handles the complete generation process.
    * @example -
    */
-  private getAppConfiguration(): IAppConfig {
-    return this.configService.getOrThrow<IAppConfig>(APP_CONFIG);
+  private generateEnvironmentExample(): Observable<void> {
+    return defer(() => {
+      const appConfig = this.configService.getOrThrow<IAppConfig>(APP_CONFIG);
+
+      return of(appConfig);
+    }).pipe(
+      switchMap((appConfig) => {
+        if (!this.shouldGenerateExamples(appConfig.env)) return EMPTY;
+
+        const configSections = this.extractConfigurationSections();
+        const templateContent = this.buildTemplate(configSections);
+        const outputPath = this.buildOutputPath(appConfig.name);
+
+        return this.processFileGeneration(outputPath, templateContent).pipe(
+          tap(() => {
+            this.logger.log({
+              file: outputPath,
+              msg: 'Environment example file generated successfully',
+              sections: configSections.length,
+              size: templateContent.length,
+            });
+          }),
+        );
+      }),
+    );
   }
 
   /**
@@ -330,25 +350,41 @@ export class EnvExampleProvider implements OnModuleInit {
   }
 
   /**
+   * Processes file generation pipeline.
+   *
+   * @param outputPath Target file path.
+   * @param templateContent Content to write.
+   * @returns Observable that handles file operations.
+   * @example -
+   */
+  private processFileGeneration(outputPath: string, templateContent: string): Observable<void> {
+    return this.shouldUpdateFile$(outputPath, templateContent).pipe(
+      switchMap((shouldUpdate) => {
+        if (!shouldUpdate) {
+          return EMPTY;
+        }
+
+        return this.writeExampleFile$(outputPath, templateContent);
+      }),
+    );
+  }
+
+  /**
    * Reads and hashes existing file content for comparison.
    *
    * @param filePath Path to the existing file.
-   * @returns Content hash or null if a file doesn't exist or can't be read.
+   * @returns Observable with content hash or null if file doesn't exist.
    * @example -
    */
-  private readExistingFileHash(filePath: string): null | string {
-    try {
-      if (!existsSync(filePath)) {
-        return null;
-      }
-
-      const existingContent = readFileSync(filePath, EnvExampleProvider.fileEncoding);
-
-      return this.generateContentHash(existingContent);
-      // eslint-disable-next-line unused-imports/no-unused-vars,sonarjs/no-ignored-exceptions
-    } catch (error) {
-      return null;
-    }
+  private readExistingFileHash$(filePath: string): Observable<null | string> {
+    return from(
+      fs.readFile(filePath, {
+        encoding: EnvExampleProvider.fileEncoding,
+      }),
+    ).pipe(
+      map((existingContent) => this.generateContentHash(existingContent)),
+      catchError(() => of(null)),
+    );
   }
 
   /**
@@ -359,7 +395,7 @@ export class EnvExampleProvider implements OnModuleInit {
    * @example -
    */
   private shouldGenerateExamples(currentEnv: Environment): boolean {
-    return currentEnv === Environment.Local;
+    return currentEnv === this.options.generateExampleIn;
   }
 
   /**
@@ -367,19 +403,15 @@ export class EnvExampleProvider implements OnModuleInit {
    *
    * @param filePath Target file path.
    * @param newContent New content to compare.
-   * @returns True if a file should be updated, false if content is unchanged.
+   * @returns Observable that emits true if file should be updated.
    * @example -
    */
-  private async shouldUpdateFile(filePath: string, newContent: string): Promise<boolean> {
-    // If the main file doesn't exist, we should create it
-    if (!existsSync(filePath)) {
-      return true;
-    }
-
+  private shouldUpdateFile$(filePath: string, newContent: string): Observable<boolean> {
     const newContentHash = this.generateContentHash(newContent);
-    const existingContentHash = this.readExistingFileHash(filePath);
 
-    return newContentHash !== existingContentHash;
+    return this.readExistingFileHash$(filePath).pipe(
+      map((existingContentHash) => newContentHash !== existingContentHash),
+    );
   }
 
   /**
@@ -393,12 +425,13 @@ export class EnvExampleProvider implements OnModuleInit {
    *
    * @param filePath Target file path.
    * @param content File content to write.
-   * @throws {Error} When directory creation or file writing fails.
+   * @returns Observable that handles file writing operations.
    * @example -
    */
-  private async writeExampleFile(filePath: string, content: string): Promise<void> {
-    await this.ensureDirectoryExists(filePath);
-    await this.writeFileContent(filePath, content);
+  private writeExampleFile$(filePath: string, content: string): Observable<void> {
+    return this.ensureDirectoryExists$(filePath).pipe(
+      switchMap(() => this.writeFileContent$(filePath, content)),
+    );
   }
 
   /**
@@ -406,10 +439,10 @@ export class EnvExampleProvider implements OnModuleInit {
    *
    * @param filePath Target file path.
    * @param content Content to write.
-   * @throws {Error} When file writing fails.
+   * @returns Observable that handles file writing.
    * @example -
    */
-  private async writeFileContent(filePath: string, content: string): Promise<void> {
-    writeFileSync(filePath, content, EnvExampleProvider.fileEncoding);
+  private writeFileContent$(filePath: string, content: string): Observable<void> {
+    return from(fs.writeFile(filePath, content, { encoding: EnvExampleProvider.fileEncoding }));
   }
 }

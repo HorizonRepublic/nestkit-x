@@ -30,7 +30,7 @@ npm install @nestkit-x/kernel @nestkit-x/core
 
 ```typescript
 // configs/app.config.ts
-import { APP_CONFIG, IAppConfig, registerConfig, Environment } from '@nestkit-x/core';
+import { APP_CONFIG, Environment, IAppConfig } from '@nestkit-x/core';
 
 class AppConfig implements IAppConfig {
   readonly env = Environment.Development;
@@ -40,8 +40,20 @@ class AppConfig implements IAppConfig {
   readonly version = '1.0.0';
 }
 
-export const appConfig = registerConfig(APP_CONFIG, AppConfig);
+export const appConfig = ConfigBuilder.from(AppConfig, APP_CONFIG)
+  .validate((c) => typia.assertEquals<IAppConfig>(c))
+  .build();
 ```
+
+:::warning Configuration Registration Required
+Your configuration must be registered in the root module that's passed to the Kernel, otherwise the application will
+fail to start.
+
+```typescript
+ConfigModule.forFeature(appConfig)
+```
+
+:::
 
 ### 2. Bootstrap Application
 
@@ -49,9 +61,8 @@ export const appConfig = registerConfig(APP_CONFIG, AppConfig);
 // main.ts
 import { NestKitKernel } from '@nestkit-x/kernel';
 import { AppModule } from './app/app.module';
-import { appConfig } from './configs/app.config';
 
-NestKitKernel.init(AppModule, appConfig);
+NestKitKernel.init(AppModule);
 ```
 
 Now your service is configured and ready for development.
@@ -158,14 +169,11 @@ this.appStateService.onCreated(logInitComplete, 1000);
 ```
 
 :::tip Priorities in NestKit-X
-System NestKit-X packages use specific priorities:
+System NestKit-X some packages use specific priorities:
 
 - `@nestkit-x/logger`: -10,000 (guaranteed to be first)
-- `@nestkit-x/compression`: -9,999
-- `@nestkit-x/config`: -9,998
 
-For your services, it's recommended to use priorities from -999 to 999, but there will be no problems in case of
-collisions
+There will be no problems in case of collisions, you can chose any priority
 :::
 
 ### Callback Types
@@ -224,7 +232,8 @@ import { APP_REF_SERVICE, IAppRefService } from '@nestkit-x/core';
 
 @Injectable()
 export class MyAdvancedService {
-  constructor(@Inject(APP_REF_SERVICE) private readonly appRef: IAppRefService) {}
+  constructor(@Inject(APP_REF_SERVICE) private readonly appRef: IAppRefService) {
+  }
 
   someMethod() {
     // ⚠️ WARNING: Can only be called after onCreated hooks execute!
@@ -245,6 +254,7 @@ It's recommended to use StateService instead of direct access to AppRefService.
 StateService makes extending NestKit-X extremely simple. Each module can register its callbacks:
 
 ```typescript
+
 @Injectable()
 export class SwaggerService {
   public constructor(

@@ -1,25 +1,20 @@
 import { DynamicModule, Module, Provider, Type } from '@nestjs/common';
-import { ConfigFactory, ConfigFactoryKeyHost, ConfigModule } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import {
   APP_REF_SERVICE,
   APP_STATE_SERVICE,
-  IAppConfig,
   IAppRefService,
   IAppStateService,
 } from '@nestkit-x/core';
 
 import { CompressionProvider } from './providers/compression.provider';
-import { EnvExampleProvider } from './providers/env-example.provider';
 import { KernelProvider } from './providers/kernel.provider';
 import { AppRefService } from './services/app-ref.service';
 import { AppStateService } from './services/app-state.service';
 
 @Module({})
 export class KernelModule {
-  public static forRoot(
-    appModule: Type<unknown>,
-    appConfig: ConfigFactory & ConfigFactoryKeyHost<IAppConfig>,
-  ): DynamicModule {
+  public static forRoot(appModule: Type<unknown>): DynamicModule {
     return {
       exports: [
         {
@@ -33,16 +28,7 @@ export class KernelModule {
         } satisfies Provider<IAppStateService>,
       ],
       global: true,
-      imports: [
-        ConfigModule.forRoot({
-          cache: true,
-          isGlobal: false,
-          load: [appConfig],
-        }),
-
-        // register client core module
-        appModule,
-      ],
+      imports: [ConfigModule.forRoot({ cache: true, isGlobal: false }), appModule],
       module: KernelModule,
       providers: [
         {
@@ -56,7 +42,6 @@ export class KernelModule {
         } satisfies Provider<IAppRefService>,
 
         KernelProvider,
-        EnvExampleProvider,
         CompressionProvider,
       ],
     };

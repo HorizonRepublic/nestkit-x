@@ -1,4 +1,5 @@
-import { APP_CONFIG, Env, Environment, IAppConfig, registerConfig } from '@nestkit-x/core';
+import { ConfigBuilder, Env } from '@nestkit-x/config';
+import { APP_CONFIG, Environment, IAppConfig } from '@nestkit-x/core';
 import typia from 'typia';
 
 class AppConfig implements IAppConfig {
@@ -18,6 +19,6 @@ class AppConfig implements IAppConfig {
   public version!: string;
 }
 
-export const appConfig = registerConfig(APP_CONFIG, AppConfig, (c) =>
-  typia.assertEquals<IAppConfig>(c),
-);
+export const appConfig = ConfigBuilder.from(AppConfig, APP_CONFIG)
+  .validate((c) => typia.assertEquals<IAppConfig>(c))
+  .build();

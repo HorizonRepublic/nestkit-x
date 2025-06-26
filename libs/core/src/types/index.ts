@@ -4,6 +4,4 @@ export * from './app-ref-service.interface';
 
 export * from './app-state-service.interface';
 
-export { IEnvFieldMetadata } from './env.types';
-
 export * from './global';

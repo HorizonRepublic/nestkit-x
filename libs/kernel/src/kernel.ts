@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Type } from '@nestjs/common';
-import { ConfigFactory, ConfigFactoryKeyHost, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { AbstractHttpAdapter, NestFactory } from '@nestjs/core';
 import {
   APP_CONFIG,
@@ -24,15 +24,12 @@ export class NestKitKernel {
   private appRef!: IAppRefService;
   private appState!: IAppStateService;
 
-  public static init(
-    appModule: Type<unknown>,
-    cfg: ConfigFactory & ConfigFactoryKeyHost<IAppConfig>,
-  ): Observable<NestKitKernel> {
+  public static init(appModule: Type<unknown>): Observable<NestKitKernel> {
     const kernel = (this.instance ??= new NestKitKernel());
 
     if (this.bootstrapResult$) return this.bootstrapResult$;
 
-    this.bootstrapResult$ = kernel.bootstrap$(appModule, cfg).pipe(
+    this.bootstrapResult$ = kernel.bootstrap$(appModule).pipe(
       map(() => kernel),
       shareReplay(1),
     );
@@ -47,15 +44,12 @@ export class NestKitKernel {
     return this.bootstrapResult$;
   }
 
-  private bootstrap$(
-    appModule: Type<unknown>,
-    cfg: ConfigFactory & ConfigFactoryKeyHost<IAppConfig>,
-  ): Observable<void> {
+  private bootstrap$(appModule: Type<unknown>): Observable<void> {
     const ultimateExpressInstance = UltimateExpress({ threads: 0 });
 
     const adapter = new UltimateExpressAdapter(ultimateExpressInstance) as AbstractHttpAdapter;
 
-    const appFactory = NestFactory.create(KernelModule.forRoot(appModule, cfg), adapter, {
+    const appFactory = NestFactory.create(KernelModule.forRoot(appModule), adapter, {
       abortOnError: false,
       autoFlushLogs: true,
       bufferLogs: true,
@@ -78,9 +72,9 @@ export class NestKitKernel {
   private listen$(): Observable<void> {
     return defer(() => {
       const app = this.appRef.get();
-      const cfg = app.get(ConfigService).getOrThrow<IAppConfig>(APP_CONFIG);
+      const config = app.get(ConfigService).getOrThrow<IAppConfig>(APP_CONFIG);
 
-      return from(app.listen(cfg.port, cfg.host)).pipe(
+      return from(app.listen(config.port, config.host)).pipe(
         switchMap(() => this.appState.setState$(AppState.Listening)),
       );
     });

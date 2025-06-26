@@ -70,16 +70,18 @@ You can register your configuration using the standard NestJS approach or the en
 import { APP_CONFIG } from '@nestkit-x/core';
 import { registerAs } from '@nestjs/config';
 
-export const appConfig = registerAs(APP_CONFIG, () => new AppConfig());
+export const appConfig = registerAs(APP_CONFIG, () => new AppConfig()); // or your own config style
 ```
 
 **NestKit-X enhanced approach (with validation):**
 
 ```typescript
-import { APP_CONFIG, registerConfig } from '@nestkit-x/core';
+import { APP_CONFIG } from '@nestkit-x/core';
+import { ConfigBuilder } from '@nestkit-x/config';
 
-export const appConfig = registerConfig(APP_CONFIG, AppConfig, (c) => typia.assertEquals(c));
-// or your own validator. typia is not must-have
+export const appConfig = ConfigBuilder.from(AppConfig, APP_CONFIG)
+  .validate((c) => typia.assertEquals<IAppConfig>(c)) // or your own validator. typia is not must-have
+  .build();
 ```
 
 The NestKit-X approach provides additional features like validation and enhanced type safety if you uses typia.
@@ -96,9 +98,8 @@ Finally, bootstrap your application in a single line:
 // main.ts
 import { NestKitKernel } from '@nestkit-x/kernel';
 import { AppModule } from './app/app.module';
-import { appConfig } from './configs/app.config';
 
-NestKitKernel.init(AppModule, appConfig);
+NestKitKernel.init(AppModule);
 ```
 
 That's it! Your service is configured, running, and ready for development.
