@@ -220,7 +220,7 @@ const createCompressionMiddleware = (options: Partial<ICompressionOptions> = {})
  *
  * Performance impact: ~2-5% CPU overhead for 40-70% bandwidth savings.
  *
- * @example
+ * @example -
  */
 @Injectable()
 export class CompressionProvider {

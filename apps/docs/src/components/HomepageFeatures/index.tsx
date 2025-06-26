@@ -1,3 +1,4 @@
+import { translate } from '@docusaurus/core/lib/client/exports/Translate';
 import Heading from '@theme/Heading';
 import clsx from 'clsx';
 import React, { ReactNode } from 'react';
@@ -12,42 +13,45 @@ interface IFeatureItem {
 
 const featureList: IFeatureItem[] = [
   {
-    description: (
-      <>
-        Modular architecture lets you easily add and configure functionality. Just register modules
-        — everything works without additional main.ts setup.
-      </>
-    ),
+    description: translate({
+      id: 'docs.intro.feature-1.description',
+      message: `Modular architecture lets you easily add and configure functionality. Just register modules
+        — everything works without additional main.ts setup.`,
+    }),
     imgPath: '/feature-images/feature-1.png',
-    title: 'Modular Approach',
+    title: translate({ id: 'docs.intro.feature-1.tittle', message: 'Modular Approach' }),
   },
   {
-    description: (
-      <>
-        Ready-to-use solution: validation, caching, API docs, logging. No need to configure each
-        component separately.
-      </>
-    ),
+    description: translate({
+      id: 'docs.intro.feature-2.description',
+      message: `Ready-to-use solution: validation, caching, API docs, logging. No need to configure each
+        component separately.`,
+    }),
     imgPath: '/feature-images/feature-3.png',
-    title: 'Batteries Included',
+    title: translate({
+      id: 'docs.intro.feature-2.message',
+      message: 'Batteries Included',
+    }),
   },
   {
-    description: (
-      <>
-        Minimal boilerplate code. Most configurations are pre-configured by default. Focus on
-        business logic, not routine setup.
-      </>
-    ),
+    description: translate({
+      id: 'docs.intro.feature-3.description',
+      message: `Minimal boilerplate code. Most configurations are pre-configured by default. Focus on
+        business logic, not routine setup.`,
+    }),
     imgPath: '/feature-images/feature-2.png',
-    title: 'Easy to Use',
+    title: translate({
+      id: 'docs.intro.feature-3.message',
+      message: 'Easy to Use',
+    }),
   },
 ];
 
 const featureComponent = ({
-  description,
-  imgPath,
-  title,
-}: Readonly<IFeatureItem>): React.JSX.Element => (
+                            description,
+                            imgPath,
+                            title,
+                          }: Readonly<IFeatureItem>): React.JSX.Element => (
   <div className={clsx('col col--4', styles.featureCard)}>
     <section className={clsx('feature-item')}>
       <div className={clsx('text--center', styles.featureImgContainer)}>

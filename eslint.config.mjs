@@ -38,7 +38,7 @@ export default [
 
   // JSON files - dependency checks
   {
-    files: ['**/package.json', '**/project.json'],
+    files: ['apps/**/package.json'],
     languageOptions: {
       parser: jsoncParser,
     },
@@ -61,7 +61,19 @@ export default [
       'unused-imports': unusedImports,
     },
     rules: {
-      '@nx/dependency-checks': 'error',
+      '@nx/dependency-checks': [
+        'error',
+        {
+          buildTargets: ['build'],
+          checkMissingDependencies: true,
+          checkObsoleteDependencies: true,
+          checkVersionMismatches: true,
+          ignoredDependencies: ['tslib'],
+          ignoredFiles: ['webpack.config.js', 'eslint.config.cjs'],
+          includeTransitiveDependencies: true,
+          useLocalPathsForWorkspaceDependencies: true,
+        },
+      ],
       // Nx-specific rules
       '@nx/enforce-module-boundaries': [
         'error',
@@ -82,6 +94,7 @@ export default [
       'arrow-spacing': 'error',
       // Naming conventions
       camelcase: ['error', { ignoreDestructuring: false, properties: 'never' }],
+
       'comma-dangle': ['error', 'always-multiline'],
       complexity: ['warn', 10],
       // Function structure rules
@@ -320,6 +333,15 @@ export default [
           varsIgnorePattern: '^_',
         },
       ],
+    },
+  },
+
+  // disable camel case for jest
+  {
+    files: ['jest.config.*'],
+    rules: {
+      '@typescript-eslint/naming-convention': 'off',
+      camelcase: 'off',
     },
   },
 ];

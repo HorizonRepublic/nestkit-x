@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "description": "Ultra-performant modules kit for NestJS",
   "scripts": {
-    "prepare": "ts-patch install"
+    "prepare": "ts-patch install",
+    "lint": "nx run-many -t lint --parallel=5 --fix"
   },
   "devDependencies": {
     "@darraghor/eslint-plugin-nestjs-typed": "^6.6.4",

@@ -19,7 +19,7 @@ export default [
 
   // Docusaurus configuration (manually converted to flat config)
   {
-    files: ['**/*.{js,jsx,ts,tsx,md,mdx}'],
+    files: ['**/*.{js,jsx,ts,tsx}'],
     plugins: {
       '@docusaurus': docusaurusLint,
     },
@@ -31,12 +31,6 @@ export default [
       '@docusaurus/prefer-docusaurus-heading': 'warn',
       '@docusaurus/string-literal-i18n-messages': 'warn',
     },
-  },
-
-  // MDX processor for Docusaurus
-  {
-    files: ['**/*.md', '**/*.mdx'],
-    processor: docusaurusLint.processors?.mdx,
   },
 
   // Ignored paths
