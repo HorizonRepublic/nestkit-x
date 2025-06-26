@@ -14,9 +14,12 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@nestkit-x/compression": ["libs/compression/src/index.ts"],
+      "@nestkit-x/config": ["libs/config/src/index.ts"],
       "@nestkit-x/core": ["libs/core/src/index.ts"],
       "@nestkit-x/kernel": ["libs/kernel/src/index.ts"],
-      "@nestkit-x/logger": ["libs/logger/src/index.ts"]
+      "@nestkit-x/logger": ["libs/logger/src/index.ts"],
+      "@nestkit-x/swagger": ["libs/swagger/src/index.ts"]
     },
     "noImplicitAny": true,
     "strict": true,

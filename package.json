@@ -69,6 +69,7 @@
     "@nestjs/common": "^11.1.3",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.3",
+    "@nestjs/platform-express": "^11.0.0",
     "@nx/webpack": "21.2.1",
     "@stigma.io/nestjs-ultimate-express": "^10.4.9",
     "axios": "^1.10.0",
