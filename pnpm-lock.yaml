@@ -105,7 +105,7 @@ importers:
         version: 9.3.1(@samchon/openapi@4.3.3)(typescript@5.8.3)
       ultimate-express:
         specifier: ^2.0.7
-        version: 2.0.7
+        version: 2.0.8
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
@@ -2643,6 +2643,9 @@ packages:
   '@types/express-serve-static-core@4.19.6':
     resolution: {integrity: sha512-N4LZ2xG7DatVqhCZzOGb1Yi5lMbXSZcmdLDe9EzSndPV2HpWYWzRbaerl2n27irrm94EPpprqa8KpskPT085+A==}
 
+  '@types/express-serve-static-core@5.0.6':
+    resolution: {integrity: sha512-3xhRnjJPkULekpSzgtoNYYcTWgEZkp4myc+Saevii5JPnHNvHMRlBSHDbs7Bh1iPPoVTERHEZXyhyLbMEsExsA==}
+
   '@types/express@4.17.23':
     resolution: {integrity: sha512-Crp6WY9aTYP3qPi2wGDo9iUe/rceX01UMhnF1jmwDcKCFM6cx7YhGP/Mpr3y9AASpfHixIG0E6azCcL5OcDHsQ==}
 
@@ -3893,6 +3896,10 @@ packages:
 
   cookie@0.7.1:
     resolution: {integrity: sha512-6DnInpx7SJ2AK3+CTUE/ZM0vWTUboZCegxhC2xiIydHR9jNuTAASBrfEpHhiGOZw/nX51bHt6YQl8jsGo4y/0w==}
+    engines: {node: '>= 0.6'}
+
+  cookie@0.7.2:
+    resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
 
   cookie@1.0.2:
@@ -9169,8 +9176,8 @@ packages:
     resolution: {integrity: sha512-CNTrT0cjfeIm1vt6mjoimeG5YgS3+sa/MtjWdybrNWt68oMu/P6e1QvYFwLpCkaz9EHx1qhYsMp1pJ74M0Iimg==}
     engines: {node: '>=18'}
 
-  ultimate-express@2.0.7:
-    resolution: {integrity: sha512-54C5PDdd6D04SC2/Tk953hjh+/Nwhd7s6SAfLWG2Lb0eFZ7Kf8ZGwBduuodvTFMsZhKFgFQBl+NWGYPZdgfG/A==}
+  ultimate-express@2.0.8:
+    resolution: {integrity: sha512-Bp+QHmmY5E4PeZJlkNsevvAnxJzR1q0LvX1jW0AXMVaRqTVYU1bXCTxD44fkTwPlN/tx54Me8GEruto8de2E+w==}
     engines: {node: '>=20'}
 
   unbox-primitive@1.1.0:
@@ -13265,7 +13272,7 @@ snapshots:
 
   '@types/connect-history-api-fallback@1.5.4':
     dependencies:
-      '@types/express-serve-static-core': 4.19.6
+      '@types/express-serve-static-core': 5.0.6
       '@types/node': 24.0.3
 
   '@types/connect@3.4.38':
@@ -13410,6 +13417,13 @@ snapshots:
   '@types/estree@1.0.8': {}
 
   '@types/express-serve-static-core@4.19.6':
+    dependencies:
+      '@types/node': 24.0.3
+      '@types/qs': 6.14.0
+      '@types/range-parser': 1.2.7
+      '@types/send': 0.17.5
+
+  '@types/express-serve-static-core@5.0.6':
     dependencies:
       '@types/node': 24.0.3
       '@types/qs': 6.14.0
@@ -14872,6 +14886,8 @@ snapshots:
 
   cookie@0.7.1: {}
 
+  cookie@0.7.2: {}
+
   cookie@1.0.2: {}
 
   copy-anything@2.0.6:
@@ -16034,7 +16050,7 @@ snapshots:
       body-parser: 2.2.0
       content-disposition: 1.0.0
       content-type: 1.0.5
-      cookie: 0.7.1
+      cookie: 0.7.2
       cookie-signature: 1.2.2
       debug: 4.4.1
       encodeurl: 2.0.0
@@ -21283,7 +21299,7 @@ snapshots:
       uWebSockets.js: https://codeload.github.com/uNetworking/uWebSockets.js/tar.gz/6609a88ffa9a16ac5158046761356ce03250a0df
       vary: 1.1.2
 
-  ultimate-express@2.0.7:
+  ultimate-express@2.0.8:
     dependencies:
       '@types/express': 4.17.23
       accepts: 1.3.8
