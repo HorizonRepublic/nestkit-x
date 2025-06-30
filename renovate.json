@@ -4,7 +4,7 @@
   "automerge": true,
   "labels": ["dependencies"],
   "dependencyDashboard": true,
-  "commitMessagePrefix": "chore(deps):",
+  "commitMessagePrefix": "deps():",
   "automergeStrategy": "squash",
   "rebaseWhen": "conflicted",
   "baseBranches": ["dev"],
