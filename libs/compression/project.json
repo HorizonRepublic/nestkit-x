@@ -27,6 +27,12 @@
       "options": {
         "packageRoot": "dist/{projectRoot}"
       }
+    },
+    "version": {
+      "executor": "@jscutlery/semver:version",
+      "options": {
+        "preset": "conventionalcommits"
+      }
     }
   }
 }
