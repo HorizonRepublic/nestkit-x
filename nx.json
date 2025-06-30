@@ -1,18 +1,7 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "tui": {
-    "enabled": false
-  },
   "cli": {
     "packageManager": "pnpm"
-  },
-  "tasksRunnerOptions": {
-    "default": {
-      "options": {
-        "accessToken": "",
-        "outputStyle": "stream"
-      }
-    }
   },
   "plugins": [
     {
@@ -46,8 +35,145 @@
     }
   },
   "release": {
+    "projects": ["libs/*"],
+    "projectsRelationship": "fixed",
     "version": {
-      "preVersionCommand": "pnpm dlx nx run-many -t build"
+      "preVersionCommand": "pnpm dlx nx run-many -t build -p libs/*",
+      "generatorOptions": {
+        "currentVersionResolver": "git-tag",
+        "specifierSource": "conventional-commits"
+      }
+    },
+    "changelog": {
+      "workspaceChangelog": false,
+      "projectChangelogs": {
+        "createRelease": "github",
+        "file": "{projectRoot}/CHANGELOG.md",
+        "entryWhenNoChanges": "This release contains no new changes.",
+        "renderOptions": {
+          "authors": false,
+          "commitReferences": true,
+          "versionTitleDate": true,
+          "mapAuthorsToGitHubUsernames": true
+        }
+      }
+    },
+    "git": {
+      "commit": true,
+      "commitMessage": "chore(release): publish {version}",
+      "commitArgs": "--no-verify",
+      "tag": true,
+      "tagMessage": "Release v{version}",
+      "tagArgs": "--force"
+    },
+    "conventionalCommits": {
+      "types": {
+        "feat": {
+          "semverBump": "minor",
+          "changelog": {
+            "title": "🚀 Features",
+            "hidden": false
+          }
+        },
+        "fix": {
+          "semverBump": "patch",
+          "changelog": {
+            "title": "🐛 Bug Fixes",
+            "hidden": false
+          }
+        },
+        "perf": {
+          "semverBump": "patch",
+          "changelog": {
+            "title": "⚡ Performance Improvements",
+            "hidden": false
+          }
+        },
+        "refactor": {
+          "semverBump": "patch",
+          "changelog": {
+            "title": "♻️ Code Refactoring",
+            "hidden": false
+          }
+        },
+        "docs": {
+          "semverBump": "patch",
+          "changelog": {
+            "title": "📚 Documentation",
+            "hidden": false
+          }
+        },
+        "style": {
+          "semverBump": "patch",
+          "changelog": {
+            "title": "💄 Styles",
+            "hidden": false
+          }
+        },
+        "test": {
+          "semverBump": "patch",
+          "changelog": {
+            "title": "🧪 Tests",
+            "hidden": false
+          }
+        },
+        "build": {
+          "semverBump": "patch",
+          "changelog": {
+            "title": "📦 Build System",
+            "hidden": false
+          }
+        },
+        "ci": {
+          "semverBump": "patch",
+          "changelog": {
+            "title": "🔧 CI/CD",
+            "hidden": false
+          }
+        },
+        "chore": {
+          "semverBump": "patch",
+          "changelog": {
+            "title": "🏠 Chores",
+            "hidden": false
+          }
+        },
+        "revert": {
+          "semverBump": "patch",
+          "changelog": {
+            "title": "⏪ Reverts",
+            "hidden": false
+          }
+        },
+        "security": {
+          "semverBump": "patch",
+          "changelog": {
+            "title": "🔒 Security",
+            "hidden": false
+          }
+        },
+        "deps": {
+          "semverBump": "patch",
+          "changelog": {
+            "title": "📦 Dependencies",
+            "hidden": false
+          }
+        },
+        "config": {
+          "semverBump": "patch",
+          "changelog": {
+            "title": "⚙️ Configuration",
+            "hidden": false
+          }
+        },
+        "release": {
+          "semverBump": "patch",
+          "changelog": {
+            "title": "🚢 Releases",
+            "hidden": false
+          }
+        }
+      }
     }
   }
 }
