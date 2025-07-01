@@ -1,5 +1,29 @@
 {
   "name": "@nestkit-x/config",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HorizonRepublic/nestkit-x.git",
+    "directory": "libs/core"
+  },
+  "homepage": "https://github.com/HorizonRepublic/nestkit-x#readme",
+  "bugs": {
+    "url": "https://github.com/HorizonRepublic/nestkit-x/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "nestjs",
+    "typescript",
+    "nestkit-x",
+    "framework",
+    "library"
+  ],
+  "author": {
+    "name": "Horizon Republic",
+    "url": "https://github.com/HorizonRepublic"
+  },
+  "license": "MIT",
   "version": "0.0.1",
   "type": "commonjs",
   "main": "./src/index.js",
