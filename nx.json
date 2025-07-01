@@ -30,16 +30,22 @@
   "targetDefaults": {
     "@nx/js:tsc": {
       "cache": true,
-      "dependsOn": ["^build"],
-      "inputs": ["default", "^default"]
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "default",
+        "^default"
+      ]
     }
   },
   "release": {
-    "projects": ["libs/*"],
+    "projects": [
+      "libs/*"
+    ],
     "projectsRelationship": "fixed",
     "version": {
-      "conventionalCommits": true,
-      "preVersionCommand": "pnpm nx run-many -t build -p libs/* --parallel=3"
+      "conventionalCommits": true
     },
     "changelog": {
       "workspaceChangelog": false,
