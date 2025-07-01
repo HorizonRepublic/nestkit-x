@@ -33,15 +33,15 @@ jobs:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, 'chore(release): publish')"
     outputs:
-      success: ${{ steps.set-status.outputs.success }}
+      success: ${{ steps.mark.outputs.success }}
 
     steps:
+      # ---------- checkout ----------
       - name: 📦 Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        with: { fetch-depth: 0 }
 
-      # ---------- CACHES ----------
+      # ---------- caches ----------
       - name: ⏳ Restore pnpm cache
         uses: actions/cache@v3
         with:
@@ -56,30 +56,33 @@ jobs:
           key: ${{ runner.os }}-nx-${{ github.sha }}
           restore-keys: ${{ runner.os }}-nx-
 
-      # ---------- TOOLCHAIN ----------
-      - name: 📦 Setup Node.js
+      # ---------- toolchain ----------
+      - name: 📦 Setup Node.js 23
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          registry-url: 'https://registry.npmjs.org'
-          cache: pnpm
+          node-version: 23
 
-      - name: 📦 Setup pnpm
+      - name: 📦 Setup pnpm v10
         uses: pnpm/action-setup@v4
         with:
           version: 10
+          run_install: false # ми самі робимо pnpm install
 
+      - name: 🔍 Check pnpm
+        run: pnpm -v
+
+      # ---------- install ----------
       - name: 📦 Install deps
         run: pnpm install --frozen-lockfile
 
-      # ---------- QUALITY ----------
+      # ---------- quality ----------
       - name: 🔍 Lint
         run: pnpm nx run-many -t lint -p libs/* --parallel=5
 
-#      - name: 🧪 Test
-#        run: pnpm nx run-many -t test -p libs/* --parallel=5
+      # - name: 🧪 Test
+      #   run: pnpm nx run-many -t test -p libs/* --parallel=5
 
-      # ---------- BUILD ----------
+      # ---------- build ----------
       - name: 🏗️ Build
         run: pnpm nx run-many -t build -p libs/* --parallel=3
 
@@ -88,7 +91,7 @@ jobs:
           echo "Built packages:"
           ls -R dist | head
 
-      # ---------- STATUS ----------
+      # ---------- status ----------
       - name: ✅ Mark success
-        id: set-status
-        run: echo "success=true" >> $GITHUB_OUTPUT
+        id: mark
+        run: echo "success=true" >> "$GITHUB_OUTPUT"

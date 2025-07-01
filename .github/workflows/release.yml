@@ -2,9 +2,9 @@ name: 🚀 Release
 
 on:
   workflow_run:
-    workflows: [ '🏗️ Build' ]
-    types: [ completed ]
-    branches: [ main ]
+    workflows: ['🏗️ Build']
+    types: [completed]
+    branches: [main]
 
 concurrency:
   group: release-main
@@ -12,9 +12,8 @@ concurrency:
 
 jobs:
   release:
-    name: 🚀 Create GitHub Release + Publish to npm
+    name: 🚀 GitHub Release + npm publish
     runs-on: ubuntu-latest
-
     if: github.event.workflow_run.conclusion == 'success'
 
     permissions:
@@ -22,30 +21,31 @@ jobs:
       packages: write
       pull-requests: write
       issues: write
-      id-token: write
-    
+      id-token: write # provenance
+
     steps:
-      # ---------- CODE ----------
-      - name: 📦 Checkout
+      # ---------- source ----------
+      - name: 📦 Checkout trigger commit
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # ---------- DETECT COMMIT TYPE ----------
-      - name: 📝 Get triggering commit message
+      # ---------- detect publish commit ----------
+      - name: 🔍 Commit message
         id: commit
         run: |
-          MSG=$(git show -s --format=%s ${{ github.event.workflow_run.head_sha }})
-          echo "msg=$MSG" >> "$GITHUB_OUTPUT"
+          echo "msg=$(git log -1 --pretty=format:%s)" >> "$GITHUB_OUTPUT"
 
-      - name: ⏭️ Skip release for publish commit
-        if: 'contains(steps.commit.outputs.msg, 'chore(release): publish')'
+      - name: ⏭️ Skip release-commit
+        if: |
+          contains(steps.commit.outputs.msg, 'chore(release): publish')
         run: |
           echo "Publish commit detected – skipping release."
-          exit 78
+          exit 0
 
-      # ---------- CACHES ----------
+      # ---------- caches ----------
       - name: ⏳ Restore pnpm cache
         uses: actions/cache@v3
         with:
@@ -53,40 +53,41 @@ jobs:
           key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: ${{ runner.os }}-pnpm-
 
-      # ---------- TOOLCHAIN ----------
-      - name: 📦 Setup Node.js
+      # ---------- toolchain ----------
+      - name: 📦 Setup Node.js 23
         uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          registry-url: 'https://registry.npmjs.org'
-          cache: pnpm
+        with: { node-version: 23 }
 
-      - name: 📦 Setup pnpm
+      - name: 📦 Setup pnpm v10
         uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 10
+          run_install: false
 
+      - name: 🔍 Check pnpm
+        run: pnpm -v
+
+      # ---------- install & rebuild ----------
       - name: 📦 Install deps
         run: pnpm install --frozen-lockfile
 
-      # ---------- BUILD (libs/*) ----------
-      - name: 🏗️ Re-build packages
+      - name: 🏗️ Build (libs/*)
         run: pnpm nx run-many -t build -p libs/* --parallel=3
 
-      # ---------- GIT ----------
+      # ---------- git user ----------
       - name: 🔧 Configure git
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      # ---------- VERSION / CHANGELOG ----------
-      - name: 🚀 Version & Generate changelog
+      # ---------- version / changelog / tag ----------
+      - name: 🏷️ Version & changelog
         run: pnpm nx release --yes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ---------- PUBLISH ----------
+      # ---------- publish ----------
       - name: 📦 Publish to npm
         run: pnpm nx release publish --yes
         env:
@@ -94,4 +95,4 @@ jobs:
           NPM_CONFIG_PROVENANCE: true
 
       - name: 🎉 Done
-        run: echo "Release pipeline finished successfully 🚀"
+        run: echo "Release completed 🚀"
