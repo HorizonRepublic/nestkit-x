@@ -38,11 +38,8 @@
     "projects": ["libs/*"],
     "projectsRelationship": "fixed",
     "version": {
-      "preVersionCommand": "pnpm dlx nx run-many -t build -p libs/*",
-      "generatorOptions": {
-        "currentVersionResolver": "git-tag",
-        "specifierSource": "conventional-commits"
-      }
+      "conventionalCommits": true,
+      "preVersionCommand": "pnpm nx run-many -t build -p libs/* --parallel=3"
     },
     "changelog": {
       "workspaceChangelog": false,
@@ -55,16 +52,12 @@
           "commitReferences": true,
           "versionTitleDate": true,
           "mapAuthorsToGitHubUsernames": true
+        },
+        "git": {
+          "commit": true,
+          "commitMessage": "docs(changelog): update {projectName} to v{version}"
         }
       }
-    },
-    "git": {
-      "commit": true,
-      "commitMessage": "chore(release): publish {version}",
-      "commitArgs": "--no-verify",
-      "tag": true,
-      "tagMessage": "Release v{version}",
-      "tagArgs": "--force"
     },
     "conventionalCommits": {
       "types": {
