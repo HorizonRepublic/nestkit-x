@@ -12,27 +12,27 @@ concurrency:
 
 jobs:
   release:
-    name: 🚀 GitHub Release + npm publish
+    name: 🚀 Version, tag, changelog, publish
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
 
     permissions:
-      contents: write
-      packages: write
-      pull-requests: write
-      issues: write
-      id-token: write # provenance
+      contents: write          # коміт + тег + реліз
+      packages: write          # GitHub Packages (якщо знадобиться)
+      pull-requests: write     # PR-и для independent груп (не використ.)
+      issues: write            # auto-close issue refs
+      id-token: write          # provenance для npm
 
     steps:
-      # -------- checkout конкретного SHA ----------
-      - name: 📦 Checkout
+      # ---------- checkout потрібного SHA ----------
+      - name: 📦 Checkout trigger commit
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.workflow_run.head_sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # -------- detect publish-commit --------------
+      # ---------- skip, якщо це вже release-комміт ----------
       - name: 🔍 Commit message
         id: commit
         run: echo "msg=$(git log -1 --pretty=format:%s)" >> "$GITHUB_OUTPUT"
@@ -42,26 +42,24 @@ jobs:
           contains(steps.commit.outputs.msg, 'chore(release): publish')
         run: exit 0
 
-      # -------- toolchain --------------------------
+      # ---------- toolchain ---------------------------
       - uses: actions/setup-node@v4
-        with: { node-version: 23 }
+        with:
+          node-version: 23
 
       - uses: pnpm/action-setup@v4
-        with: { version: 10, run_install: false }
+        with:
+          version: 10
+          run_install: false
 
       - name: 📦 Install deps
         run: pnpm install --frozen-lockfile
 
-      # -------- version & changelog ---------------
-      # (всередині preVersionCommand автоматично виконається повторна збірка libs/*)
-      - name: 🏷️ Version & changelog
-        run: pnpm nx release version --verbose
+      # ---------- full release ------------------------
+      - name: 🚀 nx release (version + changelog + build + publish)
+        run: pnpm nx release --verbose
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # -------- publish ----------------------------
-      - name: 📦 Publish to npm
-        run: pnpm nx release publish --verbose
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GH_TOKEN:          ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN:   ${{ secrets.NPM_TOKEN }}   
+          NPM_TOKEN:         ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
