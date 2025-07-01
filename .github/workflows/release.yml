@@ -55,13 +55,13 @@ jobs:
       # -------- version & changelog ---------------
       # (всередині preVersionCommand автоматично виконається повторна збірка libs/*)
       - name: 🏷️ Version & changelog
-        run: pnpm nx release version --yes
+        run: pnpm nx release version --verbose
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # -------- publish ----------------------------
       - name: 📦 Publish to npm
-        run: pnpm nx release publish --yes
+        run: pnpm nx release publish --verbose
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
