@@ -43,14 +43,14 @@ jobs:
 
       # ---------- caches ----------
       - name: ⏳ Restore pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: ${{ runner.os }}-pnpm-
 
       - name: ⏳ Restore Nx cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .nx/cache
           key: ${{ runner.os }}-nx-${{ github.sha }}
