@@ -27,10 +27,10 @@ export class KernelProvider {
   ) {
     const config = this.configService.getOrThrow<IAppConfig>(APP_CONFIG);
 
-    // this.appStateService.onCreated((app) => {
-    //   app.use(helmet()); // make optional feature (!)
-    //   app.enableCors();
-    // });
+    this.appStateService.onCreated((app) => {
+      // as example : app.use(helmet()); // make optional feature (!)
+      app.enableCors();
+    });
 
     this.appStateService.onListening(() => {
       this.logger.debug(`Node version: ${process.version}`);
