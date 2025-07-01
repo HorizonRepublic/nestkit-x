@@ -1,0 +1,94 @@
+name: 🏗️ Build
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'libs/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'nx.json'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'libs/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'nx.json'
+      - '.github/workflows/**'
+  workflow_call:
+    outputs:
+      build-success:
+        description: Build success status
+        value: ${{ jobs.build.outputs.success }}
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: 🏗️ Build & Test (libs/*)
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'chore(release): publish')"
+    outputs:
+      success: ${{ steps.set-status.outputs.success }}
+
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ---------- CACHES ----------
+      - name: ⏳ Restore pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: ⏳ Restore Nx cache
+        uses: actions/cache@v3
+        with:
+          path: .nx/cache
+          key: ${{ runner.os }}-nx-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-nx-
+
+      # ---------- TOOLCHAIN ----------
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+          cache: pnpm
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: 📦 Install deps
+        run: pnpm install --frozen-lockfile
+
+      # ---------- QUALITY ----------
+      - name: 🔍 Lint
+        run: pnpm nx run-many -t lint -p libs/* --parallel=5
+
+#      - name: 🧪 Test
+#        run: pnpm nx run-many -t test -p libs/* --parallel=5
+
+      # ---------- BUILD ----------
+      - name: 🏗️ Build
+        run: pnpm nx run-many -t build -p libs/* --parallel=3
+
+      - name: 📊 Show build artifacts
+        run: |
+          echo "Built packages:"
+          ls -R dist | head
+
+      # ---------- STATUS ----------
+      - name: ✅ Mark success
+        id: set-status
+        run: echo "success=true" >> $GITHUB_OUTPUT

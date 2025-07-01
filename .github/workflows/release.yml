@@ -1,0 +1,97 @@
+name: 🚀 Release
+
+on:
+  workflow_run:
+    workflows: [ '🏗️ Build' ]
+    types: [ completed ]
+    branches: [ main ]
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: 🚀 Create GitHub Release + Publish to npm
+    runs-on: ubuntu-latest
+
+    if: github.event.workflow_run.conclusion == 'success'
+
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    
+    steps:
+      # ---------- CODE ----------
+      - name: 📦 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # ---------- DETECT COMMIT TYPE ----------
+      - name: 📝 Get triggering commit message
+        id: commit
+        run: |
+          MSG=$(git show -s --format=%s ${{ github.event.workflow_run.head_sha }})
+          echo "msg=$MSG" >> "$GITHUB_OUTPUT"
+
+      - name: ⏭️ Skip release for publish commit
+        if: 'contains(steps.commit.outputs.msg, 'chore(release): publish')'
+        run: |
+          echo "Publish commit detected – skipping release."
+          exit 78
+
+      # ---------- CACHES ----------
+      - name: ⏳ Restore pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      # ---------- TOOLCHAIN ----------
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+          cache: pnpm
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: 📦 Install deps
+        run: pnpm install --frozen-lockfile
+
+      # ---------- BUILD (libs/*) ----------
+      - name: 🏗️ Re-build packages
+        run: pnpm nx run-many -t build -p libs/* --parallel=3
+
+      # ---------- GIT ----------
+      - name: 🔧 Configure git
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # ---------- VERSION / CHANGELOG ----------
+      - name: 🚀 Version & Generate changelog
+        run: pnpm nx release --yes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ---------- PUBLISH ----------
+      - name: 📦 Publish to npm
+        run: pnpm nx release publish --yes
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
+
+      - name: 🎉 Done
+        run: echo "Release pipeline finished successfully 🚀"
