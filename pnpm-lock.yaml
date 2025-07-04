@@ -105,7 +105,7 @@ importers:
         version: 9.3.1(@samchon/openapi@4.3.3)(typescript@5.8.3)
       ultimate-express:
         specifier: ^2.0.7
-        version: 2.0.8
+        version: 2.0.9
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
@@ -9405,8 +9405,8 @@ packages:
     resolution: {integrity: sha512-CNTrT0cjfeIm1vt6mjoimeG5YgS3+sa/MtjWdybrNWt68oMu/P6e1QvYFwLpCkaz9EHx1qhYsMp1pJ74M0Iimg==}
     engines: {node: '>=18'}
 
-  ultimate-express@2.0.8:
-    resolution: {integrity: sha512-Bp+QHmmY5E4PeZJlkNsevvAnxJzR1q0LvX1jW0AXMVaRqTVYU1bXCTxD44fkTwPlN/tx54Me8GEruto8de2E+w==}
+  ultimate-express@2.0.9:
+    resolution: {integrity: sha512-7Pw3iueUmS7603iq9b1pntYYhpvMdjtnvoe/VZEHEctU/TRZ/X1B48wGZaZklSYFoTy1SDDjsPz/Qfes1ADDJg==}
     engines: {node: '>=20'}
 
   unbox-primitive@1.1.0:
@@ -21953,7 +21953,7 @@ snapshots:
       uWebSockets.js: https://codeload.github.com/uNetworking/uWebSockets.js/tar.gz/6609a88ffa9a16ac5158046761356ce03250a0df
       vary: 1.1.2
 
-  ultimate-express@2.0.8:
+  ultimate-express@2.0.9:
     dependencies:
       '@types/express': 4.17.23
       accepts: 1.3.8
