@@ -1,23 +1,26 @@
+import { ConnectionOptions, JetStreamOptions } from 'nats/lib/src/nats-base-client';
+
 import { JetstreamTransportStrategy } from '../conts';
+import { LoggerService } from '@nestjs/common/services/logger.service';
 
-export interface IJetstreamPullOptions {
-  stream: {};
-}
+export interface IJetstreamPullOptions {}
 
-export interface IJetstreamPushOptions {
-  stream: {};
-}
+export interface IJetstreamPushOptions {}
 
 export interface IJetstreamTransportOptions<
-  T extends JetstreamTransportStrategy = JetstreamTransportStrategy,
+  JetStreamStrategy extends JetstreamTransportStrategy = JetstreamTransportStrategy,
 > {
-  options: T extends JetstreamTransportStrategy.Pull
+  jetStreamStrategy: JetStreamStrategy;
+
+  streamOptions: JetStreamStrategy extends JetstreamTransportStrategy.Pull
     ? IJetstreamPullOptions
-    : T extends JetstreamTransportStrategy.Push
+    : JetStreamStrategy extends JetstreamTransportStrategy.Push
       ? IJetstreamPushOptions
       : never;
 
-  servers: string[];
+  jetstreamOptions: JetStreamOptions;
+
   serviceName: string;
-  strategy: T;
+  connectionOptions: ConnectionOptions;
+  logger?: LoggerService;
 }

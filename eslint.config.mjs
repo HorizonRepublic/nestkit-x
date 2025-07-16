@@ -1,7 +1,6 @@
 import nx from '@nx/eslint-plugin';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import jsdoc from 'eslint-plugin-jsdoc';
-import perfectionist from 'eslint-plugin-perfectionist';
 import preferArrowPlugin from 'eslint-plugin-prefer-arrow';
 import eslintPluginPrettier from 'eslint-plugin-prettier';
 import sonarjs from 'eslint-plugin-sonarjs';
@@ -17,7 +16,6 @@ export default [
   ...nx.configs['flat/javascript'],
   ...tseslint.configs.recommended,
   jsdoc.configs['flat/recommended-typescript'],
-  perfectionist.configs['recommended-natural'],
 
   {
     ...sonarjs.configs.recommended,
