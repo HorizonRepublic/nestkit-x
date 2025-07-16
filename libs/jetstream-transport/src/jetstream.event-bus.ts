@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { JetstreamEvent } from './conts';
 import { NatsConnection } from 'nats';
-import { EMPTY, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, filter, map, Observable, Subject, Subscription } from 'rxjs';
 import { share } from 'rxjs/operators';
 
 /**
@@ -38,6 +38,7 @@ interface EventPayload<E extends JetstreamEvent = JetstreamEvent> {
  * - Minimal memory allocation during emission
  * - Fast Map-based event stream caching
  * - Built-in error isolation per event type
+ * - Status tracking based on events
  */
 export class JetstreamEventBus {
   private readonly logger = new Logger(JetstreamEventBus.name);
@@ -53,9 +54,43 @@ export class JetstreamEventBus {
   private readonly eventStreams = new Map<JetstreamEvent, Observable<any>>();
 
   /**
+   * Status subject that tracks connection status based on events
+   */
+  private readonly statusSubject = new BehaviorSubject<JetstreamEvent>(JetstreamEvent.Connecting);
+
+  /**
    * Track if the event bus is destroyed to prevent memory leaks
    */
   private isDestroyed = false;
+
+  public constructor() {
+    this.setupStatusTracking();
+  }
+
+  /**
+   * Sets up automatic status tracking based on emitted events
+   */
+  private setupStatusTracking(): void {
+    this.eventSubject.subscribe((payload) => {
+      // Мапимо події в статуси - просто використовуємо самі події як статуси
+      switch (payload.event) {
+        case JetstreamEvent.Connecting:
+        case JetstreamEvent.Connected:
+        case JetstreamEvent.JetStreamAttached:
+        case JetstreamEvent.Error:
+        case JetstreamEvent.Disconnected:
+          this.statusSubject.next(payload.event);
+          break;
+      }
+    });
+  }
+
+  /**
+   * Returns an observable that emits status changes based on events
+   */
+  public get status(): Observable<JetstreamEvent> {
+    return this.statusSubject.asObservable();
+  }
 
   /**
    * Emits an event to all registered listeners.
@@ -72,47 +107,36 @@ export class JetstreamEventBus {
 
   /**
    * Creates an observable for the specified event type.
-   * Uses caching to ensure single observable per event type for optimal performance.
+   * Uses caching to ensure a single observable per-event type for optimal performance.
    *
    * @param event - The JetStream event type to listen for
+   * @param callback
    * @returns Observable that emits event arguments
    * @template E - The specific JetStream event type
    */
-  public on<E extends JetstreamEvent>(event: E): Observable<ArgsOf<E>> {
-    if (this.isDestroyed) return EMPTY;
-
-    // Return cached observable if exists
+  public on<E extends JetstreamEvent>(
+    event: E,
+    callback: (...args: ArgsOf<E>) => any,
+  ): Subscription {
     let stream = this.eventStreams.get(event);
-    if (stream) {
-      return stream;
+    if (!stream) {
+      stream = this.eventSubject.pipe(
+        filter((p) => p.event === event),
+        map((p) => p.args as ArgsOf<E>),
+        share({ resetOnComplete: false }),
+      );
+      this.eventStreams.set(event, stream);
     }
-
-    // Create optimized stream
-    stream = new Observable<ArgsOf<E>>((subscriber) => {
-      const subscription = this.eventSubject.subscribe({
-        next: (payload) => {
-          if (payload.event === event) {
-            try {
-              subscriber.next(payload.args as ArgsOf<E>);
-            } catch (error) {
-              this.logger.error(`Event bus emission error for '${event}':`, error);
-            }
-          }
-        },
-
-        error: (error) => {
-          this.logger.error(`Event bus stream error for '${event}':`, error);
-          subscriber.error(error);
-        },
-
-        complete: () => subscriber.complete(),
-      });
-
-      return () => subscription.unsubscribe();
-    }).pipe(share());
-
-    this.eventStreams.set(event, stream);
-    return stream;
+    return stream.subscribe({
+      next: (args) => {
+        try {
+          callback(...args);
+        } catch (e) {
+          this.logger.error(`Event‑bus error ${event}`, e);
+        }
+      },
+      error: (err) => this.logger.error(`Stream error ${event}`, err),
+    });
   }
 
   /**
@@ -125,6 +149,7 @@ export class JetstreamEventBus {
     this.isDestroyed = true;
     this.eventStreams.clear();
     this.eventSubject.complete();
+    this.statusSubject.complete();
   }
 
   /**
