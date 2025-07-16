@@ -6,5 +6,5 @@ export interface IConfigModuleOptions {
    *
    * @default {Environment.Local}
    */
-  generateExampleIn?: Environment | false;
+  exampleGenerationEnv?: Environment | false;
 }
