@@ -1,6 +1,7 @@
 import { ConnectionOptions, JetStreamOptions } from 'nats/lib/src/nats-base-client';
 
 import { JetstreamTransportStrategy } from '../conts';
+import { ConsumerConfig } from 'nats';
 
 export interface IJetstreamPullOptions {}
 
@@ -21,4 +22,10 @@ export interface IJetstreamTransportOptions<
 
   serviceName: string;
   connectionOptions: ConnectionOptions; // todo: pick needed
+}
+
+
+export interface JetstreamConsumerSetup {
+  stream: string;
+  config: ConsumerConfig;
 }

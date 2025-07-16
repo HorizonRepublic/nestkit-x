@@ -1,6 +1,20 @@
-import { MessageHandler, Server, TransportId } from '@nestjs/microservices';
-import { CustomTransportStrategy } from '@nestjs/microservices/interfaces/custom-transport-strategy.interface';
-import { Codec, connect as natsConnect, JetStreamManager, JSONCodec, NatsConnection } from 'nats';
+import {
+  Codec,
+  connect as natsConnect,
+  ConnectionOptions,
+  Consumer,
+  JetStreamManager,
+  JsMsg,
+  JSONCodec,
+  NatsConnection,
+  StreamConfig,
+} from 'nats';
+import {
+  CustomTransportStrategy,
+  MessageHandler,
+  Server,
+  TransportId,
+} from '@nestjs/microservices';
 import {
   catchError,
   defer,
@@ -10,20 +24,28 @@ import {
   map,
   merge,
   Observable,
+  of,
   shareReplay,
-  Subscription,
   switchMap,
   take,
   tap,
 } from 'rxjs';
-
-import { IJetstreamTransportOptions } from '../types/jetstream-transport.options';
-import { AnyCallback, AnyCallbackResult } from '../types/callback.types';
-import { IJetstreamEventsMap } from '../types/events-map.interface';
 import { JetstreamEventBus } from '../jetstream.event-bus';
-import { JetstreamEvent } from '@nestkit-x/jetstream-transport';
-import { ConnectionOptions } from 'nats/lib/src/nats-base-client';
+import { JetStreamContext } from '../jetstream.context';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
+import { IJetstreamEventsMap } from '../types/events-map.interface';
+import {
+  IJetstreamTransportOptions,
+  JetstreamConsumerSetup,
+  JetstreamEvent,
+  JetstreamMessageType,
+} from '@nestkit-x/jetstream-transport';
+import { getJetStreamFilterSubject } from '../helpers';
+import { Logger } from '@nestjs/common';
+
+export const JETSTREAM_HEADERS = {
+  REPLY_TO: 'Nats-Reply-To',
+} as const;
 
 /**
  * Abstract base class for implementing NATS JetStream transport strategies in NestJS microservices.
@@ -34,8 +56,8 @@ export abstract class JetstreamStrategy
   implements CustomTransportStrategy
 {
   public override readonly transportId: TransportId = Symbol('NATS_JETSTREAM_TRANSPORT');
+  protected override logger = new Logger(JetstreamStrategy.name);
 
-  // FIX: Store proper MessageHandler types
   protected readonly patternHandlers = new Map<
     string,
     {
@@ -56,98 +78,63 @@ export abstract class JetstreamStrategy
     this.setupErrorLogging();
   }
 
+  /**
+   * Safe debug logging helper
+   */
+  protected logDebug(message: string, context?: any): void {
+    if (this.logger.debug) {
+      this.logger.debug(message, context);
+    }
+  }
+
   private setupErrorLogging(): void {
     this.eventBus.on(JetstreamEvent.Error, (error: unknown) => {
       this.logger.error(error);
     });
   }
 
-  // // FIX: Properly type callback parameter
-  // public override addHandler(
-  //   pattern: string,
-  //   callback: MessageHandler<any, any, any>,
-  //   isEventHandler?: boolean,
-  // ): void {
-  //
-  //   // Нормалізуємо паттерн: додаємо префікс якщо його немає
-  //   const normalizedPattern = this.normalizePatternMyVersion(pattern, isEventHandler || false);
-  //
-  //   this.patternHandlers.set(normalizedPattern, {
-  //     handler: callback,
-  //     isEvent: isEventHandler || false,
-  //   });
-  //   const type = isEventHandler ? 'EventPattern' : 'MessagePattern';
-  //
-  //   this.logger.log(`Map ${type}: "${pattern}" -> "${normalizedPattern}"`);
-  //
-  //   // Викликаємо parent з нормалізованим паттерном
-  //   super.addHandler(normalizedPattern, callback, isEventHandler);
-  // }
-
   private normalizePatternMyVersion(pattern: string, isEvent: boolean): string {
     const prefix = `${this.options.serviceName}.${isEvent ? 'event' : 'cmd'}.`;
 
-    // Якщо паттерн вже має правильний префікс - залишаємо як є
     if (pattern.startsWith(prefix)) {
       return pattern;
     }
 
-    // Якщо паттерн має інший serviceName - це помилка конфігурації
     if (pattern.includes('.cmd.') || pattern.includes('.event.')) {
       throw new RuntimeException(
         `Cross-service pattern "${pattern}" is not allowed in service "${this.options.serviceName}".`,
       );
     }
 
-    // Додаємо префікс для локальних паттернів
     return `${prefix}${pattern}`;
   }
 
-  // FIX: Return proper type or null
   public override getHandlerByPattern(subject: string): MessageHandler<any, any, any> | null {
-    console.log('🔍 Looking for handler:', {
-      subject,
-      messageHandlers: Array.from(this.messageHandlers.keys()),
-      patternHandlers: Array.from(this.patternHandlers.keys()),
-    });
-
-    // ✅ ОБРІЗАЄМО префікс з сабджекта
     const shortPattern = this.denormalizePattern(subject);
-    console.log('✂️ Denormalized pattern:', { subject, shortPattern });
-
-    // ✅ Шукаємо за коротким паттерном
     const baseHandler = this.messageHandlers.get(shortPattern);
     if (baseHandler) {
-      console.log('✅ Found in messageHandlers:', shortPattern);
       return baseHandler;
     }
 
-    // Якщо не знайшли - шукаємо в patternHandlers
     const direct = this.patternHandlers.get(subject);
     if (direct) {
-      console.log('✅ Found in patternHandlers:', subject);
       return direct.handler;
     }
 
-    console.log('❌ No handler found for subject:', subject);
     return null;
   }
 
-  // ✅ Додаємо метод для зворотного перетворення
   private denormalizePattern(subject: string): string {
     const serviceName = this.options.serviceName;
 
-    // test-service.cmd.test-cmd -> test-cmd
     if (subject.startsWith(`${serviceName}.cmd.`)) {
       return subject.replace(`${serviceName}.cmd.`, '');
     }
 
-    // test-service.event.test-event -> test-event
     if (subject.startsWith(`${serviceName}.event.`)) {
       return subject.replace(`${serviceName}.event.`, '');
     }
 
-    // Якщо не знайшли префікс - повертаємо як є
     return subject;
   }
 
@@ -155,12 +142,6 @@ export abstract class JetstreamStrategy
     const events: string[] = [];
     const messages: string[] = [];
 
-    console.log('📋 Getting registered patterns from messageHandlers:', {
-      messageHandlers: Array.from(this.messageHandlers.keys()),
-      patternHandlers: Array.from(this.patternHandlers.keys()),
-    });
-
-    // ✅ Читаємо з базового messageHandlers (оригінальні паттерни)
     for (const [pattern, handler] of this.messageHandlers) {
       if (handler.isEventHandler) {
         events.push(pattern);
@@ -169,14 +150,235 @@ export abstract class JetstreamStrategy
       }
     }
 
-    console.log('📋 Registered patterns result:', { events, messages });
-
     return { events, messages };
   }
 
-  private matchWildcard(pattern: string, subject: string): boolean {
-    const regex = pattern.replace(/\./g, '\\.').replace(/\*/g, '[^.]*').replace(/>/g, '.*');
-    return new RegExp(`^${regex}$`).test(subject);
+  /**
+   * Builds stream subjects based on registered patterns
+   */
+  protected buildStreamSubjects(): string[] {
+    const { events, messages } = this.getRegisteredPatterns();
+    const subjects: string[] = [];
+    const { serviceName } = this.options;
+
+    if (events.length > 0) {
+      subjects.push(getJetStreamFilterSubject(serviceName, JetstreamMessageType.Event));
+    }
+    if (messages.length > 0) {
+      subjects.push(getJetStreamFilterSubject(serviceName, JetstreamMessageType.Command));
+    }
+
+    return subjects.length > 0 ? subjects : [`${this.options.serviceName}.>`];
+  }
+
+  /**
+   * Creates or updates a JetStream stream
+   */
+  protected createOrUpdateStream(jsm: JetStreamManager, config: StreamConfig): Observable<void> {
+    return defer(() => from(jsm.streams.info(config.name))).pipe(
+      switchMap((info: any) => {
+        this.logger.log(`Updating existing stream: ${config.name}`, {
+          currentSubjects: info.config.subjects,
+          newSubjects: config.subjects,
+        });
+
+        return from(jsm.streams.update(config.name, { subjects: config.subjects }));
+      }),
+      catchError(() => {
+        this.logger.log(`Creating new stream: ${config.name}`, { subjects: config.subjects });
+
+        return from(jsm.streams.add(config));
+      }),
+      tap(() => {
+        this.logger.log(`Stream ${config.name} ready`, {
+          subjects: config.subjects,
+          storage: config.storage,
+          retention: config.retention,
+        });
+      }),
+      map(() => void 0),
+    );
+  }
+
+  /**
+   * Creates a JetStream consumer with the specified configuration
+   */
+  protected createConsumer(config: JetstreamConsumerSetup): Observable<Consumer> {
+    return this.getJetStreamManager().pipe(
+      switchMap((jsm) => {
+        this.logDebug(`Creating consumer: ${config.config.durable_name}`);
+
+        return from(jsm.consumers.add(config.stream, config.config)).pipe(
+          catchError((error) => {
+            if (error.code === '400' && error.api_error?.err_code === 10148) {
+              this.logDebug(
+                `Consumer ${config.config.durable_name} already exists, using existing`,
+              );
+              return of(null);
+            }
+            throw error;
+          }),
+        );
+      }),
+      switchMap(() =>
+        from(
+          this.connectionReference!.jetstream().consumers.get(
+            config.stream,
+            config.config.durable_name!,
+          ),
+        ),
+      ),
+      tap(() => {
+        this.logger.log(`Consumer ready: ${config.config.durable_name}`);
+      }),
+    );
+  }
+
+  /**
+   * Processes a single message
+   */
+  protected processMessage(message: JsMsg, isRpc: boolean): Observable<void> {
+    return defer(() => {
+      const handler = this.getHandlerByPattern(message.subject);
+
+      if (!handler) {
+        this.logDebug(`No handler found for subject: ${message.subject}`);
+        message.ack();
+        return of(void 0);
+      }
+
+      this.logDebug(`Processing ${isRpc ? 'RPC' : 'event'} message`, {
+        subject: message.subject,
+        hasReplyTo: !!message.headers?.get(JETSTREAM_HEADERS.REPLY_TO),
+      });
+
+      return isRpc
+        ? this.handleRpcMessage(message, handler)
+        : this.handleEventMessage(message, handler);
+    });
+  }
+
+  /**
+   * Handles event messages (fire-and-forget)
+   */
+  protected handleEventMessage(message: JsMsg, handler: any): Observable<void> {
+    return defer(() => {
+      const data = this.decodeMessageData(message);
+      const ctx = new JetStreamContext([message]);
+
+      try {
+        const result = handler(data, ctx);
+        return this.handleAsyncResult(result).pipe(
+          tap(() => {
+            this.logDebug(`Event processed successfully`, {
+              subject: message.subject,
+            });
+            message.ack();
+          }),
+          catchError((error) => {
+            this.logger.error(`Event handler error for ${message.subject}: ${error.message}`);
+            message.nak();
+            return of(void 0);
+          }),
+        );
+      } catch (error) {
+        this.logger.error(
+          `Event handler error for ${message.subject}: ${(error as Error).message}`,
+        );
+        message.nak();
+        return of(void 0);
+      }
+    });
+  }
+
+  /**
+   * Handles RPC messages (request-response)
+   */
+  protected handleRpcMessage(message: JsMsg, handler: any): Observable<void> {
+    return defer(() => {
+      const data = this.decodeMessageData(message);
+      const ctx = new JetStreamContext([message]);
+      const replyTo = message.headers?.get(JETSTREAM_HEADERS.REPLY_TO);
+
+      try {
+        const result = handler(data, ctx);
+        return this.handleAsyncResult(result).pipe(
+          tap((response) => {
+            this.logDebug(`RPC processed successfully`, {
+              subject: message.subject,
+              hasResponse: response !== undefined,
+            });
+            if (replyTo) {
+              this.publishResponse(replyTo, response);
+            }
+            message.ack();
+          }),
+          catchError((error) => {
+            this.logger.error(`RPC handler error for ${message.subject}: ${error.message}`);
+            if (replyTo) {
+              this.publishErrorResponse(replyTo, error);
+            }
+            message.nak();
+            return of(void 0);
+          }),
+        );
+      } catch (error) {
+        this.logger.error(`RPC handler error for ${message.subject}: ${(error as Error).message}`);
+        if (replyTo) {
+          this.publishErrorResponse(replyTo, error);
+        }
+        message.nak();
+        return of(void 0);
+      }
+    });
+  }
+
+  /**
+   * Decodes message data using the configured codec
+   */
+  protected decodeMessageData(message: JsMsg): any {
+    try {
+      return this.codec.decode(message.data);
+    } catch (error) {
+      this.logger.error(`Failed to decode message data: ${(error as Error).message}`);
+      return null;
+    }
+  }
+
+  /**
+   * Handles async results from message handlers
+   */
+  protected handleAsyncResult(result: Promise<any>): Observable<any> {
+    return from(result).pipe(
+      switchMap((resolvedValue: any) => {
+        if (resolvedValue && typeof resolvedValue.subscribe === 'function') {
+          return resolvedValue as Observable<any>;
+        }
+        return of(resolvedValue);
+      }),
+    );
+  }
+
+  /**
+   * Publishes a successful response to the reply subject
+   */
+  protected publishResponse(replyTo: string, response: any): void {
+    try {
+      this.connectionReference!.publish(replyTo, this.codec.encode(response));
+    } catch (error) {
+      this.logger.error(`Failed to serialize response: ${(error as Error).message}`);
+      this.publishErrorResponse(replyTo, new Error('Response serialization failed'));
+    }
+  }
+
+  /**
+   * Publishes an error response to the reply subject
+   */
+  protected publishErrorResponse(replyTo: string, error: any): void {
+    const errorResponse = {
+      error: error instanceof Error ? error.message : String(error),
+    };
+    this.connectionReference!.publish(replyTo, this.codec.encode(errorResponse));
   }
 
   protected getNatsConnection(): Observable<NatsConnection> {
@@ -278,19 +480,17 @@ export abstract class JetstreamStrategy
     );
   }
 
-  public override listen(cb: AnyCallback): AnyCallbackResult {
-    // ✅ Викликаємо callback одразу
-    const callbackResult = cb();
+  public override listen(callback: () => void): void {
+    callback();
 
     const flow$ = this.connect().pipe(
       take(1),
       tap(() => {
         const { events, messages } = this.getRegisteredPatterns();
-        this.logger.log(`📋 Events: ${events.join(', ') || 'none'}`);
-        this.logger.log(`📋 Messages: ${messages.join(', ') || 'none'}`);
+        this.logger.log(`Events: ${events.join(', ') || 'none'}`);
+        this.logger.log(`Messages: ${messages.join(', ') || 'none'}`);
       }),
       switchMap(() => this.setupStream()),
-      // ✅ Запускаємо обоє consumer'ів паралельно
       switchMap(() => merge(this.setupEventHandlers(), this.setupMessageHandlers())),
       catchError((err) => {
         this.eventBus.emit(JetstreamEvent.Error, err);
@@ -299,21 +499,17 @@ export abstract class JetstreamStrategy
       shareReplay({ bufferSize: 1, refCount: true }),
     );
 
-    // ✅ Підписуємося одразу
     flow$.subscribe({
       error: (err) => {
         this.eventBus.emit(JetstreamEvent.Error, err);
       },
     });
-
-    // ✅ Повертаємо результат callback'у
-    return callbackResult;
   }
 
-  public override on<E extends keyof IJetstreamEventsMap, CB extends IJetstreamEventsMap[E]>(
+  public override on<E extends keyof IJetstreamEventsMap>(
     event: E,
-    callback: CB,
-  ): Subscription {
+    callback: IJetstreamEventsMap[E],
+  ): any {
     return this.eventBus.on(event as JetstreamEvent, callback as any);
   }
 
