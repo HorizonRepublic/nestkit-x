@@ -24,10 +24,11 @@ export class MicroserviceServerProvider {
 
   private serveMicroservice(app: INestApplication): Observable<void> {
     const strategy = new JetstreamTransport({
-      jetStreamStrategy: JetstreamTransportStrategy.Core,
+      jetStreamStrategy: JetstreamTransportStrategy.Push,
       serviceName: this.options.serviceName,
       connectionOptions: { servers: this.options.servers },
       streamOptions: {},
+      jetstreamOptions: {},
     });
 
     app.connectMicroservice<CustomStrategy>(strategy, { inheritAppConfig: true });
