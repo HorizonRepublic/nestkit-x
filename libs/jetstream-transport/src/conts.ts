@@ -15,3 +15,12 @@ export enum JetstreamMessageType {
   Event = 'event',
   Command = 'cmd',
 }
+
+export enum JetstreamHeaders {
+  ReplyTo = 'reply-to',
+  User = 'user',
+  CallerName = 'service-name',
+  RequestId = 'request-id',
+  TraceId = 'trace-id',
+  SpanId = 'span-id',
+}
