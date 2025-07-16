@@ -10,3 +10,8 @@ export enum JetstreamEvent {
   Disconnected = 'disconnected',
   Error = 'error',
 }
+
+export enum JetstreamMessageType {
+  Event = 'event',
+  Command = 'cmd',
+}
