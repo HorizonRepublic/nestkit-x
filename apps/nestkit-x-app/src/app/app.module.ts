@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { NestKitConfigModule } from '@nestkit-x/config';
 import { Environment } from '@nestkit-x/core';
 import { NestKitLoggerModule } from '@nestkit-x/logger';
+import { NestKitMicroserviceServerModule } from '@nestkit-x/microservice';
 
 import { appConfig } from '../configs/app.config';
 
@@ -13,8 +14,12 @@ import { AppService } from './app.service';
   controllers: [AppController],
   imports: [
     ConfigModule.forFeature(appConfig),
-    NestKitConfigModule.forRoot({ generateExampleIn: Environment.Local }),
+    NestKitConfigModule.forRoot({ exampleGenerationEnv: Environment.Local }),
     NestKitLoggerModule.forRoot(),
+    NestKitMicroserviceServerModule.forRoot({
+      servers: ['localhost:4333'],
+      serviceName: 'test-service',
+    }),
   ],
   providers: [AppService],
 })

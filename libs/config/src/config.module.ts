@@ -4,12 +4,12 @@ import { Environment } from '@nestkit-x/core';
 
 import { CONFIG_MODULE_OPTIONS } from './const';
 import { EnvExampleProvider } from './providers/env-example.provider';
-import { IConfigModuleOptions } from './types/i-config-module.options';
+import { IConfigModuleOptions } from './types/config-module.options';
 
 @Module({})
 export class NestKitConfigModule {
   public static forRoot(
-    options: IConfigModuleOptions = { generateExampleIn: Environment.Local },
+    options: IConfigModuleOptions = { exampleGenerationEnv: Environment.Local },
   ): DynamicModule {
     return {
       imports: [ConfigModule],
