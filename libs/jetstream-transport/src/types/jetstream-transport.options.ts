@@ -1,7 +1,6 @@
 import { ConnectionOptions, JetStreamOptions } from 'nats/lib/src/nats-base-client';
 
 import { JetstreamTransportStrategy } from '../conts';
-import { LoggerService } from '@nestjs/common/services/logger.service';
 
 export interface IJetstreamPullOptions {}
 
@@ -22,5 +21,4 @@ export interface IJetstreamTransportOptions<
 
   serviceName: string;
   connectionOptions: ConnectionOptions;
-  logger?: LoggerService;
 }
