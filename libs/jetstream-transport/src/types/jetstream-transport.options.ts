@@ -20,5 +20,5 @@ export interface IJetstreamTransportOptions<
   jetstreamOptions: JetStreamOptions;
 
   serviceName: string;
-  connectionOptions: ConnectionOptions;
+  connectionOptions: ConnectionOptions; // todo: pick needed
 }

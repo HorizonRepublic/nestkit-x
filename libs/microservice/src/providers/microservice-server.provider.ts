@@ -1,7 +1,11 @@
 import { INestApplication, Inject, Injectable, Logger } from '@nestjs/common';
 import { CustomStrategy } from '@nestjs/microservices';
 import { APP_STATE_SERVICE, IAppStateService } from '@nestkit-x/core';
-import { JetstreamTransport, JetstreamTransportStrategy } from '@nestkit-x/jetstream-transport';
+import {
+  JetstreamEvent,
+  JetstreamTransport,
+  JetstreamTransportStrategy,
+} from '@nestkit-x/jetstream-transport';
 import { from, map, Observable } from 'rxjs';
 
 import { MICROSERVICE_OPTIONS } from '../const';
@@ -26,12 +30,20 @@ export class MicroserviceServerProvider {
     const strategy = new JetstreamTransport({
       jetStreamStrategy: JetstreamTransportStrategy.Push,
       serviceName: this.options.serviceName,
-      connectionOptions: { servers: this.options.servers },
+      connectionOptions: {
+        servers: this.options.servers,
+      },
       streamOptions: {},
       jetstreamOptions: {},
     });
 
-    app.connectMicroservice<CustomStrategy>(strategy, { inheritAppConfig: true });
+    const microservice = app.connectMicroservice<CustomStrategy>(strategy, {
+      inheritAppConfig: true,
+    });
+
+    microservice.on(JetstreamEvent.Connected, () => {
+      this.logger.log(`Microservice connected to ${this.options.serviceName}`);
+    });
 
     return from(app.startAllMicroservices()).pipe(map(() => void 0));
   }
