@@ -38,14 +38,11 @@ import {
   IJetstreamTransportOptions,
   JetstreamConsumerSetup,
   JetstreamEvent,
+  JetstreamHeaders,
   JetstreamMessageType,
 } from '@nestkit-x/jetstream-transport';
 import { getJetStreamFilterSubject } from '../helpers';
 import { Logger } from '@nestjs/common';
-
-export const JETSTREAM_HEADERS = {
-  REPLY_TO: 'Nats-Reply-To',
-} as const;
 
 /**
  * Abstract base class for implementing NATS JetStream transport strategies in NestJS microservices.
@@ -249,7 +246,7 @@ export abstract class JetstreamStrategy
 
       this.logDebug(`Processing ${isRpc ? 'RPC' : 'event'} message`, {
         subject: message.subject,
-        hasReplyTo: !!message.headers?.get(JETSTREAM_HEADERS.REPLY_TO),
+        hasReplyTo: !!message.headers?.get(JetstreamHeaders.ReplyTo),
       });
 
       return isRpc
@@ -298,7 +295,7 @@ export abstract class JetstreamStrategy
     return defer(() => {
       const data = this.decodeMessageData(message);
       const ctx = new JetStreamContext([message]);
-      const replyTo = message.headers?.get(JETSTREAM_HEADERS.REPLY_TO);
+      const replyTo = message.headers?.get(JetstreamHeaders.ReplyTo);
 
       try {
         const result = handler(data, ctx);
