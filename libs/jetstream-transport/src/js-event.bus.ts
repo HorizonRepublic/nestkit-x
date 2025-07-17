@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import { JetstreamEvent } from './conts';
+import { JetstreamEvent } from './const/conts';
 import { NatsConnection } from 'nats';
 import { BehaviorSubject, filter, map, Observable, Subject, Subscription } from 'rxjs';
 import { share } from 'rxjs/operators';

@@ -2,9 +2,9 @@ import { JetStreamManager, StreamConfig } from 'nats';
 import { catchError, defer, forkJoin, from, map, Observable, switchMap, tap } from 'rxjs';
 import { LoggerService } from '@nestjs/common';
 
-import { IJetstreamTransportOptions } from './types/jetstream-transport.options';
-import { JsKind } from './enum';
-import { JsStreamConfigBuilder } from './js.stream-config-builder';
+import { IJetstreamTransportOptions } from '../types/jetstream-transport.options';
+import { JsKind } from '../const/enum';
+import { JsStreamConfigBuilder } from '../config-builders/js.stream-config-builder';
 
 /**
  * Manages NATS JetStream streams lifecycle including creation, updates, and verification.
@@ -28,7 +28,7 @@ export class JetStreamStreamManager {
 
   /**
    * Ensures both Event and Command streams exist and are properly configured.
-   * Creates streams if they don't exist, updates them if configuration differs.
+   * Creates streams if they don't exist, updates them if the configuration differs.
    *
    * @returns Observable that completes when both streams are ready
    */
