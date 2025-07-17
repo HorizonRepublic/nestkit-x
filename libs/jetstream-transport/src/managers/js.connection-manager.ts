@@ -14,7 +14,7 @@ import { connect, JetStreamManager, NatsConnection } from 'nats';
 import { JetstreamEvent } from '../const/conts';
 import { ConnectionOptions } from 'nats/lib/src/nats-base-client';
 import { IJetstreamTransportOptions } from '../types/jetstream-transport.options';
-import { JsEventBus } from '../js-event.bus';
+import { JsEventBus } from '../registries/js-event.bus';
 
 export class JsConnectionManager {
   protected connectionReference: NatsConnection | null = null;
@@ -74,9 +74,10 @@ export class JsConnectionManager {
       name: this.options.serviceName,
     };
 
-    this.eventBus.emit(JetstreamEvent.Connecting);
-
-    const natsConnector = defer(() => from(connect(opts)));
+    const natsConnector = defer(() => {
+      this.eventBus.emit(JetstreamEvent.Connecting);
+      return from(connect(opts));
+    });
 
     return natsConnector.pipe(
       tap((connection) => {
@@ -87,7 +88,7 @@ export class JsConnectionManager {
         this.eventBus.emit(JetstreamEvent.Error, error);
         throw error;
       }),
-      shareReplay({ bufferSize: 1, refCount: true }),
+      shareReplay({ bufferSize: 1, refCount: false }),
     );
   }
 
@@ -103,7 +104,7 @@ export class JsConnectionManager {
         this.eventBus.emit(JetstreamEvent.Error, error);
         throw error;
       }),
-      shareReplay({ bufferSize: 1, refCount: true }),
+      shareReplay({ bufferSize: 1, refCount: false }),
     );
   }
 }
