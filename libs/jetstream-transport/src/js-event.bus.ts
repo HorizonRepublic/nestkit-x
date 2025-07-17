@@ -40,8 +40,8 @@ interface EventPayload<E extends JetstreamEvent = JetstreamEvent> {
  * - Built-in error isolation per event type
  * - Status tracking based on events
  */
-export class JetstreamEventBus {
-  private readonly logger = new Logger(JetstreamEventBus.name);
+export class JsEventBus {
+  private readonly logger = new Logger(JsEventBus.name);
 
   /**
    * Central event subject - all events flow through here for maximum efficiency
@@ -65,6 +65,10 @@ export class JetstreamEventBus {
 
   public constructor() {
     this.setupStatusTracking();
+
+    this.on(JetstreamEvent.Error, (error: unknown) => {
+      this.logger.error(error);
+    });
   }
 
   /**
@@ -72,7 +76,6 @@ export class JetstreamEventBus {
    */
   private setupStatusTracking(): void {
     this.eventSubject.subscribe((payload) => {
-      // Мапимо події в статуси - просто використовуємо самі події як статуси
       switch (payload.event) {
         case JetstreamEvent.Connecting:
         case JetstreamEvent.Connected:
