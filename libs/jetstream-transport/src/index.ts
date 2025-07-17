@@ -4,6 +4,6 @@ export * from './jetstream.transport';
 
 export * from './types/jetstream-transport.options';
 
-export * from './config-builders/js.stream-config-builder';
+export * from './config-builders';
 
 export * from './const/enum';
