@@ -32,7 +32,6 @@ import {
 } from 'rxjs';
 import { JetstreamEventBus } from '../jetstream.event-bus';
 import { JetStreamContext } from '../jetstream.context';
-import { RuntimeException } from '@nestjs/core/errors/exceptions';
 import { IJetstreamEventsMap } from '../types/events-map.interface';
 import {
   IJetstreamTransportOptions,
@@ -88,22 +87,6 @@ export abstract class JetstreamStrategy
     this.eventBus.on(JetstreamEvent.Error, (error: unknown) => {
       this.logger.error(error);
     });
-  }
-
-  private normalizePatternMyVersion(pattern: string, isEvent: boolean): string {
-    const prefix = `${this.options.serviceName}.${isEvent ? 'event' : 'cmd'}.`;
-
-    if (pattern.startsWith(prefix)) {
-      return pattern;
-    }
-
-    if (pattern.includes('.cmd.') || pattern.includes('.event.')) {
-      throw new RuntimeException(
-        `Cross-service pattern "${pattern}" is not allowed in service "${this.options.serviceName}".`,
-      );
-    }
-
-    return `${prefix}${pattern}`;
   }
 
   public override getHandlerByPattern(subject: string): MessageHandler<any, any, any> | null {
@@ -487,7 +470,7 @@ export abstract class JetstreamStrategy
         this.logger.log(`Events: ${events.join(', ') || 'none'}`);
         this.logger.log(`Messages: ${messages.join(', ') || 'none'}`);
       }),
-      switchMap(() => this.setupStream()),
+      switchMap(() => merge(this.setupCommandStream(), this.setupEventStream())),
       switchMap(() => merge(this.setupEventHandlers(), this.setupMessageHandlers())),
       catchError((err) => {
         this.eventBus.emit(JetstreamEvent.Error, err);
@@ -518,7 +501,9 @@ export abstract class JetstreamStrategy
     return this.eventBus.status;
   }
 
-  protected abstract setupStream(): Observable<void>;
+  protected abstract setupCommandStream(): Observable<void>;
+
+  protected abstract setupEventStream(): Observable<void>;
 
   protected abstract setupEventHandlers(): Observable<void>;
 

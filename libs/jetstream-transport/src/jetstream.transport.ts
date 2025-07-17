@@ -1,13 +1,13 @@
 import { CustomStrategy } from '@nestjs/microservices';
 
-import { JetstreamPullStrategy } from './strategies/jetstream-pull.strategy';
 import { JetstreamPushStrategy } from './strategies/jetstream-push.strategy';
+import { JetstreamPullStrategy } from './strategies/jetstream-pull.strategy';
 import { IJetstreamTransportOptions } from './types/jetstream-transport.options';
 import { JetstreamTransportStrategy } from './conts';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
 
 export class JetstreamTransport implements CustomStrategy {
-  public strategy!: JetstreamPullStrategy | JetstreamPushStrategy;
+  public strategy!: JetstreamPushStrategy | JetstreamPullStrategy;
   public options: Record<string, string> = {};
 
   public constructor(options: IJetstreamTransportOptions) {
@@ -16,10 +16,10 @@ export class JetstreamTransport implements CustomStrategy {
 
   private createStrategy(
     options: IJetstreamTransportOptions,
-  ): JetstreamPullStrategy | JetstreamPushStrategy {
+  ): JetstreamPushStrategy | JetstreamPullStrategy {
     const strategies = {
-      [JetstreamTransportStrategy.Push]: () => new JetstreamPushStrategy(options),
-      [JetstreamTransportStrategy.Pull]: () => new JetstreamPullStrategy(options),
+      [JetstreamTransportStrategy.Push]: () => new JetstreamPullStrategy(options),
+      [JetstreamTransportStrategy.Pull]: () => new JetstreamPushStrategy(options),
     };
 
     const strategyFactory = strategies[options.jetStreamStrategy];
