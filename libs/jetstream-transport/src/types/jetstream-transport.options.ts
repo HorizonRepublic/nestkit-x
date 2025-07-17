@@ -1,29 +1,24 @@
+import { ConsumerConfig, StreamConfig } from 'nats';
 import { ConnectionOptions, JetStreamOptions } from 'nats/lib/src/nats-base-client';
+import { JsKind } from '../enum';
 
-import { JetstreamTransportStrategy } from '../conts';
-import { ConsumerConfig } from 'nats';
-
-export interface IJetstreamPullOptions {}
-
-export interface IJetstreamPushOptions {}
-
-export interface IJetstreamTransportOptions<
-  JetStreamStrategy extends JetstreamTransportStrategy = JetstreamTransportStrategy,
-> {
-  jetStreamStrategy: JetStreamStrategy;
-
-  streamOptions: JetStreamStrategy extends JetstreamTransportStrategy.Pull
-    ? IJetstreamPullOptions
-    : JetStreamStrategy extends JetstreamTransportStrategy.Push
-      ? IJetstreamPushOptions
-      : never;
-
-  jetstreamOptions: JetStreamOptions;
-
+export interface IJetstreamTransportOptions {
   serviceName: string;
-  connectionOptions: ConnectionOptions; // todo: pick needed
-}
 
+  connectionOptions: ConnectionOptions;
+
+  jetstreamOptions?: JetStreamOptions;
+
+  streamConfig?: {
+    [JsKind.Command]?: Partial<StreamConfig>;
+    [JsKind.Event]?: Partial<StreamConfig>;
+  };
+
+  consumerConfig?: {
+    [JsKind.Command]?: Partial<ConsumerConfig>;
+    [JsKind.Event]?: Partial<ConsumerConfig>;
+  };
+}
 
 export interface JetstreamConsumerSetup {
   stream: string;

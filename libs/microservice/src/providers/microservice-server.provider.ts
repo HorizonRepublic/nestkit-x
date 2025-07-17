@@ -4,7 +4,8 @@ import { APP_STATE_SERVICE, IAppStateService } from '@nestkit-x/core';
 import {
   JetstreamEvent,
   JetstreamTransport,
-  JetstreamTransportStrategy,
+  JsKind,
+  JsStreamConfigBuilder,
 } from '@nestkit-x/jetstream-transport';
 import { from, map, Observable } from 'rxjs';
 
@@ -28,13 +29,21 @@ export class MicroserviceServerProvider {
 
   private serveMicroservice(app: INestApplication): Observable<void> {
     const strategy = new JetstreamTransport({
-      jetStreamStrategy: JetstreamTransportStrategy.Push,
       serviceName: this.options.serviceName,
       connectionOptions: {
         servers: this.options.servers,
       },
-      streamOptions: {},
-      jetstreamOptions: {},
+      streamConfig: {
+        [JsKind.Command]: JsStreamConfigBuilder.create(this.options.serviceName)
+          .forKind(JsKind.Command)
+          .with({})
+          .build(),
+
+        [JsKind.Event]: JsStreamConfigBuilder.create(this.options.serviceName)
+          .forKind(JsKind.Command)
+          .with({})
+          .build(),
+      },
     });
 
     const microservice = app.connectMicroservice<CustomStrategy>(strategy, {

@@ -1,4 +1,4 @@
-import { JsKind } from './types/enum';
+import { JsKind } from './enum';
 
 export const getJetstreamDurableName = (serviceName: string, type: JsKind) =>
   `${serviceName}-${type}`;
