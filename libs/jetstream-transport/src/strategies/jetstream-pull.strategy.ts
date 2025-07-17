@@ -10,7 +10,7 @@ import {
   StoreCompression,
   StreamConfig,
 } from 'nats';
-import { catchError, defer, finalize, from, map, Observable, of, switchMap, timer } from 'rxjs';
+import { catchError, defer, finalize, from, Observable, of, repeat, switchMap, timer } from 'rxjs';
 import { JetstreamStrategy } from './jetstream.strategy';
 import { getJetstreamDurableName, getJetStreamFilterSubject, getStreamName } from '../helpers';
 import {
@@ -20,70 +20,72 @@ import {
 } from '@nestkit-x/jetstream-transport';
 
 export class JetstreamPullStrategy extends JetstreamStrategy {
-  // HTTP timeout = 120 секунд, залишаємо люфт
-  private readonly httpTimeoutMs = 120_000; // 2 хвилини
-  private readonly rpcTimeoutMs = 180_000; // 3 хвилини (з люфтом)
-  private readonly eventTimeoutMs = 30_000; // 30 секунд для events
-
-  private readonly fetchExpires = 30_000;
-  private readonly maxAckPending = 10;
-
-  // Дедуплікація
-  private readonly processingMessages = new Set<string>();
+  /* ---------- таймаути і ліміти ---------- */
+  private readonly rpcTimeoutMs = 180_000; // 3 min
+  private readonly eventTimeoutMs = 60_000; // 1 min
+  private readonly fetchExpiresMs = 30_000; // pull timeout
+  private readonly maxAckPendingEvents = 50; // паралельність для івентів
+  private readonly maxAckPendingRpc = 5; // паралельність RPC
 
   /* ================================================================
-   *  ABSTRACT METHODS IMPLEMENTATION
+   *  STREAMS
    * ================================================================ */
 
-  /**
-   * Events Stream - довге зберігання, розслаблені таймаути
-   */
+  /* ---------- STREAM CONFIGS (повністю) ---------- */
+
   protected override setupEventStream(): Observable<void> {
     const { serviceName } = this.options;
 
-    const eventCfg: StreamConfig = {
+    const cfg: StreamConfig = {
+      /* технічні прапорці — залишив як у тебе */
+      deny_delete: false,
+      deny_purge: false,
+      discard_new_per_subject: false,
+      first_seq: 0,
+      max_consumers: 100,
+      max_msg_size: 10 * 1024 * 1024, // 10 MB
+      max_msgs_per_subject: 5_000_000,
+      mirror_direct: false,
+      sealed: false,
+
+      /* ключові параметри сховища */
       name: `${getStreamName(serviceName)}-events`,
       subjects: [`${serviceName}.event.>`],
       description: `Event stream for ${serviceName}`,
       storage: StorageType.File,
       retention: RetentionPolicy.Workqueue,
-      num_replicas: 1, // todo: to env config
+      num_replicas: 1,
 
-      // Довге зберігання для events
-      max_msgs: 50_000_000, // 50М повідомлень
-      max_msgs_per_subject: 5_000_000, // 5М на subject
-      max_bytes: 5 * 1024 * 1024 * 1024, // 5GB
-      max_age: 7 * 24 * 60 * 60 * 1_000_000_000, // 7 днів
-      max_msg_size: 10 * 1024 * 1024, // 10MB
-      duplicate_window: 2 * 60 * 1_000_000_000, // 2 хвилини
+      /* ліміти довгого зберігання */
+      max_msgs: 50_000_000, // 50 M
+      max_bytes: 5 * 1024 ** 3, // 5 GB
+      max_age: 7 * 24 * 60 * 60 * 1e9, // 7 днів
+      duplicate_window: 2 * 60 * 1e9, // 2 хв
+
+      /* поведінка дискарду й I/O */
       discard: DiscardPolicy.Old,
-
-      // Стандартні налаштування
       allow_direct: true,
       allow_rollup_hdrs: true,
       compression: StoreCompression.None,
-      sealed: false,
-      no_ack: false,
-      deny_delete: false,
-      deny_purge: false,
-      max_consumers: 100,
-      first_seq: 0,
-      mirror_direct: false,
-      discard_new_per_subject: false,
     };
 
-    return this.getJetStreamManager().pipe(
-      switchMap((jsm) => this.createOrUpdateStream(jsm, eventCfg)),
-    );
+    return this.getJetStreamManager().pipe(switchMap((jsm) => this.createOrUpdateStream(jsm, cfg)));
   }
 
-  /**
-   * Commands Stream - агресивні таймаути для RPC
-   */
   protected override setupCommandStream(): Observable<void> {
     const { serviceName } = this.options;
 
-    const commandCfg: StreamConfig = {
+    const cfg: StreamConfig = {
+      deny_delete: false,
+      deny_purge: false,
+      discard_new_per_subject: false,
+      first_seq: 0,
+      max_consumers: 50,
+      max_msg_size: 5 * 1024 * 1024, // 5 MB
+      max_msgs_per_subject: 100_000,
+      mirror_direct: false,
+      sealed: false,
+
       name: `${getStreamName(serviceName)}-commands`,
       subjects: [`${serviceName}.cmd.>`],
       description: `Command stream for ${serviceName}`,
@@ -91,208 +93,135 @@ export class JetstreamPullStrategy extends JetstreamStrategy {
       retention: RetentionPolicy.Workqueue,
       num_replicas: 1,
 
-      // Швидке видалення для RPC
-      max_msgs: 1_000_000, // 1М повідомлень
-      max_msgs_per_subject: 100_000, // 100К на subject
-      max_bytes: 100 * 1024 * 1024, // 100MB
-      max_age: this.msToNs(this.rpcTimeoutMs), // ← 3 хвилини максимум
-      max_msg_size: 5 * 1024 * 1024, // 5MB (менше для RPC)
-      duplicate_window: 30 * 1_000_000_000, // 30 секунд
-      discard: DiscardPolicy.Old,
+      /* ліміти для швидкого очищення RPC */
+      max_msgs: 1_000_000, // 1 M
+      max_bytes: 100 * 1024 ** 2, // 100 MB
+      max_age: this.msToNs(this.rpcTimeoutMs), // 3 хв
+      duplicate_window: 30 * 1e9, // 30 сек
 
-      // Швидкість для RPC
+      discard: DiscardPolicy.Old,
       allow_direct: true,
-      allow_rollup_hdrs: false, // Вимкнути для швидкості
+      allow_rollup_hdrs: false,
       compression: StoreCompression.None,
-      sealed: false,
-      no_ack: false,
-      deny_delete: false,
-      deny_purge: false,
-      max_consumers: 50, // Менше для RPC
-      first_seq: 0,
-      mirror_direct: false,
-      discard_new_per_subject: false,
     };
 
-    return this.getJetStreamManager().pipe(
-      switchMap((jsm) => this.createOrUpdateStream(jsm, commandCfg)),
-    );
+    return this.getJetStreamManager().pipe(switchMap((jsm) => this.createOrUpdateStream(jsm, cfg)));
   }
 
+  /* ================================================================
+   *  CONSUMERS
+   * ================================================================ */
+
   protected override setupEventHandlers(): Observable<void> {
-    if (this.getRegisteredPatterns().events.length === 0) {
-      this.logDebug('No EventPattern found – skip event consumer');
-      return of(void 0);
-    }
-    return this.createConsumer(this.buildConsumerCfg(JetstreamMessageType.Event)).pipe(
+    if (this.getRegisteredPatterns().events.length === 0) return of(void 0);
+
+    return this.createConsumer(this.consumerCfg(JetstreamMessageType.Event)).pipe(
       switchMap((c) => this.pullLoop(c, false)),
     );
   }
 
   protected override setupMessageHandlers(): Observable<void> {
-    if (this.getRegisteredPatterns().messages.length === 0) {
-      this.logDebug('No MessagePattern found – skip command consumer');
-      return of(void 0);
-    }
-    return this.createConsumer(this.buildConsumerCfg(JetstreamMessageType.Command)).pipe(
+    if (this.getRegisteredPatterns().messages.length === 0) return of(void 0);
+
+    return this.createConsumer(this.consumerCfg(JetstreamMessageType.Command)).pipe(
       switchMap((c) => this.pullLoop(c, true)),
     );
   }
 
   /* ================================================================
-   *  PULL LOOP IMPLEMENTATION
+   *  PULL LOOP (без рекурсії)
    * ================================================================ */
 
-  /**
-   * Оптимізований pull loop без затримок
-   */
   private pullLoop(consumer: Consumer, isRpc: boolean): Observable<void> {
     const tag = isRpc ? 'RPC' : 'EVENT';
 
-    return defer(async () => {
-      const info = await consumer.info();
-      return info.config.durable_name;
-    }).pipe(
-      switchMap((durableName) => {
-        this.logDebug(`Start pull loop <${tag}> for durable ${durableName}`);
-
-        // Рекурсивний цикл без затримок
-        const continuousLoop = (): Observable<void> => {
-          return this.fetchBatch(consumer, isRpc).pipe(
-            switchMap(() => continuousLoop()), // ← Негайно продовжуємо
-          );
-        };
-
-        return continuousLoop();
-      }),
+    return defer(() => from(consumer.info())).pipe(
+      switchMap(() => defer(() => this.fetchAndProcess(consumer, isRpc)).pipe(repeat())),
       catchError((err) => {
-        this.logger.error(`Pull loop <${tag}> error: ${err.message}`);
-        // При помилці - короткий таймаут і перезапуск
+        this.logger.error(`${tag} pull error: ${err.message}`);
         return timer(1000).pipe(switchMap(() => this.pullLoop(consumer, isRpc)));
       }),
     );
   }
 
-  /**
-   * Швидкий fetch одного повідомлення
-   */
-  private fetchBatch(consumer: Consumer, isRpc: boolean): Observable<void> {
-    return defer(() => {
-      return from(consumer.next({ expires: this.fetchExpires }));
-    }).pipe(
+  private fetchAndProcess(consumer: Consumer, isRpc: boolean): Observable<void> {
+    return defer(() => from(consumer.next({ expires: this.fetchExpiresMs }))).pipe(
       switchMap((msg: JsMsg | null) => {
         if (!msg) return of(void 0);
-
-        return this.processJsMsg(msg, isRpc);
+        return this.handleMsg(msg, isRpc);
       }),
       catchError((err) => {
-        if (err.message?.includes('timeout') || err.message?.includes('408')) {
-          this.logDebug('Fetch timeout - continuing');
-          return of(void 0);
-        }
+        if (err.message?.includes('timeout')) return of(void 0);
         this.logger.error(`Fetch error: ${err.message}`);
         return of(void 0);
       }),
-      map(() => void 0),
     );
   }
 
-  /**
-   * Обробка повідомлення з дедуплікацією
-   */
-  private processJsMsg(msg: JsMsg, isRpc: boolean): Observable<void> {
-    const msgId = `${msg.subject}-${msg.seq}`;
+  /* ================================================================
+   *  MESSAGE HANDLING
+   * ================================================================ */
 
-    if (this.processingMessages.has(msgId)) {
-      this.logDebug(`Duplicate message skipped: ${msgId}`);
-      msg.ack();
+  private handleMsg(msg: JsMsg, isRpc: boolean): Observable<void> {
+    const handler = this.getHandlerByPattern(msg.subject);
+    if (!handler) {
+      msg.term();
       return of(void 0);
     }
 
-    return defer(() => {
-      this.processingMessages.add(msgId);
+    const data = this.codec.decode(msg.data);
+    const ctx = {
+      subject: msg.subject,
+      headers: msg.headers,
+      extendProcessingTime: () => msg.working(),
+    };
 
-      const handler = this.getHandlerByPattern(msg.subject);
-      if (!handler) {
-        this.logDebug(`No handler for subject ${msg.subject}`);
-        msg.term();
-        this.processingMessages.delete(msgId);
-        return of(void 0);
-      }
+    const result$ = this.handleAsyncResult(handler(data, ctx));
+    const replyTo = msg.headers?.get(JetstreamHeaders.ReplyTo);
 
-      const data = this.codec.decode(msg.data);
-      const ctx = {
-        subject: msg.subject,
-        headers: msg.headers,
-        // Додаємо метод для довгої обробки
-        extendProcessingTime: () => {
-          this.logDebug(`Extending processing time for ${msgId}`);
-          msg.working();
-        },
-      };
-      const result$ = this.handleAsyncResult(handler(data, ctx));
-      const replyTo = msg.headers?.get(JetstreamHeaders.ReplyTo);
-
-      if (isRpc && replyTo) {
-        return result$.pipe(
-          switchMap((response) => {
-            this.publishResponse(replyTo, response);
-            return of(void 0);
-          }),
-          catchError((err) => {
-            this.publishErrorResponse(replyTo, err);
-            return of(void 0);
-          }),
-          finalize(() => {
-            msg.ack();
-            this.processingMessages.delete(msgId);
-          }),
-        );
-      }
-
+    if (isRpc && replyTo) {
       return result$.pipe(
-        finalize(() => {
-          msg.ack();
-          this.processingMessages.delete(msgId);
-        }),
-        catchError((err) => {
-          this.logger.error(`Handler error (${msg.subject}): ${err.message}`);
-          msg.nak();
-          this.processingMessages.delete(msgId);
+        switchMap((resp) => {
+          this.publishResponse(replyTo, resp);
           return of(void 0);
         }),
+        catchError((err) => {
+          this.publishErrorResponse(replyTo, err);
+          return of(void 0);
+        }),
+        finalize(() => msg.ack()),
       );
-    });
+    }
+
+    return result$.pipe(
+      catchError((err) => {
+        this.logger.error(`Handler error (${msg.subject}): ${err.message}`);
+        msg.nak();
+        return of(void 0);
+      }),
+      finalize(() => msg.ack()),
+    );
   }
 
   /* ================================================================
-   *  CONSUMER CONFIGURATION
+   *  CONSUMER CONFIG
    * ================================================================ */
 
-  /**
-   * Різні consumer конфігурації для events та commands
-   */
-  private buildConsumerCfg(t: JetstreamMessageType): JetstreamConsumerSetup {
+  private consumerCfg(t: JetstreamMessageType): JetstreamConsumerSetup {
     const { serviceName } = this.options;
     const isRpc = t === JetstreamMessageType.Command;
 
-    const streamName = isRpc
-      ? `${getStreamName(serviceName)}-commands`
-      : `${getStreamName(serviceName)}-events`;
-
     return {
-      stream: streamName,
+      stream: `${getStreamName(serviceName)}-${isRpc ? 'commands' : 'events'}`,
       config: {
         durable_name: getJetstreamDurableName(serviceName, t),
         filter_subject: getJetStreamFilterSubject(serviceName, t),
         deliver_policy: DeliverPolicy.All,
         replay_policy: ReplayPolicy.Instant,
         ack_policy: AckPolicy.Explicit,
-
-        // Різні таймаути для RPC та Events
         ack_wait: this.msToNs(isRpc ? this.rpcTimeoutMs : this.eventTimeoutMs),
-        max_deliver: isRpc ? 1 : 3, // RPC - один раз, Events - до 3 разів
-        max_ack_pending: isRpc ? 5 : this.maxAckPending, // RPC - менше паралельності
+        max_deliver: isRpc ? 1 : 5,
+        max_ack_pending: isRpc ? this.maxAckPendingRpc : this.maxAckPendingEvents,
       },
     };
   }
