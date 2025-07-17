@@ -22,7 +22,7 @@ export class MicroserviceServerProvider {
     @Inject(MICROSERVICE_OPTIONS)
     private readonly options: IMicroserviceModuleOptions,
   ) {
-    this.stateService.onCreated((app): Observable<void> => {
+    this.stateService.onListening((app): Observable<void> => {
       return this.serveMicroservice(app);
     });
   }

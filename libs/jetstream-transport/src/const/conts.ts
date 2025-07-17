@@ -7,7 +7,9 @@ export enum JetstreamEvent {
 }
 
 export enum JetStreamErrorCodes {
-  NotFound = 10148,
+  ConsumerNotFound = 10014,
+  ConsumerExists = 10013,
+  StreamNotFound = 10059,
 }
 
 export enum JetstreamHeaders {

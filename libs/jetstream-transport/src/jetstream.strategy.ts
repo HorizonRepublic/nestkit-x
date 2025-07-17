@@ -1,16 +1,10 @@
+import { Codec, Consumer, JsMsg, JSONCodec, NatsConnection } from 'nats';
 import {
-  AckPolicy,
-  Codec,
-  Consumer,
-  DeliverPolicy,
-  JetStreamManager,
-  JsMsg,
-  JSONCodec,
-  NatsConnection,
-  ReplayPolicy,
-  StreamConfig,
-} from 'nats';
-import { CustomTransportStrategy, MessageHandler, Server, TransportId } from '@nestjs/microservices';
+  CustomTransportStrategy,
+  MessageHandler,
+  Server,
+  TransportId,
+} from '@nestjs/microservices';
 import {
   catchError,
   combineLatest,
@@ -30,19 +24,13 @@ import {
 } from 'rxjs';
 import { JsEventBus } from './js-event.bus';
 import { IJetstreamEventsMap } from './types/events-map.interface';
-import {
-  IJetstreamTransportOptions,
-  JetstreamConsumerSetup,
-  JetStreamErrorCodes,
-  JetstreamEvent,
-  JetstreamHeaders,
-} from './index';
-import { getJetstreamDurableName, getJetStreamFilterSubject } from './helpers';
+import { IJetstreamTransportOptions, JetstreamEvent, JetstreamHeaders } from './index';
 import { Logger } from '@nestjs/common';
 import { JsConnectionManager } from './managers/js.connection-manager';
 import { JetStreamContext } from './jetstream.context';
 import { JetStreamStreamManager } from './managers/js.stream-manager';
 import { JsKind } from './const/enum';
+import { JsConsumerManager } from './managers/js.consumer-manager';
 
 /**
  * Abstract base class for implementing NATS JetStream transport strategies in NestJS microservices.
@@ -50,7 +38,8 @@ import { JsKind } from './const/enum';
  */
 export class JetstreamStrategy
   extends Server<IJetstreamEventsMap>
-  implements CustomTransportStrategy {
+  implements CustomTransportStrategy
+{
   public override readonly transportId: TransportId = Symbol('NATS_JETSTREAM_TRANSPORT');
   protected override logger = new Logger(JetstreamStrategy.name);
 
@@ -60,17 +49,13 @@ export class JetstreamStrategy
   >();
 
   protected readonly codec: Codec<any> = JSONCodec();
-
-  private readonly rpcTimeoutMs = 180_000; // 3 min
-  private readonly eventTimeoutMs = 60_000; // 1 min
   private readonly fetchExpiresMs = 30_000; // pull timeout
-  private readonly maxAckPendingEvents = 50; // паралельність для івентів
-  private readonly maxAckPendingRpc = 5; // паралельність RPC
 
   // new
   private readonly connectionManager: JsConnectionManager;
   private readonly eventBus: JsEventBus;
   private readonly streamManager: JetStreamStreamManager;
+  private readonly consumerManager: JsConsumerManager;
 
   public constructor(protected readonly options: IJetstreamTransportOptions) {
     super();
@@ -84,19 +69,21 @@ export class JetstreamStrategy
       this.options,
       this.logger,
     );
+
+    this.consumerManager = new JsConsumerManager(
+      this.connectionManager.getJetStreamManager(),
+      this.options,
+      this.logger,
+    );
   }
 
-  public override getHandlerByPattern(subject: string): MessageHandler<any, any, any> | null {
+  public override getHandlerByPattern(subject: string): MessageHandler | null {
     const shortPattern = this.denormalizePattern(subject);
     const baseHandler = this.messageHandlers.get(shortPattern);
-    if (baseHandler) {
-      return baseHandler;
-    }
+    if (baseHandler) return baseHandler;
 
     const direct = this.patternHandlers.get(subject);
-    if (direct) {
-      return direct.handler;
-    }
+    if (direct) return direct.handler;
 
     return null;
   }
@@ -104,12 +91,11 @@ export class JetstreamStrategy
   private denormalizePattern(subject: string): string {
     const serviceName = this.options.serviceName;
 
-    
     const cmdSearchStr = `${serviceName}.${JsKind.Command}.`;
     if (subject.startsWith(cmdSearchStr)) {
       return subject.replace(cmdSearchStr, '');
     }
-    
+
     const eventSearchStr = `${serviceName}.${JsKind.Event}.`;
 
     if (subject.startsWith(eventSearchStr)) {
@@ -132,73 +118,6 @@ export class JetstreamStrategy
     }
 
     return { events, messages };
-  }
-
-  /**
-   * Creates or updates a JetStream stream
-   */
-  protected createOrUpdateStream(jsm: JetStreamManager, config: StreamConfig): Observable<void> {
-    return defer(() => from(jsm.streams.info(config.name))).pipe(
-      switchMap((info: any) => {
-        this.logger.log(`Updating existing stream: ${config.name}`, {
-          currentSubjects: info.config.subjects,
-          newSubjects: config.subjects,
-        });
-
-        return from(jsm.streams.update(config.name, { subjects: config.subjects }));
-      }),
-      catchError(() => {
-        this.logger.log(`Creating new stream: ${config.name}`, { subjects: config.subjects });
-
-        return from(jsm.streams.add(config));
-      }),
-      tap(() => {
-        this.logger.log(`Stream ${config.name} ready`, {
-          subjects: config.subjects,
-          storage: config.storage,
-          retention: config.retention,
-        });
-      }),
-      map(() => void 0),
-    );
-  }
-
-  /**
-   * Creates a JetStream consumer with the specified configuration
-   */
-  protected createConsumer(config: JetstreamConsumerSetup): Observable<Consumer> {
-    return this.connectionManager.getJetStreamManager().pipe(
-      switchMap((jsm) => {
-        this.logger.debug(`Creating consumer: ${config.config.durable_name}`);
-
-        return from(jsm.consumers.add(config.stream, config.config)).pipe(
-          catchError((error) => {
-            if (error.api_error?.err_code === JetStreamErrorCodes.NotFound) {
-              this.logger.debug(
-                `Consumer ${config.config.durable_name} already exists, using existing`,
-              );
-              return of(null);
-            }
-            throw error;
-          }),
-        );
-      }),
-
-      switchMap(() =>
-        this.connectionManager
-          .getNatsConnection()
-          .pipe(
-            switchMap((connection) =>
-              from(
-                connection.jetstream().consumers.get(config.stream, config.config.durable_name!),
-              ),
-            ),
-          ),
-      ),
-      tap(() => {
-        this.logger.log(`Consumer ready: ${config.config.durable_name}`);
-      }),
-    );
   }
 
   /**
@@ -266,7 +185,7 @@ export class JetstreamStrategy
     );
   }
 
-  public listen(callback: () => void): void {
+  public listen(done: () => void): void {
     const connection$ = combineLatest([
       this.connectionManager.getNatsConnection(),
       this.connectionManager.getJetStreamManager(),
@@ -274,34 +193,36 @@ export class JetstreamStrategy
 
     connection$
       .pipe(
-        tap(() => {
-          const { events, messages } = this.getRegisteredPatterns();
-          this.logger.log(`Events: ${events.join(', ') || 'none'}`);
-          this.logger.log(`Messages: ${messages.join(', ') || 'none'}`);
-        }),
         switchMap(() => this.streamManager.ensureAll()),
-        tap(() => {
-          const { events, messages } = this.getRegisteredPatterns();
-
-          const flow = (t: JsKind, ack: boolean) =>
-            this.createConsumer(this.consumerCfg(t))
-              .pipe(switchMap((c) => this.pullLoop(c, ack)));
-
-          merge(
-            events.length ? flow(JsKind.Event, false) : EMPTY,
-            messages.length ? flow(JsKind.Command, true) : EMPTY,
-          ).subscribe({
-            error: (err) => this.eventBus.emit(JetstreamEvent.Error, err),
-          });
-        }),
-
-        finalize(callback),
+        tap(done),
+        switchMap(() => this.startConsumers()),
         catchError((err) => {
           this.eventBus.emit(JetstreamEvent.Error, err);
           throw err;
         }),
       )
       .subscribe();
+  }
+
+  private startConsumers(): Observable<void> {
+    const { events, messages } = this.getRegisteredPatterns();
+
+    const run = (kind: JsKind, ackRpc: boolean) =>
+      this.consumerManager
+        .ensure(this.streamManager.getStreamName(kind), kind)
+        .pipe(switchMap((ci) => this.attachPullLoop(ci.stream_name, ci.name, ackRpc)));
+
+    return merge(
+      events.length ? run(JsKind.Event, false) : EMPTY,
+      messages.length ? run(JsKind.Command, true) : EMPTY,
+    ).pipe(map(() => void 0));
+  }
+
+  private attachPullLoop(stream: string, durable: string, ackRpc: boolean) {
+    return this.connectionManager.getNatsConnection().pipe(
+      switchMap((conn) => from(conn.jetstream().consumers.get(stream, durable))),
+      switchMap((consumer) => this.pullLoop(consumer, ackRpc)),
+    );
   }
 
   public on<E extends keyof IJetstreamEventsMap>(event: E, callback: IJetstreamEventsMap[E]): any {
@@ -315,7 +236,6 @@ export class JetstreamStrategy
   public override get status(): Observable<JetstreamEvent> {
     return this.eventBus.status;
   }
-
 
   /* ================================================================
    *  PULL LOOP (без рекурсії)
@@ -385,32 +305,5 @@ export class JetstreamStrategy
       }),
       finalize(() => msg.ack()),
     );
-  }
-
-  /* ================================================================
-   *  CONSUMER CONFIG
-   * ================================================================ */
-
-  private consumerCfg(kind: JsKind): JetstreamConsumerSetup {
-    const { serviceName } = this.options;
-    const isRpc = kind === JsKind.Command;
-
-    return {
-      stream: this.streamManager.getStreamName(kind),
-      config: {
-        durable_name: getJetstreamDurableName(serviceName, kind),
-        filter_subject: getJetStreamFilterSubject(serviceName, kind),
-        deliver_policy: DeliverPolicy.All,
-        replay_policy: ReplayPolicy.Instant,
-        ack_policy: AckPolicy.Explicit,
-        ack_wait: this.msToNs(isRpc ? this.rpcTimeoutMs : this.eventTimeoutMs),
-        max_deliver: isRpc ? 1 : 5,
-        max_ack_pending: isRpc ? this.maxAckPendingRpc : this.maxAckPendingEvents,
-      },
-    };
-  }
-
-  private msToNs(ms: number): number {
-    return ms * 1_000_000;
   }
 }
