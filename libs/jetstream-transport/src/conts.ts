@@ -11,9 +11,8 @@ export enum JetstreamEvent {
   Error = 'error',
 }
 
-export enum JetstreamMessageType {
-  Event = 'event',
-  Command = 'cmd',
+export enum JetStreamErrorCodes {
+  NotFound = 10148
 }
 
 export enum JetstreamHeaders {

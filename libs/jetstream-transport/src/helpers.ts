@@ -1,9 +1,7 @@
-import { JetstreamMessageType } from './conts';
+import { JsKind } from './types/enum';
 
-export const getJetstreamDurableName = (serviceName: string, type: JetstreamMessageType) =>
+export const getJetstreamDurableName = (serviceName: string, type: JsKind) =>
   `${serviceName}-${type}`;
 
-export const getJetStreamFilterSubject = (serviceName: string, type: JetstreamMessageType) =>
+export const getJetStreamFilterSubject = (serviceName: string, type: JsKind) =>
   `${serviceName}.${type}.>`;
-
-export const getStreamName = (serviceName: string) => `${serviceName.toLowerCase()}-stream`;
