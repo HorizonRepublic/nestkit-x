@@ -1,6 +1,6 @@
 import { ConsumerConfig, StreamConfig } from 'nats';
 import { ConnectionOptions, JetStreamOptions } from 'nats/lib/src/nats-base-client';
-import { JsKind } from '../enum';
+import { JsKind } from '../const/enum';
 
 export interface IJetstreamTransportOptions {
   serviceName: string;

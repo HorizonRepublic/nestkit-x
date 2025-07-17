@@ -1,5 +1,5 @@
 import { DiscardPolicy, RetentionPolicy, StorageType, StoreCompression, StreamConfig } from 'nats';
-import { JsKind } from './enum';
+import { JsKind } from '../const/enum';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
 
 // Size constants in bytes

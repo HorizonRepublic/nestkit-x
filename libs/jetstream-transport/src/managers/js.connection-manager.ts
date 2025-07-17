@@ -11,10 +11,10 @@ import {
   tap,
 } from 'rxjs';
 import { connect, JetStreamManager, NatsConnection } from 'nats';
-import { JetstreamEvent } from './conts';
+import { JetstreamEvent } from '../const/conts';
 import { ConnectionOptions } from 'nats/lib/src/nats-base-client';
-import { IJetstreamTransportOptions } from './types/jetstream-transport.options';
-import { JsEventBus } from './js-event.bus';
+import { IJetstreamTransportOptions } from '../types/jetstream-transport.options';
+import { JsEventBus } from '../js-event.bus';
 
 export class JsConnectionManager {
   protected connectionReference: NatsConnection | null = null;
