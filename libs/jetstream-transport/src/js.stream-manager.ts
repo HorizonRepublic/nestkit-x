@@ -1,35 +1,96 @@
-import { DiscardPolicy, JetStreamManager, RetentionPolicy, StorageType, StoreCompression, StreamConfig } from 'nats';
+import { JetStreamManager, StreamConfig } from 'nats';
 import { catchError, defer, forkJoin, from, map, Observable, switchMap, tap } from 'rxjs';
-import { IJetstreamTransportOptions } from './types/jetstream-transport.options';
 import { LoggerService } from '@nestjs/common';
-import { JsKind } from './types/enum';
 
+import { IJetstreamTransportOptions } from './types/jetstream-transport.options';
+import { JsKind } from './enum';
+import { JsStreamConfigBuilder } from './js.stream-config-builder';
+
+/**
+ * Manages NATS JetStream streams lifecycle including creation, updates, and verification.
+ * Provides high-level API for ensuring stream availability and retrieving stream metadata.
+ *
+ * This manager handles both Event and Command streams, automatically creating them
+ * with appropriate configurations and updating existing streams when needed.
+ */
 export class JetStreamStreamManager {
+  /**
+   * Creates a new JetStream stream manager instance.
+   * @param jsm$ - Observable that emits JetStream manager instances
+   * @param opts - JetStream transport configuration options
+   * @param logger - Logger service for operation tracking
+   */
   constructor(
     private readonly jsm$: Observable<JetStreamManager>,
     private readonly opts: IJetstreamTransportOptions,
     private readonly logger: LoggerService,
-  ) {
-  }
+  ) {}
 
+  /**
+   * Ensures both Event and Command streams exist and are properly configured.
+   * Creates streams if they don't exist, updates them if configuration differs.
+   *
+   * @returns Observable that completes when both streams are ready
+   */
   public ensureAll(): Observable<void> {
-    return forkJoin([
-      this.ensure(JsKind.Event),
-      this.ensure(JsKind.Command)])
-      .pipe(map(() => void 0));
+    return forkJoin([this.ensure(JsKind.Event), this.ensure(JsKind.Command)]).pipe(
+      map(() => void 0),
+    );
   }
 
+  /**
+   * Ensures a specific stream exists and is properly configured.
+   * Creates the stream if it doesn't exist, updates it if configuration differs.
+   *
+   * @param kind - The type of stream to ensure (Event or Command)
+   * @returns Observable that completes when the stream is ready
+   */
   public ensure(kind: JsKind): Observable<void> {
-    return this.ensureStream(this.buildCfg(kind));
+    const cfg = this.buildStreamConfig(kind);
+
+    return this.ensureStream(cfg);
   }
 
-  /* ------------------------------------------------------------------ */
-
+  /**
+   * Retrieves the stream name for a given stream kind.
+   * Used by consumers to identify which stream to subscribe to.
+   *
+   * @param kind - The type of stream
+   * @returns The fully qualified stream name
+   */
   public getStreamName(kind: JsKind): string {
-    return `${this.opts.serviceName}_${kind}-stream`;
+    return this.buildStreamConfig(kind).name;
   }
 
+  /**
+   * Builds stream configuration using the builder pattern.
+   * Delegates to JsStreamConfigBuilder for consistent configuration generation.
+   *
+   * @param kind - The type of stream to configure
+   * @returns Complete stream configuration object
+   */
+  private buildStreamConfig(kind: JsKind): StreamConfig {
+    const builder = JsStreamConfigBuilder.create(this.opts.serviceName).forKind(kind);
 
+    const userCfg = this.opts.streamConfig?.[kind];
+
+    if (userCfg) builder.with(userCfg);
+
+    return builder.build();
+  }
+
+  /**
+   * Ensures a stream exists with the given configuration.
+   * Attempts to update the existing stream or create a new one if it doesn't exist.
+   *
+   * The operation follows this flow:
+   * 1. Try to get existing stream info
+   * 2. If exists, update with new subjects configuration
+   * 3. If doesn't exist, create a new stream with full configuration
+   *
+   * @param cfg - Complete stream configuration
+   * @returns Observable that completes when stream is ready
+   */
   private ensureStream(cfg: StreamConfig): Observable<void> {
     return this.jsm$.pipe(
       switchMap((jsm) =>
@@ -42,84 +103,14 @@ export class JetStreamStreamManager {
 
             return from(jsm.streams.update(cfg.name, { subjects: cfg.subjects }));
           }),
-
           catchError(() => {
             this.logger.log(`Creating stream: ${cfg.name}`);
             return from(jsm.streams.add(cfg));
           }),
         ),
       ),
-
       tap(() => this.logger.log(`Stream ready: ${cfg.name}`)),
-
       map(() => void 0),
     );
-  }
-
-  private buildCfg(kind: JsKind): StreamConfig {
-    const { serviceName } = this.opts;
-
-    const common: StreamConfig = {
-      discard: DiscardPolicy.Old,
-      duplicate_window: 0,
-      max_age: 0,
-      max_bytes: 0,
-      max_consumers: 0,
-      max_msg_size: 0,
-      max_msgs: 0,
-      max_msgs_per_subject: 0,
-      name: '',
-      subjects: [],
-      deny_delete: false,
-      deny_purge: false,
-      discard_new_per_subject: false,
-      first_seq: 0,
-      mirror_direct: false,
-      sealed: false,
-      storage: StorageType.File,
-      retention: RetentionPolicy.Workqueue,
-      num_replicas: 1,
-      allow_direct: true,
-      allow_rollup_hdrs: kind === JsKind.Event,
-      compression: StoreCompression.None,
-    };
-
-    if (kind === JsKind.Event) {
-      return {
-        ...common,
-        name: this.getStreamName(kind),
-        subjects: [`${serviceName}.${JsKind.Event}.>`],
-        description: `${JsKind.Event} stream for ${serviceName}`,
-        max_consumers: 100,
-        max_msg_size: 10 * 1024 ** 2,
-        max_msgs_per_subject: 5_000_000,
-        max_msgs: 50_000_000,
-        max_bytes: 5 * 1024 ** 3,
-        max_age: 7 * 24 * 60 * 60 * 1e9,
-        duplicate_window: 2 * 60 * 1e9,
-        discard: DiscardPolicy.Old,
-      };
-    }
-
-    /* command */
-    return {
-      ...common,
-      name: this.getStreamName(kind),
-      subjects: [`${serviceName}.${JsKind.Command}.>`],
-      description: `${JsKind.Command} stream for ${serviceName}`,
-      max_consumers: 50,
-      max_msg_size: 5 * 1024 ** 2,
-      max_msgs_per_subject: 100_000,
-      max_msgs: 1_000_000,
-      max_bytes: 100 * 1024 ** 2,
-      max_age: this.msToNs(180_000), // rpcTimeoutMs
-      duplicate_window: 30 * 1e9,
-      allow_rollup_hdrs: false,
-      discard: DiscardPolicy.Old,
-    };
-  }
-
-  private msToNs(ms: number): number {
-    return ms * 1_000_000;
   }
 }

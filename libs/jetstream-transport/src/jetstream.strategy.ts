@@ -42,7 +42,7 @@ import { Logger } from '@nestjs/common';
 import { JsConnectionManager } from './js.connection-manager';
 import { JetStreamContext } from './jetstream.context';
 import { JetStreamStreamManager } from './js.stream-manager';
-import { JsKind } from './types/enum';
+import { JsKind } from './enum';
 
 /**
  * Abstract base class for implementing NATS JetStream transport strategies in NestJS microservices.

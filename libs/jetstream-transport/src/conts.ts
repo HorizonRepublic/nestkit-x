@@ -1,8 +1,3 @@
-export enum JetstreamTransportStrategy {
-  Pull = 'pull',
-  Push = 'push',
-}
-
 export enum JetstreamEvent {
   Connecting = 'connecting',
   Connected = 'connected',
@@ -12,7 +7,7 @@ export enum JetstreamEvent {
 }
 
 export enum JetStreamErrorCodes {
-  NotFound = 10148
+  NotFound = 10148,
 }
 
 export enum JetstreamHeaders {
