@@ -1,6 +1,7 @@
 export enum JetstreamEvent {
   Connecting = 'connecting',
   Connected = 'connected',
+  Reconnected = 'reconnected',
   JetStreamAttached = 'jetstream-attached',
   Disconnected = 'disconnected',
   Error = 'error',
