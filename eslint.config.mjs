@@ -109,12 +109,7 @@ export default [
       'jsdoc/require-description': 'error',
       'jsdoc/require-description-complete-sentence': 'error',
 
-      'jsdoc/require-example': [
-        'warn',
-        {
-          contexts: ['ClassDeclaration', 'MethodDefinition[kind="method"]'],
-        },
-      ],
+      'jsdoc/require-example': ['off'],
       'jsdoc/require-hyphen-before-param-description': ['error', 'never'],
       'jsdoc/require-jsdoc': [
         'off', // enable later
@@ -172,26 +167,6 @@ export default [
         { blankLine: 'always', next: 'export', prev: '*' },
         { blankLine: 'always', next: '*', prev: 'block-like' },
       ],
-      // Replaced import sorting with perfectionist
-      'perfectionist/sort-imports': [
-        'error',
-        {
-          groups: [
-            'builtin',
-            'external',
-            'internal',
-            'parent',
-            'sibling',
-            'index',
-            'object',
-            'type',
-            'unknown',
-          ],
-          order: 'asc',
-          type: 'natural',
-        },
-      ],
-
       'prefer-arrow-callback': 'error',
 
       // Prefer arrow functions

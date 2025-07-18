@@ -1,11 +1,11 @@
 import { Codec, JsMsg, NatsConnection } from 'nats';
-import { catchError, finalize, from, Observable, of, switchMap } from 'rxjs';
-import { LoggerService } from '@nestjs/common';
+import { catchError, finalize, from, map, Observable, of, switchMap } from 'rxjs';
+import { Logger } from '@nestjs/common';
 
-import { JetstreamEvent, JetstreamHeaders } from '../index';
 import { JsEventBus } from '../registries/js-event.bus';
 import { JetStreamContext } from '../jetstream.context';
 import { MessageHandler } from '@nestjs/microservices';
+import { JetstreamEvent, JetstreamHeaders } from '../const/enum';
 
 /**
  * Manages JetStream message processing with handler resolution and response publishing.
@@ -15,19 +15,19 @@ import { MessageHandler } from '@nestjs/microservices';
  * Provides comprehensive error handling and message acknowledgment management.
  */
 export class JsMsgManager {
+  private readonly logger = new Logger(JsMsgManager.name);
+
   /**
    * Initializes message manager with dependencies and handler resolver.
    *
-   * @param conn$ - Observable of NATS connection for response publishing
-   * @param codec - Message codec for encoding/decoding payloads
-   * @param logger - Logger service for error tracking
-   * @param bus - Event bus for error event emission
-   * @param resolver - Handler resolver function provided by strategy
+   * @param conn$ Observable of NATS connection for response publishing.
+   * @param codec Message codec for encoding/decoding payloads.
+   * @param bus Event bus for error event emission.
+   * @param resolver Handler resolver function provided by strategy.
    */
-  constructor(
+  public constructor(
     private readonly conn$: Observable<NatsConnection>,
-    private readonly codec: Codec<any>,
-    private readonly logger: LoggerService,
+    private readonly codec: Codec<unknown>,
     private readonly bus: JsEventBus,
     private readonly resolver: (s: string) => MessageHandler | null,
   ) {}
@@ -39,15 +39,15 @@ export class JsMsgManager {
    * and handles response publishing for RPC patterns. Provides proper message acknowledgment
    * and error handling throughout the processing pipeline.
    *
-   * @param msg - JetStream message to process
-   * @param isRpc - Whether message requires RPC-style response handling
-   * @returns Observable that completes when message processing finishes
+   * @param msg JetStream message to process.
+   * @param isRpc Whether message requires RPC-style response handling.
+   * @returns Observable that completes when message processing finishes.
    */
   public handle(msg: JsMsg, isRpc: boolean): Observable<void> {
     const handler = this.resolver(msg.subject);
+
     if (!handler) {
       msg.term(); // Terminate message processing for unhandled subjects
-
       return of(void 0);
     }
 
@@ -61,12 +61,14 @@ export class JsMsgManager {
       return res$.pipe(
         switchMap((v) => this.publish(reply, v)),
         catchError((e) => this.publishError(reply, e)),
-        finalize(() => msg.ack()),
+        finalize(() => {
+          msg.ack();
+        }),
       );
     }
 
     // Handle event pattern with error logging
-    const handleEventError = (e: Error) => {
+    const handleEventError = (e: Error): Observable<void> => {
       this.logger.error(`Handler error (${msg.subject}): ${e.message}`);
       msg.nak(); // Negative acknowledgment for retry
       this.bus.emit(JetstreamEvent.Error, e);
@@ -74,19 +76,22 @@ export class JsMsgManager {
     };
 
     return res$.pipe(
+      map(() => void 0), // Convert unknown to void
       catchError(handleEventError),
-      finalize(() => msg.ack()),
+      finalize(() => {
+        msg.ack();
+      }),
     );
   }
 
   /**
    * Publishes successful response to a reply subject.
    *
-   * @param reply - Reply subject for response
-   * @param payload - Response payload to publish
-   * @returns Observable that completes when response is published
+   * @param reply Reply subject for response.
+   * @param payload Response payload to publish.
+   * @returns Observable that completes when response is published.
    */
-  private publish(reply: string, payload: any): Observable<void> {
+  private publish(reply: string, payload: unknown): Observable<void> {
     return this.conn$.pipe(
       switchMap((c) => {
         c.publish(reply, this.codec.encode(payload));
@@ -102,11 +107,11 @@ export class JsMsgManager {
   /**
    * Publishes error response to reply subject.
    *
-   * @param reply - Reply subject for error response
-   * @param err - Error to publish
-   * @returns Observable that completes when error response is published
+   * @param reply Reply subject for error response.
+   * @param err Error to publish.
+   * @returns Observable that completes when error response is published.
    */
-  private publishError(reply: string, err: any): Observable<void> {
+  private publishError(reply: string, err: unknown): Observable<void> {
     const errorResponse = {
       error: err instanceof Error ? err.message : String(err),
     };
@@ -120,12 +125,13 @@ export class JsMsgManager {
    * Handles various return types including promises, observables, and synchronous values.
    * Ensures all handler results are processed through the same reactive pipeline.
    *
-   * @param v - Handler result of any type
-   * @returns Observable representation of handler result
+   * @param v Handler result of any type.
+   * @returns Observable representation of handler result.
    */
-  private toObs(v: any): Observable<any> {
+  private toObs(v: unknown): Observable<unknown> {
     // First, convert to promise to handle sync values and promises uniformly
-    const hasSubscribe = (x: any): boolean => x && typeof x.subscribe === 'function';
+    const hasSubscribe = (x: unknown): x is Observable<unknown> =>
+      x !== null && typeof x === 'object' && 'subscribe' in x && typeof x.subscribe === 'function';
 
     return from(Promise.resolve(v)).pipe(switchMap((x) => (hasSubscribe(x) ? x : of(x))));
   }

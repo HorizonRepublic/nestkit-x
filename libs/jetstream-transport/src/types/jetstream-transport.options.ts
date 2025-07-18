@@ -19,8 +19,3 @@ export interface IJetstreamTransportOptions {
     [JsKind.Event]?: Partial<ConsumerConfig>;
   };
 }
-
-export interface JetstreamConsumerSetup {
-  stream: string;
-  config: ConsumerConfig;
-}

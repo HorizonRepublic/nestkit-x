@@ -4,7 +4,12 @@
   "type": "commonjs",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
-  "dependencies": {
-    "tslib": "^2.3.0"
+  "peerDependencies": {
+    "@nestjs/core": "^11.1.4",
+    "@nestjs/microservices": "^11.1.4",
+    "@nestjs/common": "^11.1.4",
+    "tslib": "^2.3.0",
+    "nats": "^2.29.3",
+    "rxjs": "^7.8.2"
   }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { DiscardPolicy, RetentionPolicy, StorageType, StoreCompression, StreamConfig } from 'nats';
 import { JsKind } from '../const/enum';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
@@ -30,11 +31,12 @@ export class JsStreamConfigBuilder {
   private readonly base: Readonly<StreamConfig>;
   private readonly service: string;
   private kind?: JsKind;
-  private overrides: Partial<StreamConfig> = {};
+  private readonly overrides: Partial<StreamConfig> = {};
 
   /**
    * Creates a new builder instance.
-   * @param service - The service name used for stream naming and subject patterns
+   *
+   * @param service The service name used for stream naming and subject patterns.
    */
   private constructor(service: string) {
     this.service = service;
@@ -72,8 +74,10 @@ export class JsStreamConfigBuilder {
 
   /**
    * Creates a new builder instance for the specified service.
-   * @param service - The service name used for stream naming and subject patterns
-   * @returns A new builder instance
+   *
+   * @param service The service name used for stream naming and subject patterns.
+   * @returns A new builder instance.
+   * @example -
    */
   public static create(service: string): JsStreamConfigBuilder {
     return new JsStreamConfigBuilder(service);
@@ -82,8 +86,10 @@ export class JsStreamConfigBuilder {
   /**
    * Sets the stream kind (Event or Command) and applies kind-specific defaults.
    * This method must be called before build().
-   * @param kind - The type of stream to create
-   * @returns The builder instance for method chaining
+   *
+   * @param kind The type of stream to create.
+   * @returns The builder instance for method chaining.
+   * @example -
    */
   public forKind(kind: JsKind): this {
     this.kind = kind;
@@ -94,8 +100,10 @@ export class JsStreamConfigBuilder {
   /**
    * Applies custom configuration overrides to the stream.
    * These overrides take precedence over kind-specific defaults.
-   * @param partial - Partial stream configuration to merge
-   * @returns The builder instance for method chaining
+   *
+   * @param partial Partial stream configuration to merge.
+   * @returns The builder instance for method chaining.
+   * @example -
    */
   public with(partial: Partial<StreamConfig>): this {
     Object.assign(this.overrides, partial);
@@ -106,8 +114,10 @@ export class JsStreamConfigBuilder {
   /**
    * Builds the final stream configuration by combining base defaults,
    * kind-specific settings, and user overrides.
-   * @returns The complete stream configuration
-   * @throws Error if forKind() was not called before build()
+   *
+   * @returns The complete stream configuration.
+   * @throws Error if forKind() was not called before build().
+   * @example -
    */
   public build(): StreamConfig {
     if (!this.kind) {
@@ -133,10 +143,13 @@ export class JsStreamConfigBuilder {
    * Returns kind-specific configuration optimized for Event or Command streams.
    * Event streams are configured for high throughput and longer retention.
    * Command streams are configured for low latency and shorter retention.
-   * @param kind - The stream kind
-   * @returns Kind-specific configuration object
+   *
+   * @param kind The stream kind.
+   * @returns Kind-specific configuration object.
+   * @example -
    */
   private getKindSpecificConfig(kind: JsKind): Partial<StreamConfig> {
+    // event
     if (kind === JsKind.Event) {
       return {
         allow_rollup_hdrs: true,
@@ -150,19 +163,16 @@ export class JsStreamConfigBuilder {
       };
     }
 
-    if (kind === JsKind.Command) {
-      return {
-        allow_rollup_hdrs: false,
-        max_consumers: 50,
-        max_msg_size: 5 * MB,
-        max_msgs_per_subject: 100_000,
-        max_msgs: 1_000_000,
-        max_bytes: 100 * MB,
-        max_age: 3 * MIN,
-        duplicate_window: 30 * SEC,
-      };
-    }
-
-    return {};
+    // command
+    return {
+      allow_rollup_hdrs: false,
+      max_consumers: 50,
+      max_msg_size: 5 * MB,
+      max_msgs_per_subject: 100_000,
+      max_msgs: 1_000_000,
+      max_bytes: 100 * MB,
+      max_age: 3 * MIN,
+      duplicate_window: 30 * SEC,
+    };
   }
 }

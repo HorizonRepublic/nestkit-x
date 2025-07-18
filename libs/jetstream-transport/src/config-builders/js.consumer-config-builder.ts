@@ -1,9 +1,7 @@
-import { AckPolicy, ConsumerConfig, DeliverPolicy, ReplayPolicy } from 'nats';
-import { JsKind } from '@nestkit-x/jetstream-transport';
+/* eslint-disable @typescript-eslint/naming-convention */
 
-// Time constants in nanoseconds (NATS JetStream format)
-const SECOND = 1e9;
-const MINUTE = 60 * SECOND;
+import { AckPolicy, ConsumerConfig, DeliverPolicy, ReplayPolicy } from 'nats';
+import { JsKind } from '../const/enum';
 
 // Timeout constants in milliseconds (converted to nanoseconds)
 const RPC_TIMEOUT_MS = 180_000; // 3 minutes
@@ -19,24 +17,27 @@ const EVENT_TIMEOUT_MS = 60_000; // 1 minute
  * Event consumers are optimized for high-throughput event processing
  * with higher concurrency and retry capabilities.
  *
- * @example
+ *
  * ```typescript
  * const config = JsConsumerConfigBuilder
- *   .create('my-service')
- *   .forKind(JsKind.Command)
- *   .with({ max_ack_pending: 10 })
- *   .build();
+ * .create('my-service')
+ * .forKind(JsKind.Command)
+ * .with({ max_ack_pending: 10 })
+ * .build();
  * ```
+ *
+ * @example
  */
 export class JsConsumerConfigBuilder {
   private readonly base: Readonly<ConsumerConfig>;
   private readonly service: string;
   private kind?: JsKind;
-  private overrides: Partial<ConsumerConfig> = {};
+  private readonly overrides: Partial<ConsumerConfig> = {};
 
   /**
    * Creates a new consumer builder instance.
-   * @param service - The service name used for consumer naming
+   *
+   * @param service The service name used for consumer naming.
    */
   private constructor(service: string) {
     this.service = service;
@@ -54,8 +55,10 @@ export class JsConsumerConfigBuilder {
 
   /**
    * Creates a new consumer builder instance for the specified service.
-   * @param service - The service name used for consumer naming
-   * @returns A new builder instance
+   *
+   * @param service The service name used for consumer naming.
+   * @returns A new builder instance.
+   * @example -
    */
   public static create(service: string): JsConsumerConfigBuilder {
     return new JsConsumerConfigBuilder(service);
@@ -64,8 +67,10 @@ export class JsConsumerConfigBuilder {
   /**
    * Sets the consumer kind (Event or Command) and applies kind-specific defaults.
    * This method must be called before build().
-   * @param kind - The type of consumer to create
-   * @returns The builder instance for method chaining
+   *
+   * @param kind The type of consumer to create.
+   * @returns The builder instance for method chaining.
+   * @example -
    */
   public forKind(kind: JsKind): this {
     this.kind = kind;
@@ -75,8 +80,10 @@ export class JsConsumerConfigBuilder {
   /**
    * Applies custom configuration overrides to the consumer.
    * These overrides take precedence over kind-specific defaults.
-   * @param partial - Partial consumer configuration to merge
-   * @returns The builder instance for method chaining
+   *
+   * @param partial Partial consumer configuration to merge.
+   * @returns The builder instance for method chaining.
+   * @example -
    */
   public with(partial: Partial<ConsumerConfig>): this {
     Object.assign(this.overrides, partial);
@@ -86,8 +93,10 @@ export class JsConsumerConfigBuilder {
   /**
    * Builds the final consumer configuration by combining base defaults,
    * kind-specific settings, and user overrides.
-   * @returns The complete consumer configuration
-   * @throws Error if forKind() was not called before build()
+   *
+   * @returns The complete consumer configuration.
+   * @throws Error if forKind() was not called before build().
+   * @example -
    */
   public build(): ConsumerConfig {
     if (!this.kind) {
@@ -109,15 +118,16 @@ export class JsConsumerConfigBuilder {
    * Command consumers (RPC-style):
    * - Lower concurrency (max_ack_pending: 5)
    * - Single delivery attempt (max_deliver: 1)
-   * - Longer ack timeout for complex operations (3 minutes)
+   * - Longer ack timeout for complex operations (3 minutes).
    *
    * Event consumers (high throughput):
    * - Higher concurrency (max_ack_pending: 50)
    * - Multiple delivery attempts with retries (max_deliver: 5)
-   * - Shorter ack timeout for quick processing (1 minute)
+   * - Shorter ack timeout for quick processing (1 minute).
    *
-   * @param kind - The consumer kind
-   * @returns Kind-specific configuration object
+   * @param kind The consumer kind.
+   * @returns Kind-specific configuration object.
+   * @example -
    */
   private getKindSpecificConfig(kind: JsKind): Partial<ConsumerConfig> {
     const durable = `${this.service}_${kind}-consumer`;
@@ -127,6 +137,7 @@ export class JsConsumerConfigBuilder {
       name: durable,
     };
 
+    // command
     if (kind === JsKind.Command) {
       return {
         ...baseConfig,
@@ -136,22 +147,21 @@ export class JsConsumerConfigBuilder {
       };
     }
 
-    if (kind === JsKind.Event) {
-      return {
-        ...baseConfig,
-        ack_wait: this.msToNs(EVENT_TIMEOUT_MS),
-        max_deliver: 5,
-        max_ack_pending: 50,
-      };
-    }
-
-    return baseConfig;
+    // event
+    return {
+      ...baseConfig,
+      ack_wait: this.msToNs(EVENT_TIMEOUT_MS),
+      max_deliver: 5,
+      max_ack_pending: 50,
+    };
   }
 
   /**
    * Converts milliseconds to nanoseconds for NATS JetStream time values.
-   * @param ms - Time in milliseconds
-   * @returns Time in nanoseconds
+   *
+   * @param ms Time in milliseconds.
+   * @returns Time in nanoseconds.
+   * @example -
    */
   private msToNs(ms: number): number {
     return ms * 1_000_000;
