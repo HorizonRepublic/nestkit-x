@@ -1,12 +1,10 @@
 import { ConsumerConfig, ConsumerInfo, JetStreamManager } from 'nats';
 import { catchError, defer, from, Observable, switchMap, tap } from 'rxjs';
 import { LoggerService } from '@nestjs/common';
-import {
-  IJetstreamTransportOptions,
-  JetStreamErrorCodes as EC,
-  JsConsumerConfigBuilder,
-  JsKind,
-} from '@nestkit-x/jetstream-transport';
+import { IJetstreamTransportOptions } from '../types/jetstream-transport.options';
+import { JsKind } from '../const/enum';
+import { JsConsumerConfigBuilder } from '../config-builders/js.consumer-config-builder';
+import { IJetStreamError, JetStreamErrorCode } from '../types/types';
 
 /**
  * Manages JetStream consumer lifecycle with idempotent creation and race condition handling.
@@ -20,11 +18,11 @@ export class JsConsumerManager {
   /**
    * Initializes consumer manager with JetStream manager and configuration.
    *
-   * @param jsm$ - Observable that emits JetStream manager when available
-   * @param opts - Transport configuration including service name and overrides
-   * @param logger - Logger service for operation tracking
+   * @param jsm$ Observable that emits JetStream manager when available.
+   * @param opts Transport configuration including service name and overrides.
+   * @param logger Logger service for operation tracking.
    */
-  constructor(
+  public constructor(
     private readonly jsm$: Observable<JetStreamManager>,
     private readonly opts: IJetstreamTransportOptions,
     private readonly logger: LoggerService,
@@ -37,15 +35,15 @@ export class JsConsumerManager {
    * then creates new one if not found. Handles race conditions during concurrent
    * creation attempts by falling back to existing consumer when creation conflicts occur.
    *
-   * @param stream - Target stream name for consumer creation
-   * @param kind - Consumer type determining configuration defaults
-   * @returns Observable that emits consumer info when ready
+   * @param stream Target stream name for consumer creation.
+   * @param kind Consumer type determining configuration defaults.
+   * @returns Observable that emits consumer info when ready.
    */
-  ensure(stream: string, kind: JsKind): Observable<ConsumerInfo> {
+  public ensure(stream: string, kind: JsKind): Observable<ConsumerInfo> {
     const cfg = this.buildConfig(kind);
 
-    const isConsumerNotFound = (err: any): boolean =>
-      err.api_error?.err_code === EC.ConsumerNotFound;
+    const isConsumerNotFound = (err: IJetStreamError): boolean =>
+      err.api_error?.err_code === JetStreamErrorCode.ConsumerNotFound;
 
     return this.jsm$.pipe(
       switchMap((jsm) =>
@@ -53,31 +51,37 @@ export class JsConsumerManager {
           catchError((err) =>
             isConsumerNotFound(err)
               ? this.create(jsm, stream, cfg) // Create new consumer
-              : this.throwInfoErr(err, stream, kind, cfg.durable_name!),
+              : this.throwInfoErr(err, stream, kind, cfg.durable_name ?? 'unknown'),
           ),
         ),
       ),
-      tap((ci) => this.logger.log(`Consumer ready: ${cfg.name}`)),
+      tap((consumerInfo) => this.logger.log(`Consumer ready: ${consumerInfo.name}`)),
     );
   }
 
   /**
    * Retrieves existing consumer information from JetStream.
    *
-   * @param jsm - JetStream manager instance
-   * @param stream - Target stream name
-   * @param cfg - Consumer configuration
-   * @returns Observable that emits consumer info if exists
+   * @param jsm JetStream manager instance.
+   * @param stream Target stream name.
+   * @param cfg Consumer configuration.
+   * @returns Observable that emits consumer info if exists.
    */
-  private getExisting(jsm: JetStreamManager, stream: string, cfg: ConsumerConfig) {
+  private getExisting(
+    jsm: JetStreamManager,
+    stream: string,
+    cfg: ConsumerConfig,
+  ): Observable<ConsumerInfo> {
     const extractKindFromDurable = (durable: string): string =>
-      durable.split('_').pop() || 'unknown';
+      durable.split('_').pop() ?? 'unknown';
 
-    return defer(() => from(jsm.consumers.info(stream, cfg.durable_name!))).pipe(
+    const durableName = cfg.durable_name ?? 'unknown';
+
+    return defer(() => from(jsm.consumers.info(stream, durableName))).pipe(
       tap((ci) =>
-        this.logger.log(`Consumer using: ${cfg.durable_name}`, {
+        this.logger.log(`Consumer using: ${durableName}`, {
           stream,
-          kind: extractKindFromDurable(cfg.durable_name!),
+          kind: extractKindFromDurable(durableName),
           numPending: ci.num_pending,
         }),
       ),
@@ -90,17 +94,22 @@ export class JsConsumerManager {
    * Attempts to create consumer and handles concurrent creation by falling back
    * to existing consumer info when creation conflicts occur.
    *
-   * @param jsm - JetStream manager instance
-   * @param stream - Target stream name
-   * @param cfg - Consumer configuration
-   * @returns Observable that emits consumer info when created or retrieved
+   * @param jsm JetStream manager instance.
+   * @param stream Target stream name.
+   * @param cfg Consumer configuration.
+   * @returns Observable that emits consumer info when created or retrieved.
    */
-  private create(jsm: JetStreamManager, stream: string, cfg: ConsumerConfig) {
-    const handleRaceCondition = (err: any): Observable<ConsumerInfo> => {
-      const isConsumerExists = err.api_error?.err_code === EC.ConsumerExists;
+  private create(
+    jsm: JetStreamManager,
+    stream: string,
+    cfg: ConsumerConfig,
+  ): Observable<ConsumerInfo> {
+    const handleRaceCondition = (err: IJetStreamError): Observable<ConsumerInfo> => {
+      const isConsumerExists = err.api_error?.err_code === JetStreamErrorCode.ConsumerExists;
+      const durableName = cfg.durable_name ?? 'unknown';
 
       return isConsumerExists
-        ? from(jsm.consumers.info(stream, cfg.durable_name!)) // Race condition - use existing
+        ? from(jsm.consumers.info(stream, durableName)) // Race condition - use existing
         : this.throwCreateErr(err, stream, cfg);
     };
 
@@ -113,13 +122,13 @@ export class JsConsumerManager {
   /**
    * Logs error and throws when consumer info retrieval fails.
    *
-   * @param err - Error object from consumer info operation
-   * @param stream - Target stream name
-   * @param kind - Consumer type
-   * @param durable - Durable consumer name
-   * @throws Original error after logging
+   * @param err Error object from consumer info operation.
+   * @param stream Target stream name.
+   * @param kind Consumer type.
+   * @param durable Durable consumer name.
+   * @throws Original error after logging.
    */
-  private throwInfoErr(err: any, stream: string, kind: JsKind, durable: string): never {
+  private throwInfoErr(err: IJetStreamError, stream: string, kind: JsKind, durable: string): never {
     this.logger.error(`Consumer info failed: ${durable}`, {
       stream,
       kind,
@@ -132,12 +141,12 @@ export class JsConsumerManager {
   /**
    * Logs error and throws when consumer creation fails.
    *
-   * @param err - Error object from consumer creation operation
-   * @param stream - Target stream name
-   * @param cfg - Consumer configuration that failed
-   * @throws Original error after logging
+   * @param err Error object from consumer creation operation.
+   * @param stream Target stream name.
+   * @param cfg Consumer configuration that failed.
+   * @throws Original error after logging.
    */
-  private throwCreateErr(err: any, stream: string, cfg: ConsumerConfig): never {
+  private throwCreateErr(err: IJetStreamError, stream: string, cfg: ConsumerConfig): never {
     this.logger.error(`Consumer create failed: ${cfg.durable_name}`, {
       stream,
       error: err.message,
@@ -153,14 +162,15 @@ export class JsConsumerManager {
    * Combines kind-specific defaults with user-provided overrides and applies
    * service-specific filter subject for message routing.
    *
-   * @param kind - Consumer type determining configuration defaults
-   * @returns Complete consumer configuration
+   * @param kind Consumer type determining configuration defaults.
+   * @returns Complete consumer configuration.
    */
   private buildConfig(kind: JsKind): ConsumerConfig {
     const builder = JsConsumerConfigBuilder.create(this.opts.serviceName).forKind(kind);
 
     const applyUserOverrides = (builder: JsConsumerConfigBuilder): void => {
       const userOverride = this.opts.consumerConfig?.[kind];
+
       if (userOverride) builder.with(userOverride);
     };
 
@@ -168,6 +178,7 @@ export class JsConsumerManager {
 
     applyUserOverrides(builder);
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     return builder.with({ filter_subject: createFilterSubject() }).build();
   }
 }

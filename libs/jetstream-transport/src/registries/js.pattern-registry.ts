@@ -1,15 +1,14 @@
 // managers/pattern.registry.ts
 import { MessageHandler } from '@nestjs/microservices';
-import { Logger } from '@nestjs/common';
 import { JsKind } from '../const/enum';
 
 /**
  * Registry for managing NATS JetStream message patterns and their handlers.
  * Provides pattern-to-handler mapping and subject normalization for routing.
+ *
+ * @example -
  */
 export class JsPatternRegistry {
-  private readonly logger = new Logger(JsPatternRegistry.name);
-
   public constructor(
     private readonly serviceName: string,
     private readonly handlers: Map<string, MessageHandler>,
@@ -17,17 +16,22 @@ export class JsPatternRegistry {
 
   /**
    * Retrieves handler for a given subject by normalizing and matching patterns.
-   * @param subject - Full NATS subject (e.g., "service.Event.user.created")
-   * @returns Message handler or null if no match found
+   *
+   * @param subject Full NATS subject (e.g., "service.Event.user.created").
+   * @returns Message handler or null if no match found.
+   * @example -
    */
   public getHandler(subject: string): MessageHandler | null {
     const normalizedPattern = this.normalizeSubject(subject);
+
     return this.handlers.get(normalizedPattern) ?? null;
   }
 
   /**
    * Lists all registered patterns grouped by type and logs them.
-   * @returns Object containing events and messages arrays
+   *
+   * @returns Object containing events and messages arrays.
+   * @example -
    */
   public list(): { events: string[]; messages: string[] } {
     const { events, messages } = this.categorizeHandlers();
@@ -37,9 +41,11 @@ export class JsPatternRegistry {
 
   /**
    * Normalizes subject by removing service prefix and kind identifier.
-   * Converts "service.Event.user.created" to "user.created"
-   * @param subject - Full NATS subject
-   * @returns Normalized pattern without service prefix
+   * Converts "service.Event.user.created" to "user.created".
+   *
+   * @param subject Full NATS subject.
+   * @returns Normalized pattern without a service prefix.
+   * @example -
    */
   private normalizeSubject(subject: string): string {
     const commandPrefix = this.buildPrefix(JsKind.Command);
@@ -50,8 +56,10 @@ export class JsPatternRegistry {
 
   /**
    * Builds subject prefix for a given kind.
-   * @param kind - JetStream kind (Event or Command)
-   * @returns Formatted prefix string
+   *
+   * @param kind JetStream kind (Event or Command).
+   * @returns Formatted prefix string.
+   * @example -
    */
   private buildPrefix(kind: JsKind): string {
     return `${this.serviceName}.${kind}.`;
@@ -59,7 +67,9 @@ export class JsPatternRegistry {
 
   /**
    * Categorizes registered handlers into events and messages.
-   * @returns Object with separated handler arrays
+   *
+   * @returns Object with separated handler arrays.
+   * @example -
    */
   private categorizeHandlers(): { events: string[]; messages: string[] } {
     const events: string[] = [];

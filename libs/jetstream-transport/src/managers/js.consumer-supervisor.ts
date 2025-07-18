@@ -1,6 +1,5 @@
 import { from, map, merge, Observable, switchMap } from 'rxjs';
-import { NatsConnection } from 'nats';
-import { LoggerService } from '@nestjs/common';
+import { Consumer, ConsumerInfo, NatsConnection } from 'nats';
 
 import { JsKind } from '../const/enum';
 import { JsConsumerManager } from './js.consumer-manager';
@@ -16,22 +15,20 @@ import { JsMsgManager } from './js.msg-manager';
  * delegates message processing to pull runners with appropriate configurations.
  */
 export class JsConsumerSupervisor {
+  private readonly pullTimeoutMs: number = 200;
+
   /**
    * Initializes supervisor with required managers and configuration.
    *
-   * @param consumerMgr - Consumer manager for creation and lifecycle
-   * @param streamMgr - Stream manager for stream name resolution
-   * @param conn$ - Observable of NATS connection for consumer retrieval
-   * @param pullTimeoutMs - Timeout for pull operations
-   * @param logger - Logger service for operation tracking
-   * @param msgMgr - Message manager for handling incoming messages
+   * @param consumerMgr Consumer manager for creation and lifecycle.
+   * @param streamMgr Stream manager for stream name resolution.
+   * @param conn$ Observable of NATS connection for consumer retrieval.
+   * @param msgMgr Message manager for handling incoming messages.
    */
-  constructor(
+  public constructor(
     private readonly consumerMgr: JsConsumerManager,
     private readonly streamMgr: JetStreamStreamManager,
     private readonly conn$: Observable<NatsConnection>,
-    private readonly pullTimeoutMs: number,
-    private readonly logger: LoggerService,
     private readonly msgMgr: JsMsgManager,
   ) {}
 
@@ -42,11 +39,11 @@ export class JsConsumerSupervisor {
    * provided flags. Each stream type runs independently with appropriate RPC
    * handling configuration.
    *
-   * @param event - Whether to start Event stream pull loop
-   * @param command - Whether to start Command stream pull loop
-   * @returns Observable that runs pull operations until completion
+   * @param event Whether to start Event stream pull loop.
+   * @param command Whether to start Command stream pull loop.
+   * @returns Observable that runs pull operations until completion.
    */
-  run(event: boolean, command: boolean): Observable<void> {
+  public run(event: boolean, command: boolean): Observable<void> {
     const collectFlows = (): Observable<void>[] => {
       const flows: Observable<void>[] = [];
 
@@ -62,21 +59,21 @@ export class JsConsumerSupervisor {
   }
 
   /**
-   * Starts pull loop for specific stream kind with RPC configuration.
+   * Starts pull loop for a specific stream kind with RPC configuration.
    *
    * Sets up consumer, retrieves JetStream consumer instance, and creates pull
    * runner with message handling delegation. The flow ensures proper consumer
    * setup before starting message processing.
    *
-   * @param kind - Stream type to start pulling from
-   * @param ackRpc - Whether to handle RPC-style acknowledgments
-   * @returns Observable that runs pull operations for the stream
+   * @param kind Stream type to start pulling from.
+   * @param ackRpc Whether to handle RPC-style acknowledgments.
+   * @returns Observable that runs pull operations for the stream.
    */
   private start(kind: JsKind, ackRpc: boolean): Observable<void> {
-    const getJetStreamConsumer = (ci: any) =>
+    const getJetStreamConsumer = (ci: ConsumerInfo): Observable<Consumer> =>
       this.conn$.pipe(switchMap((c) => from(c.jetstream().consumers.get(ci.stream_name, ci.name))));
 
-    const createPullRunner = (consumer: any) =>
+    const createPullRunner = (consumer: Consumer): Observable<void> =>
       JsPullRunner.create(consumer, {
         expiresMs: this.pullTimeoutMs,
         handle: (msg) => this.msgMgr.handle(msg, ackRpc),

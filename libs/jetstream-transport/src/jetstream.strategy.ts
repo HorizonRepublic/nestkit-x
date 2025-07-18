@@ -16,7 +16,6 @@ import {
   tap,
 } from 'rxjs';
 import { JsEventBus } from './registries/js-event.bus';
-import { IJetstreamEventsMap } from './types/events-map.interface';
 import { IJetstreamTransportOptions, JetstreamEvent } from './index';
 import { Logger } from '@nestjs/common';
 import { JsConnectionManager } from './managers/js.connection-manager';
@@ -27,19 +26,30 @@ import { JsPatternRegistry } from './registries/js.pattern-registry';
 import { JsConsumerSupervisor } from './managers/js.consumer-supervisor';
 
 /**
- * Abstract base class for implementing NATS JetStream transport strategies in NestJS microservices.
- * Provides core functionality for managing NATS connections and JetStream interactions.
+ * NestJS custom transport strategy for NATS JetStream messaging.
+ *
+ * This strategy provides a complete JetStream implementation that handles:
+ * - Connection management with automatic reconnection
+ * - Stream and consumer lifecycle management
+ * - Message routing and handler resolution
+ * - Error handling and event emission
+ * - Graceful shutdown with resource cleanup.
+ *
+ * The strategy automatically creates Event and Command streams based on
+ * registered message handlers and manages pull-based consumers for reliable
+ * message delivery with acknowledgment support.
  */
 export class JetstreamStrategy
-  extends Server<IJetstreamEventsMap>
+  extends Server<Record<string, (...args: unknown[]) => unknown>>
   implements CustomTransportStrategy
 {
   public override readonly transportId: TransportId = Symbol('NATS_JETSTREAM_TRANSPORT');
   protected override logger = new Logger(JetstreamStrategy.name);
 
-  // todo: allow different codecs
-  private readonly codec: Codec<any> = JSONCodec();
-  private readonly fetchExpiresMs = 5_000;
+  // Core message encoding/decoding using NATS JSON codec
+  private readonly codec: Codec<unknown> = JSONCodec();
+
+  // Manager instances for different aspects of JetStream functionality
   private readonly connectionManager: JsConnectionManager;
   private readonly eventBus: JsEventBus;
   private readonly streamManager: JetStreamStreamManager;
@@ -48,54 +58,98 @@ export class JetstreamStrategy
   private readonly patterns: JsPatternRegistry;
   private readonly supervisor: JsConsumerSupervisor;
 
+  // Active subscription for the main message processing loop
   private sub?: Subscription;
 
+  /**
+   * Initializes the JetStream strategy with all required managers and dependencies.
+   *
+   * The constructor creates a complete ecosystem of managers that work together:
+   * - Connection manager handles NATS connection lifecycle
+   * - Stream manager ensures JetStream streams exist
+   * - Consumer manager creates and manages durable consumers
+   * - Message manager processes incoming messages and routes them to handlers
+   * - Pattern registry maps message subjects to NestJS message handlers
+   * - Consumer supervisor orchestrates pull-based message consumption.
+   *
+   * @param options JetStream transport configuration including connection settings.
+   */
   public constructor(protected readonly options: IJetstreamTransportOptions) {
     super();
 
+    // Initialize event bus for internal communication between managers
     this.eventBus = new JsEventBus();
 
+    // Create connection manager with event bus integration
     this.connectionManager = new JsConnectionManager(this.options, this.eventBus);
 
+    // Initialize stream manager for JetStream stream lifecycle
     this.streamManager = new JetStreamStreamManager(
       this.connectionManager.getJetStreamManager(),
       this.options,
       this.logger,
     );
 
+    // Initialize consumer manager for durable consumer creation
     this.consumerManager = new JsConsumerManager(
       this.connectionManager.getJetStreamManager(),
       this.options,
       this.logger,
     );
 
+    // Create pattern registry to map subjects to handlers
     this.patterns = new JsPatternRegistry(this.options.serviceName, this.messageHandlers);
+
+    // Create message manager with handler resolution callback
+    const handlerResolver = (subject: string): MessageHandler | null =>
+      this.patterns.getHandler(subject);
 
     this.msgManager = new JsMsgManager(
       this.connectionManager.getNatsConnection(),
       this.codec,
-      this.logger,
       this.eventBus,
-      (subj) => this.patterns.getHandler(subj),
+      handlerResolver,
     );
 
+    // Initialize consumer supervisor to orchestrate message consumption
     this.supervisor = new JsConsumerSupervisor(
       this.consumerManager,
       this.streamManager,
       this.connectionManager.getNatsConnection(),
-      this.fetchExpiresMs,
-      this.logger,
       this.msgManager,
     );
   }
 
+  /**
+   * Retrieves a message handler for a specific subject pattern.
+   *
+   * This method is called by NestJS to resolve handlers during message processing.
+   * It delegates to the pattern registry which normalizes NATS subjects to
+   * handler patterns registered via @MessagePattern and @EventPattern decorators.
+   *
+   * @param subject NATS subject to find handler for.
+   * @returns Message handler function or null if no handler found.
+   */
   public override getHandlerByPattern(subject: string): MessageHandler | null {
     return this.patterns.getHandler(subject);
   }
 
+  /**
+   * Gracefully shuts down the JetStream strategy and all associated resources.
+   *
+   * The shutdown process ensures:
+   * 1. Active message processing subscription is cancelled
+   * 2. NATS connection is properly drained and closed
+   * 3. Event bus is destroyed to prevent memory leaks
+   * 4. All background processes are terminated.
+   *
+   * @returns Observable that completes when shutdown is finished.
+   */
   public close(): Observable<void> {
+    // Cancel active subscription to stop new message processing
     this.sub?.unsubscribe();
 
+    // Close connection manager and clean up event bus
     return this.connectionManager.close().pipe(
       finalize(() => {
         this.eventBus.destroy();
@@ -103,37 +157,99 @@ export class JetstreamStrategy
     );
   }
 
+  /**
+   * Starts the JetStream message processing pipeline.
+   *
+   * This method orchestrates the startup sequence:
+   * 1. Waits for NATS connection and JetStream manager to be ready
+   * 2. Ensures required streams exist (Event and Command streams)
+   * 3. Calls the done callback to signal NestJS that transport is ready
+   * 4. Starts consumer supervisors based on registered handler patterns
+   * 5. Handles any startup errors by emitting error events.
+   *
+   * @param done Callback to signal NestJS that transport is ready.
+   */
   public listen(done: () => void): void {
-    if (this.sub && !this.sub.closed) return; // guard від повторного listen
+    // Guard against multiple listen calls
+    if (this.sub && !this.sub.closed) return;
 
-    this.sub = combineLatest([
+    // Create startup pipeline
+    const connectionReadyCheck = combineLatest([
       this.connectionManager.getNatsConnection(),
       this.connectionManager.getJetStreamManager(),
-    ])
+    ]);
+
+    const streamSetup = (): Observable<void> => this.streamManager.ensureAll();
+
+    const consumerSetup = (): Observable<void> => {
+      // Cache pattern information to avoid repeated calls
+      const patternCache = this.patterns.list();
+
+      // Determine which stream types need consumers based on registered handlers
+      const hasEventHandlers = patternCache.events.length > 0;
+      const hasMessageHandlers = patternCache.messages.length > 0;
+
+      return this.supervisor.run(hasEventHandlers, hasMessageHandlers);
+    };
+
+    const errorHandler = (err: unknown): never => {
+      this.eventBus.emit(JetstreamEvent.Error, err);
+      throw err;
+    };
+
+    // Execute startup sequence
+    this.sub = connectionReadyCheck
       .pipe(
-        take(1),
-        switchMap(() => this.streamManager.ensureAll()),
-        tap(done),
-        switchMap(() => {
-          const cache = this.patterns.list(); // кеш — один раз
-          return this.supervisor.run(cache.events.length > 0, cache.messages.length > 0);
-        }),
-        catchError((err) => {
-          this.eventBus.emit(JetstreamEvent.Error, err);
-          throw err;
-        }),
+        take(1), // Only execute once
+        switchMap(streamSetup),
+        tap(done), // Signal NestJS that transport is ready
+        switchMap(consumerSetup),
+        catchError(errorHandler),
       )
       .subscribe();
   }
 
-  public on<E extends keyof IJetstreamEventsMap>(event: E, callback: IJetstreamEventsMap[E]): any {
-    return this.eventBus.on(event as JetstreamEvent, callback as any);
+  /**
+   * Subscribes to JetStream events emitted by the internal event bus.
+   *
+   * This method follows the base Server class signature while providing
+   * type-safe access to JetStream-specific events. It bridges the gap
+   * between the internal event system and external event handlers.
+   *
+   * @param event Event type to listen for.
+   * @param callback Function to call when event is emitted.
+   * @returns Subscription that can be used to unsubscribe.
+   */
+  public override on<EventKey extends string = string>(
+    event: EventKey,
+    callback: (...args: unknown[]) => unknown,
+  ): Subscription {
+    return this.eventBus.on(event as JetstreamEvent, callback as (...args: unknown[]) => void);
   }
 
+  /**
+   * Provides direct access to the underlying NATS connection.
+   *
+   * This method allows advanced users to access the raw NATS connection
+   * for operations not covered by the JetStream strategy. Use with caution
+   * as direct connection manipulation can interfere with the strategy's
+   * internal state management.
+   *
+   * @returns Raw NATS connection instance or null if not connected.
+   */
   public unwrap<T = NatsConnection | null>(): T {
     return this.connectionManager.getRef() as T;
   }
 
+  /**
+   * Provides access to the current JetStream connection status.
+   *
+   * Returns an observable that emits status updates as the connection
+   * state changes. This can be used to monitor connection health and
+   * react to connection events in external code.
+   *
+   * @returns Observable that emits current JetStream status.
+   */
   public override get status(): Observable<JetstreamEvent> {
     return this.eventBus.status;
   }
