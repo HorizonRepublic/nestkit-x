@@ -47,7 +47,6 @@ export class JetStreamStreamManager {
    */
   public ensure(kind: JsKind): Observable<void> {
     const cfg = this.buildStreamConfig(kind);
-
     return this.ensureStream(cfg);
   }
 
@@ -72,9 +71,10 @@ export class JetStreamStreamManager {
   private buildStreamConfig(kind: JsKind): StreamConfig {
     const builder = JsStreamConfigBuilder.create(this.opts.serviceName).forKind(kind);
 
-    const userCfg = this.opts.streamConfig?.[kind];
-
-    if (userCfg) builder.with(userCfg);
+    const userConfig = this.opts.streamConfig?.[kind];
+    if (userConfig) {
+      builder.with(userConfig);
+    }
 
     return builder.build();
   }
@@ -93,24 +93,53 @@ export class JetStreamStreamManager {
    */
   private ensureStream(cfg: StreamConfig): Observable<void> {
     return this.jsm$.pipe(
-      switchMap((jsm) =>
-        defer(() => from(jsm.streams.info(cfg.name))).pipe(
-          switchMap((info) => {
-            this.logger.log(`Updating stream: ${cfg.name}`, {
-              current: info.config.subjects,
-              next: cfg.subjects,
-            });
-
-            return from(jsm.streams.update(cfg.name, { subjects: cfg.subjects }));
-          }),
-          catchError(() => {
-            this.logger.log(`Creating stream: ${cfg.name}`);
-            return from(jsm.streams.add(cfg));
-          }),
-        ),
-      ),
+      switchMap((jsm) => this.tryUpdateOrCreateStream(jsm, cfg)),
       tap(() => this.logger.log(`Stream ready: ${cfg.name}`)),
       map(() => void 0),
     );
+  }
+
+  /**
+   * Attempts to update existing stream or create new one if it doesn't exist.
+   * @param jsm - JetStream manager instance
+   * @param cfg - Stream configuration
+   * @returns Observable with a stream operation result
+   */
+  private tryUpdateOrCreateStream(jsm: JetStreamManager, cfg: StreamConfig): Observable<any> {
+    return defer(() => from(jsm.streams.info(cfg.name))).pipe(
+      switchMap((info) => this.updateExistingStream(jsm, cfg, info)),
+      catchError(() => this.createNewStream(jsm, cfg)),
+    );
+  }
+
+  /**
+   * Updates existing stream with new subjects configuration.
+   * @param jsm - JetStream manager instance
+   * @param cfg - Stream configuration
+   * @param info - Current stream info
+   * @returns Observable with an update result
+   */
+  private updateExistingStream(
+    jsm: JetStreamManager,
+    cfg: StreamConfig,
+    info: any,
+  ): Observable<any> {
+    this.logger.log(`Updating stream: ${cfg.name}`, {
+      current: info.config.subjects,
+      next: cfg.subjects,
+    });
+
+    return from(jsm.streams.update(cfg.name, { subjects: cfg.subjects }));
+  }
+
+  /**
+   * Creates a new stream with full configuration.
+   * @param jsm - JetStream manager instance
+   * @param cfg - Stream configuration
+   * @returns Observable with a creation result
+   */
+  private createNewStream(jsm: JetStreamManager, cfg: StreamConfig): Observable<any> {
+    this.logger.log(`Creating stream: ${cfg.name}`);
+    return from(jsm.streams.add(cfg));
   }
 }
