@@ -10,6 +10,7 @@ import { share } from 'rxjs/operators';
  */
 type EventArgsMap = {
   [JetstreamEvent.Connected]: [NatsConnection];
+  [JetstreamEvent.Reconnected]: [NatsConnection];
   [JetstreamEvent.Error]: [unknown];
   [JetstreamEvent.Connecting]: [];
   [JetstreamEvent.Disconnected]: [];
@@ -79,6 +80,7 @@ export class JsEventBus {
       switch (payload.event) {
         case JetstreamEvent.Connecting:
         case JetstreamEvent.Connected:
+        case JetstreamEvent.Reconnected:
         case JetstreamEvent.JetStreamAttached:
         case JetstreamEvent.Error:
         case JetstreamEvent.Disconnected:

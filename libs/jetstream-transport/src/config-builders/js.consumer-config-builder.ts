@@ -120,8 +120,11 @@ export class JsConsumerConfigBuilder {
    * @returns Kind-specific configuration object
    */
   private getKindSpecificConfig(kind: JsKind): Partial<ConsumerConfig> {
-    const baseConfig = {
-      durable_name: `${this.service}-${kind}_consumer`,
+    const durable = `${this.service}_${kind}-consumer`;
+
+    const baseConfig: Pick<ConsumerConfig, 'name' | 'durable_name'> = {
+      durable_name: durable,
+      name: durable,
     };
 
     if (kind === JsKind.Command) {
