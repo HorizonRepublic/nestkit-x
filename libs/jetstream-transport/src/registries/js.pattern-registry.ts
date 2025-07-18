@@ -1,45 +1,76 @@
 // managers/pattern.registry.ts
 import { MessageHandler } from '@nestjs/microservices';
-import { LoggerService } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { JsKind } from '../const/enum';
 
+/**
+ * Registry for managing NATS JetStream message patterns and their handlers.
+ * Provides pattern-to-handler mapping and subject normalization for routing.
+ */
 export class JsPatternRegistry {
-  private readonly svc: string;
+  private readonly logger = new Logger(JsPatternRegistry.name);
 
-  constructor(
-    serviceName: string,
+  public constructor(
+    private readonly serviceName: string,
     private readonly handlers: Map<string, MessageHandler>,
-    private readonly logger: LoggerService,
-  ) {
-    this.svc = serviceName;
+  ) {}
+
+  /**
+   * Retrieves handler for a given subject by normalizing and matching patterns.
+   * @param subject - Full NATS subject (e.g., "service.Event.user.created")
+   * @returns Message handler or null if no match found
+   */
+  public getHandler(subject: string): MessageHandler | null {
+    const normalizedPattern = this.normalizeSubject(subject);
+    return this.handlers.get(normalizedPattern) ?? null;
   }
 
-  /** скорочує subject → повертає handler або null */
-  getHandler(subject: string): MessageHandler | null {
-    const base = this.denormalize(subject);
-    return this.handlers.get(base) ?? null;
+  /**
+   * Lists all registered patterns grouped by type and logs them.
+   * @returns Object containing events and messages arrays
+   */
+  public list(): { events: string[]; messages: string[] } {
+    const { events, messages } = this.categorizeHandlers();
+
+    return { events, messages };
   }
 
-  /** повертає списки і одразу лог/debug */
-  list(): { events: string[]; messages: string[] } {
-    const ev: string[] = [];
-    const cmd: string[] = [];
-    for (const [p, h] of this.handlers) (h.isEventHandler ? ev : cmd).push(p);
+  /**
+   * Normalizes subject by removing service prefix and kind identifier.
+   * Converts "service.Event.user.created" to "user.created"
+   * @param subject - Full NATS subject
+   * @returns Normalized pattern without service prefix
+   */
+  private normalizeSubject(subject: string): string {
+    const commandPrefix = this.buildPrefix(JsKind.Command);
+    const eventPrefix = this.buildPrefix(JsKind.Event);
 
-    this.logger.log(`Events: ${ev.join(', ') || 'none'}; Messages: ${cmd.join(', ') || 'none'}`);
-
-    return { events: ev, messages: cmd };
+    return subject.replace(commandPrefix, '').replace(eventPrefix, '');
   }
 
-  /* ───── helpers ───── */
+  /**
+   * Builds subject prefix for a given kind.
+   * @param kind - JetStream kind (Event or Command)
+   * @returns Formatted prefix string
+   */
+  private buildPrefix(kind: JsKind): string {
+    return `${this.serviceName}.${kind}.`;
+  }
 
-  private denormalize(subj: string): string {
-    const cmd = `${this.svc}.${JsKind.Command}.`;
-    const evt = `${this.svc}.${JsKind.Event}.`;
+  /**
+   * Categorizes registered handlers into events and messages.
+   * @returns Object with separated handler arrays
+   */
+  private categorizeHandlers(): { events: string[]; messages: string[] } {
+    const events: string[] = [];
+    const messages: string[] = [];
 
-    if (subj.startsWith(cmd)) return subj.replace(cmd, '');
-    if (subj.startsWith(evt)) return subj.replace(evt, '');
+    for (const [pattern, handler] of this.handlers) {
+      const targetArray = handler.isEventHandler ? events : messages;
 
-    return subj;
+      targetArray.push(pattern);
+    }
+
+    return { events, messages };
   }
 }

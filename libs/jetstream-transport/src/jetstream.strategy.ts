@@ -69,11 +69,7 @@ export class JetstreamStrategy
       this.logger,
     );
 
-    this.patterns = new JsPatternRegistry(
-      this.options.serviceName,
-      this.messageHandlers,
-      this.logger,
-    );
+    this.patterns = new JsPatternRegistry(this.options.serviceName, this.messageHandlers);
 
     this.msgManager = new JsMsgManager(
       this.connectionManager.getNatsConnection(),
