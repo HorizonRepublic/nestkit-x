@@ -26,7 +26,7 @@ jobs:
     steps:
       # ---------- checkout потрібного SHA ----------
       - name: 📦 Checkout trigger commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           ref: ${{ github.event.workflow_run.head_sha }}
