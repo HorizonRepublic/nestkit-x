@@ -1,4 +1,4 @@
-import { Codec, JsMsg, NatsConnection } from 'nats';
+import { Codec, headers, JsMsg, NatsConnection } from 'nats';
 import { catchError, finalize, from, map, Observable, of, switchMap } from 'rxjs';
 import { Logger } from '@nestjs/common';
 
@@ -35,19 +35,14 @@ export class JsMsgManager {
   /**
    * Processes complete JetStream message with handler execution and response handling.
    *
-   * Resolves handler by subject, decodes message data, creates context, executes handler,
-   * and handles response publishing for RPC patterns. Provides proper message acknowledgment
-   * and error handling throughout the processing pipeline.
-   *
-   * @param msg JetStream message to process.
-   * @param isRpc Whether message requires RPC-style response handling.
-   * @returns Observable that completes when message processing finishes.
+   * @param msg
+   * @param isRpc
    */
   public handle(msg: JsMsg, isRpc: boolean): Observable<void> {
     const handler = this.resolver(msg.subject);
 
     if (!handler) {
-      msg.term(); // Terminate message processing for unhandled subjects
+      msg.term();
       return of(void 0);
     }
 
@@ -58,25 +53,28 @@ export class JsMsgManager {
 
     // Handle RPC pattern with response publishing
     if (isRpc && reply) {
+      // ✅ Отримуємо correlation ID з оригінального повідомлення
+      const correlationId = msg.headers?.get(JetstreamHeaders.CorrelationId);
+
       return res$.pipe(
-        switchMap((v) => this.publish(reply, v)),
-        catchError((e) => this.publishError(reply, e)),
+        switchMap((v) => this.publish(reply, v, correlationId)), // ✅ Передаємо correlation ID
+        catchError((e) => this.publishError(reply, e, correlationId)), // ✅ І для помилок теж
         finalize(() => {
           msg.ack();
         }),
       );
     }
 
-    // Handle event pattern with error logging
+    // Event pattern handling remains the same
     const handleEventError = (e: Error): Observable<void> => {
       this.logger.error(`Handler error (${msg.subject}): ${e.message}`);
-      msg.nak(); // Negative acknowledgment for retry
+      msg.nak();
       this.bus.emit(JetstreamEvent.Error, e);
       return of(void 0);
     };
 
     return res$.pipe(
-      map(() => void 0), // Convert unknown to void
+      map(() => void 0),
       catchError(handleEventError),
       finalize(() => {
         msg.ack();
@@ -85,48 +83,65 @@ export class JsMsgManager {
   }
 
   /**
-   * Publishes successful response to a reply subject.
+   * Publishes successful response to a reply subject with correlation ID.
    *
-   * @param reply Reply subject for response.
-   * @param payload Response payload to publish.
-   * @returns Observable that completes when response is published.
+   * @param reply
+   * @param payload
+   * @param correlationId
    */
-  private publish(reply: string, payload: unknown): Observable<void> {
+  private publish(reply: string, payload: unknown, correlationId?: string): Observable<void> {
     return this.conn$.pipe(
       switchMap((c) => {
-        c.publish(reply, this.codec.encode(payload));
+        const hdrs = headers();
+
+        this.logger.debug(`Publishing payload before encoding:`, {
+          payload,
+          type: typeof payload,
+          isNull: payload === null,
+          isUndefined: payload === undefined,
+        });
+
+        // ✅ Копіюємо correlation ID в відповідь
+        if (correlationId) {
+          hdrs.set(JetstreamHeaders.CorrelationId, correlationId);
+          this.logger.debug(`→ [Response] Publishing to ${reply} (cid: ${correlationId})`);
+        } else {
+          this.logger.warn(`→ [Response] Publishing to ${reply} without correlation ID`);
+        }
+
+        c.publish(reply, this.codec.encode(payload), { headers: hdrs });
         return of(void 0);
       }),
       catchError((e) => {
-        this.logger.error(`Failed to publish response: ${e.message}`);
+        this.logger.error(`Failed to publish response to ${reply}:`, e);
         return of(void 0);
       }),
     );
   }
 
   /**
-   * Publishes error response to reply subject.
+   * Publishes error response to reply subject with correlation ID.
    *
-   * @param reply Reply subject for error response.
-   * @param err Error to publish.
-   * @returns Observable that completes when error response is published.
+   * @param reply
+   * @param err
+   * @param correlationId
    */
-  private publishError(reply: string, err: unknown): Observable<void> {
+  private publishError(reply: string, err: unknown, correlationId?: string): Observable<void> {
     const errorResponse = {
       error: err instanceof Error ? err.message : String(err),
     };
 
-    return this.publish(reply, errorResponse);
+    return this.publish(reply, errorResponse, correlationId); // ✅ Передаємо correlation ID
   }
 
   /**
    * Converts a handler result to Observable for consistent processing.
    *
-   * Handles various return types including promises, observables, and synchronous values.
+   * Handles various return types, including promises, observables, and synchronous values.
    * Ensures all handler results are processed through the same reactive pipeline.
    *
    * @param v Handler result of any type.
-   * @returns Observable representation of handler result.
+   * @returns Observable representation of a handler result.
    */
   private toObs(v: unknown): Observable<unknown> {
     // First, convert to promise to handle sync values and promises uniformly

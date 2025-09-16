@@ -15,7 +15,7 @@ import { JsMsgManager } from './js.msg-manager';
  * delegates message processing to pull runners with appropriate configurations.
  */
 export class JsConsumerSupervisor {
-  private readonly pullTimeoutMs: number = 200;
+  private readonly pullTimeoutMs: number = 1_000;
 
   /**
    * Initializes supervisor with required managers and configuration.

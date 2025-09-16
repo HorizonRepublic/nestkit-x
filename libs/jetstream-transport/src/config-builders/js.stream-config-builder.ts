@@ -77,7 +77,6 @@ export class JsStreamConfigBuilder {
    *
    * @param service The service name used for stream naming and subject patterns.
    * @returns A new builder instance.
-   * @example -
    */
   public static create(service: string): JsStreamConfigBuilder {
     return new JsStreamConfigBuilder(service);
@@ -89,7 +88,6 @@ export class JsStreamConfigBuilder {
    *
    * @param kind The type of stream to create.
    * @returns The builder instance for method chaining.
-   * @example -
    */
   public forKind(kind: JsKind): this {
     this.kind = kind;
@@ -103,7 +101,6 @@ export class JsStreamConfigBuilder {
    *
    * @param partial Partial stream configuration to merge.
    * @returns The builder instance for method chaining.
-   * @example -
    */
   public with(partial: Partial<StreamConfig>): this {
     Object.assign(this.overrides, partial);
@@ -117,7 +114,6 @@ export class JsStreamConfigBuilder {
    *
    * @returns The complete stream configuration.
    * @throws Error if forKind() was not called before build().
-   * @example -
    */
   public build(): StreamConfig {
     if (!this.kind) {
@@ -146,7 +142,6 @@ export class JsStreamConfigBuilder {
    *
    * @param kind The stream kind.
    * @returns Kind-specific configuration object.
-   * @example -
    */
   private getKindSpecificConfig(kind: JsKind): Partial<StreamConfig> {
     // event

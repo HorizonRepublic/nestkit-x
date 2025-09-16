@@ -19,7 +19,6 @@ export class JsPatternRegistry {
    *
    * @param subject Full NATS subject (e.g., "service.Event.user.created").
    * @returns Message handler or null if no match found.
-   * @example -
    */
   public getHandler(subject: string): MessageHandler | null {
     const normalizedPattern = this.normalizeSubject(subject);
@@ -31,7 +30,6 @@ export class JsPatternRegistry {
    * Lists all registered patterns grouped by type and logs them.
    *
    * @returns Object containing events and messages arrays.
-   * @example -
    */
   public list(): { events: string[]; messages: string[] } {
     const { events, messages } = this.categorizeHandlers();
@@ -45,7 +43,6 @@ export class JsPatternRegistry {
    *
    * @param subject Full NATS subject.
    * @returns Normalized pattern without a service prefix.
-   * @example -
    */
   private normalizeSubject(subject: string): string {
     const commandPrefix = this.buildPrefix(JsKind.Command);
@@ -59,7 +56,6 @@ export class JsPatternRegistry {
    *
    * @param kind JetStream kind (Event or Command).
    * @returns Formatted prefix string.
-   * @example -
    */
   private buildPrefix(kind: JsKind): string {
     return `${this.serviceName}.${kind}.`;
@@ -69,7 +65,6 @@ export class JsPatternRegistry {
    * Categorizes registered handlers into events and messages.
    *
    * @returns Object with separated handler arrays.
-   * @example -
    */
   private categorizeHandlers(): { events: string[]; messages: string[] } {
     const events: string[] = [];

@@ -19,7 +19,10 @@ export enum JetStreamErrorCodes {
 }
 
 export enum JetstreamHeaders {
+  CorrelationId = 'correlation-id',
   ReplyTo = 'reply-to',
+  MessageId = 'message-id',
+  Subject = 'subject',
   User = 'user',
   CallerName = 'service-name',
   RequestId = 'request-id',
