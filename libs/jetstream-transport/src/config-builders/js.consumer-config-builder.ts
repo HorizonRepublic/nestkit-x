@@ -58,7 +58,6 @@ export class JsConsumerConfigBuilder {
    *
    * @param service The service name used for consumer naming.
    * @returns A new builder instance.
-   * @example -
    */
   public static create(service: string): JsConsumerConfigBuilder {
     return new JsConsumerConfigBuilder(service);
@@ -70,7 +69,6 @@ export class JsConsumerConfigBuilder {
    *
    * @param kind The type of consumer to create.
    * @returns The builder instance for method chaining.
-   * @example -
    */
   public forKind(kind: JsKind): this {
     this.kind = kind;
@@ -83,7 +81,6 @@ export class JsConsumerConfigBuilder {
    *
    * @param partial Partial consumer configuration to merge.
    * @returns The builder instance for method chaining.
-   * @example -
    */
   public with(partial: Partial<ConsumerConfig>): this {
     Object.assign(this.overrides, partial);
@@ -96,7 +93,6 @@ export class JsConsumerConfigBuilder {
    *
    * @returns The complete consumer configuration.
    * @throws Error if forKind() was not called before build().
-   * @example -
    */
   public build(): ConsumerConfig {
     if (!this.kind) {
@@ -127,7 +123,6 @@ export class JsConsumerConfigBuilder {
    *
    * @param kind The consumer kind.
    * @returns Kind-specific configuration object.
-   * @example -
    */
   private getKindSpecificConfig(kind: JsKind): Partial<ConsumerConfig> {
     const durable = `${this.service}_${kind}-consumer`;
@@ -161,7 +156,6 @@ export class JsConsumerConfigBuilder {
    *
    * @param ms Time in milliseconds.
    * @returns Time in nanoseconds.
-   * @example -
    */
   private msToNs(ms: number): number {
     return ms * 1_000_000;

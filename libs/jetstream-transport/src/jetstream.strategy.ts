@@ -16,7 +16,7 @@ import {
   tap,
 } from 'rxjs';
 import { JsEventBus } from './registries/js-event.bus';
-import { IJetstreamTransportOptions, JetstreamEvent } from './index';
+import { IJetstreamTransportOptions, JETSTREAM_TRANSPORT, JetstreamEvent } from './index';
 import { Logger } from '@nestjs/common';
 import { JsConnectionManager } from './managers/js.connection-manager';
 import { JetStreamStreamManager } from './managers/js.stream-manager';
@@ -43,7 +43,7 @@ export class JetstreamStrategy
   extends Server<Record<string, (...args: unknown[]) => unknown>>
   implements CustomTransportStrategy
 {
-  public override readonly transportId: TransportId = Symbol('NATS_JETSTREAM_TRANSPORT');
+  public override readonly transportId: TransportId = JETSTREAM_TRANSPORT;
   protected override logger = new Logger(JetstreamStrategy.name);
 
   // Core message encoding/decoding using NATS JSON codec

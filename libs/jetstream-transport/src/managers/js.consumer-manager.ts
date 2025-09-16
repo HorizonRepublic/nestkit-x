@@ -55,7 +55,12 @@ export class JsConsumerManager {
           ),
         ),
       ),
-      tap((consumerInfo) => this.logger.log(`Consumer ready: ${consumerInfo.name}`)),
+      tap((consumerInfo) =>
+        this.logger.log({
+          msg: `Consumer ready: ${consumerInfo.name}}`,
+          info: consumerInfo.config,
+        }),
+      ),
     );
   }
 
