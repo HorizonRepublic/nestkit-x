@@ -137,17 +137,41 @@ export class JsMsgManager {
   /**
    * Converts a handler result to Observable for consistent processing.
    *
-   * Handles various return types, including promises, observables, and synchronous values.
-   * Ensures all handler results are processed through the same reactive pipeline.
+   * Handles various return types, including promises, observables, async iterables, and synchronous values.
+   * Ensures all handler results are processed through the same reactive pipeline without leaking nested Observables.
    *
    * @param v Handler result of any type.
    * @returns Observable representation of a handler result.
    */
   private toObs(v: unknown): Observable<unknown> {
-    // First, convert to promise to handle sync values and promises uniformly
-    const hasSubscribe = (x: unknown): x is Observable<unknown> =>
-      x !== null && typeof x === 'object' && 'subscribe' in x && typeof x.subscribe === 'function';
+    const isObservable = (x: unknown): x is Observable<unknown> =>
+      x !== null &&
+      typeof x === 'object' &&
+      'subscribe' in x &&
+      typeof x['subscribe'] === 'function';
 
-    return from(Promise.resolve(v)).pipe(switchMap((x) => (hasSubscribe(x) ? x : of(x))));
+    const isPromise = (x: unknown): x is Promise<unknown> =>
+      x !== null && typeof x === 'object' && 'then' in x && typeof x.then === 'function';
+
+    const isAsyncIterable = (x: unknown): x is AsyncIterable<unknown> =>
+      x !== null && typeof x === 'object' && Symbol.asyncIterator in x;
+
+    const toObsInner = (x: unknown): Observable<unknown> => {
+      if (isObservable(x)) {
+        return x;
+      }
+
+      if (isAsyncIterable(x)) {
+        return from(x);
+      }
+
+      if (isPromise(x)) {
+        return from(x).pipe(switchMap((y) => toObsInner(y)));
+      }
+
+      return of(x);
+    };
+
+    return toObsInner(v);
   }
 }

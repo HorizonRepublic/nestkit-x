@@ -7,12 +7,13 @@ import {
 } from '@nestjs/microservices';
 import {
   catchError,
-  combineLatest,
+  EMPTY,
+  filter,
   finalize,
+  map,
   Observable,
   Subscription,
   switchMap,
-  take,
   tap,
 } from 'rxjs';
 import { JsEventBus } from './registries/js-event.bus';
@@ -60,6 +61,8 @@ export class JetstreamStrategy
 
   // Active subscription for the main message processing loop
   private sub?: Subscription;
+  // Ensure done() is called only once across reconnects
+  private readySignalled = false;
 
   /**
    * Initializes the JetStream strategy with all required managers and dependencies.
@@ -160,24 +163,16 @@ export class JetstreamStrategy
   /**
    * Starts the JetStream message processing pipeline.
    *
-   * This method orchestrates the startup sequence:
-   * 1. Waits for NATS connection and JetStream manager to be ready
-   * 2. Ensures required streams exist (Event and Command streams)
-   * 3. Calls the done callback to signal NestJS that transport is ready
-   * 4. Starts consumer supervisors based on registered handler patterns
-   * 5. Handles any startup errors by emitting error events.
+   * This method orchestrates an event-driven startup & recovery sequence:
+   * - On Connected/Reconnected: ensures streams and (re)starts consumers
+   * - On Disconnected: stops current consumer flows
+   * - Calls done() only once on the first successful startup
    *
    * @param done Callback to signal NestJS that transport is ready.
    */
   public listen(done: () => void): void {
     // Guard against multiple listen calls
     if (this.sub && !this.sub.closed) return;
-
-    // Create startup pipeline
-    const connectionReadyCheck = combineLatest([
-      this.connectionManager.getNatsConnection(),
-      this.connectionManager.getJetStreamManager(),
-    ]);
 
     const streamSetup = (): Observable<void> => this.streamManager.ensureAll();
 
@@ -192,19 +187,38 @@ export class JetstreamStrategy
       return this.supervisor.run(hasEventHandlers, hasMessageHandlers);
     };
 
-    const errorHandler = (err: unknown): never => {
+    // Connection state stream: true on (Re)Connected, false on Disconnected
+    const connectionState$ = this.eventBus.status.pipe(
+      filter(
+        (e) =>
+          e === JetstreamEvent.Connected ||
+          e === JetstreamEvent.Reconnected ||
+          e === JetstreamEvent.Disconnected,
+      ),
+      map((e) => e === JetstreamEvent.Connected || e === JetstreamEvent.Reconnected),
+    );
+
+    const runPipeline = (): Observable<void> =>
+      streamSetup().pipe(
+        tap(() => {
+          if (!this.readySignalled) {
+            done();
+            this.readySignalled = true;
+          }
+        }),
+        switchMap(consumerSetup),
+      );
+
+    const handleError = (err: unknown): Observable<never> => {
       this.eventBus.emit(JetstreamEvent.Error, err);
-      throw err;
+      // Keep listening for future reconnects
+      return EMPTY;
     };
 
-    // Execute startup sequence
-    this.sub = connectionReadyCheck
+    // Start/stop consumers based on connection state
+    this.sub = connectionState$
       .pipe(
-        take(1), // Only execute once
-        switchMap(streamSetup),
-        tap(done), // Signal NestJS that transport is ready
-        switchMap(consumerSetup),
-        catchError(errorHandler),
+        switchMap((connected) => (connected ? runPipeline().pipe(catchError(handleError)) : EMPTY)),
       )
       .subscribe();
   }
