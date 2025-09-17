@@ -2,7 +2,6 @@ import {
   catchError,
   defer,
   EMPTY,
-  filter,
   finalize,
   from,
   ignoreElements,
@@ -20,6 +19,7 @@ import { IJetstreamTransportOptions } from '../types/jetstream-transport.options
 import { JsEventBus } from '../registries/js-event.bus';
 import { DebugEvents, Events } from 'nats/lib/nats-base-client/core';
 import { JetstreamEvent } from '../const/enum';
+import { Logger } from '@nestjs/common';
 
 /**
  * Manages NATS connection lifecycle and JetStream manager initialization.
@@ -34,6 +34,7 @@ export class JsConnectionManager {
   protected readonly natsConnection$: Observable<NatsConnection>;
 
   private hasEmittedConnected = false;
+  private readonly logger = new Logger(JsConnectionManager.name);
 
   /**
    * Initializes connection manager with configuration and event bus.
@@ -143,6 +144,8 @@ export class JsConnectionManager {
           this.hasEmittedConnected = true;
           this.eventBus.emit(JetstreamEvent.Connected, conn);
         }
+
+        this.logger.log('NATS connected');
       }),
       catchError((err) => {
         this.eventBus.emit(JetstreamEvent.Error, err);
@@ -159,23 +162,12 @@ export class JsConnectionManager {
 
   /**
    * Starts background status monitoring for connection events.
-   * Monitors reconnection and disconnection events without duplicating Connected events.
+   * Keeps monitoring across disconnects and reconnections; stops only when connection is closed.
    *
    * @param connect$ Connection observable to monitor.
    */
   private startStatusMonitoring(connect$: Observable<NatsConnection>): void {
-    connect$
-      .pipe(
-        switchMap((conn) => this.monitorConnectionStatus(conn)),
-        takeUntil(
-          this.eventBus.status.pipe(
-            // Stop monitoring when permanently disconnected
-            filter((status) => status === JetstreamEvent.Disconnected),
-            take(1),
-          ),
-        ),
-      )
-      .subscribe();
+    connect$.pipe(switchMap((conn) => this.monitorConnectionStatus(conn))).subscribe();
   }
 
   /**
@@ -247,6 +239,7 @@ export class JsConnectionManager {
    */
   private handleDisconnect(): void {
     this.hasEmittedConnected = false;
+    this.logger.warn('NATS disconnected');
     this.eventBus.emit(JetstreamEvent.Disconnected);
   }
 
@@ -262,6 +255,7 @@ export class JsConnectionManager {
       this.eventBus.emit(JetstreamEvent.Connected, conn);
     }
 
+    this.logger.log('NATS reconnected');
     this.eventBus.emit(JetstreamEvent.Reconnected, conn);
   }
 
@@ -271,6 +265,7 @@ export class JsConnectionManager {
    * @param data Error data.
    */
   private handleError(data?: unknown): void {
+    this.logger.error('NATS connection error', data as any);
     this.eventBus.emit(JetstreamEvent.Error, data);
   }
 
