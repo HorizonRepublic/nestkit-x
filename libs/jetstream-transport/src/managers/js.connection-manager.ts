@@ -151,23 +151,13 @@ export class JsConnectionManager {
         this.eventBus.emit(JetstreamEvent.Error, err);
         throw err;
       }),
+      tap((conn) => {
+        this.monitorConnectionStatus(conn).subscribe();
+      }),
       shareReplay({ bufferSize: 1, refCount: false }),
     );
 
-    // Start background status monitoring
-    this.startStatusMonitoring(connect$);
-
     return connect$;
-  }
-
-  /**
-   * Starts background status monitoring for connection events.
-   * Keeps monitoring across disconnects and reconnections; stops only when connection is closed.
-   *
-   * @param connect$ Connection observable to monitor.
-   */
-  private startStatusMonitoring(connect$: Observable<NatsConnection>): void {
-    connect$.pipe(switchMap((conn) => this.monitorConnectionStatus(conn))).subscribe();
   }
 
   /**
@@ -179,6 +169,9 @@ export class JsConnectionManager {
    */
   private monitorConnectionStatus(conn: NatsConnection): Observable<never> {
     return from(conn.status()).pipe(
+      tap((status) => {
+        console.log('NEW STATUS RECEIVED: ', status);
+      }),
       tap((status) => {
         this.handleConnectionEvent(status.type, conn, status.data);
       }),
@@ -249,6 +242,7 @@ export class JsConnectionManager {
    * @param conn NATS connection instance.
    */
   private handleReconnect(conn: NatsConnection): void {
+    console.log('Started handling reconnect');
     // Only emit Connected if we haven't already for this connection
     if (!this.hasEmittedConnected) {
       this.hasEmittedConnected = true;
