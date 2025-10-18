@@ -11,9 +11,9 @@
     "@commitlint/config-conventional": "^20.0.0",
     "@darraghor/eslint-plugin-nestjs-typed": "^6.6.4",
     "@docusaurus/eslint-plugin": "^3.8.1",
-    "@docusaurus/module-type-aliases": "3.9.1",
-    "@docusaurus/tsconfig": "3.9.1",
-    "@docusaurus/types": "3.9.1",
+    "@docusaurus/module-type-aliases": "3.9.2",
+    "@docusaurus/tsconfig": "3.9.2",
+    "@docusaurus/types": "3.9.2",
     "@eslint/js": "^9.29.0",
     "@nestia/benchmark": "^8.0.0",
     "@nestjs/schematics": "^11.0.5",
@@ -61,8 +61,8 @@
     "verdaccio": "^6.0.5"
   },
   "dependencies": {
-    "@docusaurus/core": "3.9.1",
-    "@docusaurus/preset-classic": "3.9.1",
+    "@docusaurus/core": "3.9.2",
+    "@docusaurus/preset-classic": "3.9.2",
     "@docusaurus/theme-mermaid": "^3.8.1",
     "@mdx-js/react": "^3.0.0",
     "@nestia/core": "^8.0.0",
