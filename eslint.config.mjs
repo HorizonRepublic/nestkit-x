@@ -30,12 +30,11 @@ export default [
   // Ignored paths
   {
     ignores: [
-      '**/dist',
-      '**/node_modules',
-      '**/coverage',
-      'docs/**/*', // Exclude entire docs folder
-      '**/*.md',
-      '**/*.mdx',
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.nx/**',
+      '**/tmp/**',
+      '**/.docusaurus/**',
     ],
   },
 

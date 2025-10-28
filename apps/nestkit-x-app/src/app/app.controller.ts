@@ -9,8 +9,8 @@ export class AppController {
   private readonly logger = new Logger(AppController.name);
 
   public constructor(
-    @InjectJetStreamProxy('test-service')
-    private readonly testService: ClientProxy,
+    // @InjectJetStreamProxy('test-service')
+    // private readonly testService: ClientProxy,
   ) {}
 
   @TypedRoute.Get()
@@ -23,14 +23,14 @@ export class AppController {
     //   ),
     // );
 
-    const data = await firstValueFrom(
-      this.testService.send('test-cmd', { data: 'HELLO FROM CONTROLLER CMD!!!' }).pipe(
-        tap((data) => {
-          console.log('cmd data', data);
-        }),
-      ),
-    );
-
-    return { dataFromRpc: data };
+    // const data = await firstValueFrom(
+    //   this.testService.send('test-cmd', { data: 'HELLO FROM CONTROLLER CMD!!!' }).pipe(
+    //     tap((data) => {
+    //       console.log('cmd data', data);
+    //     }),
+    //   ),
+    // );
+    //
+    // return { dataFromRpc: data };
   }
 }

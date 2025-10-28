@@ -1,16 +1,12 @@
 import { INestApplication, Inject, Injectable, Logger } from '@nestjs/common';
-import { CustomStrategy } from '@nestjs/microservices';
 import { APP_STATE_SERVICE, IAppStateService } from '@nestkit-x/core';
-import {
-  JetstreamEvent,
-  JetstreamTransport,
-  JsKind,
-  JsStreamConfigBuilder,
-} from '@nestkit-x/jetstream-transport';
 import { from, map, Observable } from 'rxjs';
 
 import { MICROSERVICE_OPTIONS } from '../const';
 import { IMicroserviceModuleOptions } from '../types/microservice-module.options';
+import { JETSTREAM_TRANSPORT } from '@nestkit-x/jetstream-transport-x';
+import { CustomStrategy } from '@nestjs/microservices';
+import { Events } from 'nats';
 
 @Injectable()
 export class MicroserviceServerProvider {
@@ -28,30 +24,14 @@ export class MicroserviceServerProvider {
   }
 
   private serveMicroservice(app: INestApplication): Observable<void> {
-    const strategy = new JetstreamTransport({
-      serviceName: this.options.serviceName,
-      connectionOptions: {
-        servers: this.options.servers,
-      },
-      streamConfig: {
-        [JsKind.Command]: JsStreamConfigBuilder.create(this.options.serviceName)
-          .forKind(JsKind.Command)
-          .with({})
-          .build(),
+    const transport = app.get<CustomStrategy>(JETSTREAM_TRANSPORT);
 
-        [JsKind.Event]: JsStreamConfigBuilder.create(this.options.serviceName)
-          .forKind(JsKind.Command)
-          .with({})
-          .build(),
-      },
-    });
-
-    const microservice = app.connectMicroservice<CustomStrategy>(strategy, {
+    const microservice = app.connectMicroservice<CustomStrategy>(transport, {
       inheritAppConfig: true,
     });
 
-    microservice.on(JetstreamEvent.Connected, () => {
-      this.logger.log(`Microservice connected to ${this.options.serviceName}`);
+    microservice.on(Events.Reconnect, () => {
+      this.logger.log('(client log) Reconnected to NATS');
     });
 
     return from(app.startAllMicroservices()).pipe(map(() => void 0));

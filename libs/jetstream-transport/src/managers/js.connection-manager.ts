@@ -8,6 +8,7 @@ import {
   map,
   Observable,
   shareReplay,
+  startWith,
   switchMap,
   take,
   takeUntil,
@@ -133,7 +134,7 @@ export class JsConnectionManager {
       name: this.options.connectionOptions.name ?? this.options.serviceName,
     };
 
-    const connect$ = defer(() => {
+    return defer(() => {
       this.eventBus.emit(JetstreamEvent.Connecting);
       return from(connect(opts));
     }).pipe(
@@ -151,13 +152,17 @@ export class JsConnectionManager {
         this.eventBus.emit(JetstreamEvent.Error, err);
         throw err;
       }),
-      tap((conn) => {
-        this.monitorConnectionStatus(conn).subscribe();
-      }),
+      switchMap((conn) =>
+        // повертаємо conn далі, але паралельно запускаємо моніторинг статусів
+        this.monitorConnectionStatus(conn).pipe(
+          // монітор ігнорує елементи, тож просто пропускаємо conn
+          startWith(null as unknown),
+          map(() => conn),
+          takeUntil(from(conn.closed())),
+        ),
+      ),
       shareReplay({ bufferSize: 1, refCount: false }),
     );
-
-    return connect$;
   }
 
   /**

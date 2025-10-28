@@ -149,6 +149,7 @@ export class JetStreamStreamManager {
    */
   private createNewStream(jsm: JetStreamManager, cfg: StreamConfig): Observable<StreamInfo> {
     this.logger.log(`Creating stream: ${cfg.name}`);
+
     return from(jsm.streams.add(cfg));
   }
 }

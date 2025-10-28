@@ -12,7 +12,7 @@ services:
 
   nats:
     image: nats:latest
-    container_name: nats
+    container_name: nestkit-x_nats
     ports:
       - '4222:4222'
       - '8222:8222'
