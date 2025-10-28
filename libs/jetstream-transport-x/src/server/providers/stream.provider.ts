@@ -19,14 +19,14 @@ export class StreamProvider {
     private readonly connectionProvider: ConnectionProvider,
   ) {}
 
-  public ensureStreams(): Observable<void> {
+  public create(): Observable<void> {
     return forkJoin([
-      this.createStream(JetStreamKind.Event), // event
-      this.createStream(JetStreamKind.Command), // command
+      this.createForKind(JetStreamKind.Event), // event
+      this.createForKind(JetStreamKind.Command), // command
     ]).pipe(map(() => void 0));
   }
 
-  protected getStreamName(kind: JetStreamKind): string {
+  public getStreamName(kind: JetStreamKind): string {
     return `${this.options.name}_${kind}-stream`;
   }
 
@@ -34,7 +34,7 @@ export class StreamProvider {
     return [`${this.options.name}.${kind}.>`];
   }
 
-  protected createStream(kind: JetStreamKind): Observable<StreamInfo> {
+  protected createForKind(kind: JetStreamKind): Observable<StreamInfo> {
     const config = {
       ...streamConfig.base,
       ...streamConfig[kind],

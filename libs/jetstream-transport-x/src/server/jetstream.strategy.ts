@@ -1,34 +1,46 @@
 import { CustomTransportStrategy, Server, TransportId } from '@nestjs/microservices';
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { StreamProvider } from './providers/stream.provider';
 import { ConnectionProvider } from '../common/connection.provider';
-import * as console from 'node:console';
-import { NatsConnection } from 'nats';
-import { filter, Subject, takeUntil, tap } from 'rxjs';
+import { Events, NatsConnection } from 'nats';
+import { filter, startWith, Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { INatsEventsMap } from './types/nats.events-map';
+import { ConsumerProvider } from './providers/consumer.provider';
 
 @Injectable()
-export class JetstreamStrategy extends Server<INatsEventsMap> implements CustomTransportStrategy {
+export class JetstreamStrategy
+  extends Server<INatsEventsMap>
+  implements CustomTransportStrategy, OnModuleInit
+{
   public override readonly transportId: TransportId = Symbol('jetstream-transport');
 
   private readonly destroy$ = new Subject<void>();
+  private readonly reconnect$ = new Subject<void>();
 
   public constructor(
     private readonly connectionProvider: ConnectionProvider,
     private readonly streamProvider: StreamProvider,
+    private readonly consumerProvider: ConsumerProvider,
   ) {
     super();
   }
 
-  public listen(done: { (): void }): void {
-    console.log('LISTENING');
+  public onModuleInit(): void {
+    this.on(Events.Reconnect, () => {
+      this.reconnect$.next();
+    });
+  }
 
-    this.streamProvider
-      .ensureStreams()
-      .pipe
-      // switchMap() => {}
-      ()
-      .subscribe({ next: done });
+  public listen(done: { (): void }): void {
+    this.reconnect$
+      .pipe(
+        startWith(void 0),
+        switchMap(() => this.streamProvider.create()),
+        switchMap(() => this.consumerProvider.create()),
+        tap(done),
+        takeUntil(this.destroy$),
+      )
+      .subscribe();
   }
 
   public close(): void {

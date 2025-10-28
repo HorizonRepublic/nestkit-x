@@ -1,7 +1,16 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { DiscardPolicy, RetentionPolicy, StorageType, StoreCompression } from 'nats';
+import {
+  AckPolicy,
+  DeliverPolicy,
+  DiscardPolicy,
+  ReplayPolicy,
+  RetentionPolicy,
+  StorageType,
+  StoreCompression,
+} from 'nats';
 import { JetStreamKind } from '../../enum';
-import { StreamConfigRecord } from '../types';
+import { ConsumerConfigRecord, StreamConfigRecord } from '../types';
+import { ConsumerConfig } from 'nats/lib/jetstream/jsapi_types';
 
 // Size constants in bytes
 const KB = 1024;
@@ -13,7 +22,7 @@ const SEC = 1e9;
 const MIN = 60 * SEC;
 const DAY = 24 * 60 * MIN;
 
-export const streamConfig: StreamConfigRecord = {
+export const streamConfig: StreamConfigRecord = Object.freeze({
   base: {
     name: '',
     subjects: [],
@@ -65,4 +74,40 @@ export const streamConfig: StreamConfigRecord = {
     max_age: 3 * MIN,
     duplicate_window: 30 * SEC,
   },
+});
+
+const RPC_TIMEOUT_MS = 180_000; // 3 minutes
+const EVENT_TIMEOUT_MS = 60_000; // 1 minute
+
+const baseConsumerConfig = (
+  name: string,
+  kind: JetStreamKind,
+): Pick<ConsumerConfig, 'name' | 'durable_name' | 'filter_subject'> => {
+  return {
+    durable_name: `${name}_${kind}-consumer`,
+    name: `${name}_${kind}-consumer`,
+    filter_subject: `${name}.${kind}.>`,
+  };
+};
+
+export const consumerConfig: ConsumerConfigRecord = {
+  [JetStreamKind.Event]: (name, kind) => ({
+    ...baseConsumerConfig(name, kind),
+    ack_wait: EVENT_TIMEOUT_MS * 1_000_000,
+    max_deliver: 5,
+    max_ack_pending: 50,
+    ack_policy: AckPolicy.Explicit,
+    deliver_policy: DeliverPolicy.All,
+    replay_policy: ReplayPolicy.Instant,
+  }),
+
+  [JetStreamKind.Command]: (name, kind) => ({
+    ...baseConsumerConfig(name, kind),
+    ack_wait: RPC_TIMEOUT_MS * 1_000_000,
+    max_deliver: 1,
+    max_ack_pending: 5,
+    ack_policy: AckPolicy.Explicit,
+    deliver_policy: DeliverPolicy.All,
+    replay_policy: ReplayPolicy.Instant,
+  }),
 };

@@ -70,17 +70,26 @@ export class JsConsumerSupervisor {
    * @returns Observable that runs pull operations for the stream.
    */
   private start(kind: JsKind, ackRpc: boolean): Observable<void> {
-    const getJetStreamConsumer = (ci: ConsumerInfo): Observable<Consumer> =>
-      this.conn$.pipe(switchMap((c) => from(c.jetstream().consumers.get(ci.stream_name, ci.name))));
+    const getJetStreamConsumer = (ci: ConsumerInfo): Observable<Consumer> => {
+      return this.conn$.pipe(
+        switchMap((c) => from(c.jetstream().consumers.get(ci.stream_name, ci.name))),
+      );
+    };
 
-    const createPullRunner = (consumer: Consumer): Observable<void> =>
-      JsPullRunner.create(consumer, {
+    const createPullRunner = (consumer: Consumer): Observable<void> => {
+      return JsPullRunner.create(consumer, {
         expiresMs: this.pullTimeoutMs,
         handle: (msg) => this.msgMgr.handle(msg, ackRpc),
       }).run();
+    };
+
+    const streamName = this.streamMgr.getStreamName(kind);
 
     return this.consumerMgr
-      .ensure(this.streamMgr.getStreamName(kind), kind)
-      .pipe(switchMap(getJetStreamConsumer), switchMap(createPullRunner));
+      .ensure(streamName, kind) // consumer setup
+      .pipe(
+        switchMap(getJetStreamConsumer), // get consumer
+        switchMap(createPullRunner), // create runner
+      );
   }
 }
