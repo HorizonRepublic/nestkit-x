@@ -4,17 +4,19 @@ import { JetStreamKind } from '../../enum';
 import { Consumer, ConsumerInfo, JsMsg } from 'nats';
 import {
   catchError,
-  concat,
+  defer,
   EMPTY,
   from,
   merge,
   Observable,
   of,
+  repeat,
   Subject,
+  Subscription,
   switchMap,
+  take,
   takeUntil,
   tap,
-  throwError,
   timer,
 } from 'rxjs';
 import { ConnectionProvider } from '../../common/connection.provider';
@@ -22,26 +24,41 @@ import { ConnectionProvider } from '../../common/connection.provider';
 @Injectable()
 export class PullProvider implements OnModuleDestroy {
   private readonly destroy$ = new Subject<void>();
+  private readonly activeConsumers = new Map<JetStreamKind, Observable<JsMsg>>();
+  private readonly subscription?: Subscription; // Зберігаємо subscription
 
   public constructor(
     private readonly consumerProvider: ConsumerProvider,
     private readonly connectionProvider: ConnectionProvider,
   ) {
-    this.consumerProvider.consumerMap$
+    this.subscription = this.consumerProvider.consumerMap$
       .pipe(
-        switchMap((consumerMap) => {
+        take(1),
+        tap((consumerMap) => {
           console.log('Consumer subscription started');
           const evConsumer = consumerMap.get(JetStreamKind.Event);
           const cmdConsumer = consumerMap.get(JetStreamKind.Command);
 
           const flows: Observable<JsMsg>[] = [];
 
-          if (evConsumer) flows.push(this.pullConsumer(evConsumer));
-          if (cmdConsumer) flows.push(this.pullConsumer(cmdConsumer));
+          if (evConsumer) {
+            const flow = this.pullConsumer(evConsumer);
 
-          return merge(...flows);
+            this.activeConsumers.set(JetStreamKind.Event, flow);
+            flows.push(flow);
+          }
+
+          if (cmdConsumer) {
+            const flow = this.pullConsumer(cmdConsumer);
+
+            this.activeConsumers.set(JetStreamKind.Command, flow);
+            flows.push(flow);
+          }
+
+          merge(...flows)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe();
         }),
-        catchError(() => EMPTY),
         takeUntil(this.destroy$),
       )
       .subscribe();
@@ -50,38 +67,57 @@ export class PullProvider implements OnModuleDestroy {
   public onModuleDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.activeConsumers.clear();
+    this.subscription?.unsubscribe(); // Явно відписуємось
   }
 
   protected pullConsumer(consumerInfo: ConsumerInfo): Observable<JsMsg> {
-    return of(consumerInfo).pipe(
-      switchMap((info) => this.getConsumer(info)),
-      switchMap((consumer) => {
-        return from(consumer.consume()).pipe(
-          switchMap((messages) => {
-            console.log('Consumer started, waiting for messages...');
+    return defer(() => {
+      console.log('🔄 Starting pullConsumer for', consumerInfo.name);
 
-            // Обгортаємо в concat, щоб після завершення кинути помилку
-            return concat(
-              from(messages as AsyncIterable<JsMsg>).pipe(
-                tap((msg: JsMsg) => {
-                  console.log('MSG', msg);
-                  msg.ack();
+      return of(consumerInfo).pipe(
+        switchMap((info) => this.getConsumer(info)),
+        tap(() => {
+          console.log('✅ Consumer obtained');
+        }),
+        switchMap((consumer) => {
+          return from(consumer.consume()).pipe(
+            tap(() => {
+              console.log('📡 consume() called');
+            }),
+            switchMap((messages) => {
+              console.log('📨 MESSAGES iterator received');
+
+              return from(messages as AsyncIterable<JsMsg>).pipe(
+                tap({
+                  next: (msg) => {
+                    console.log('✉️ MSG received', msg.subject);
+                  },
+                  complete: () => {
+                    console.log('⚠️ Message stream COMPLETED');
+                  },
                 }),
-              ),
-              // Після завершення стріму кидаємо помилку для реконнекту
-              throwError(() => new Error('Consumer stream completed - reconnecting')),
-            );
-          }),
-          catchError((err) => {
-            console.log('ERROR in message stream', err);
-            return throwError(() => err);
-          }),
-        );
+              );
+            }),
+            tap((msg: JsMsg) => {
+              console.log('MSG', msg);
+              msg.ack();
+            }),
+          );
+        }),
+      );
+    }).pipe(
+      repeat({
+        delay: (attemptCount) => {
+          console.log(`🔁 Restarting consumer (attempt ${attemptCount})...`);
+          return timer(1000);
+        },
       }),
       catchError((err) => {
-        console.log('Consumer error, reconnecting in 2s...', err);
-        return timer(2000).pipe(switchMap(() => this.pullConsumer(consumerInfo)));
+        console.log('💥 Fatal error in pullConsumer', err);
+        return EMPTY;
       }),
+      takeUntil(this.destroy$),
     );
   }
 
