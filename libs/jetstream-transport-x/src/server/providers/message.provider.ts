@@ -38,8 +38,8 @@ import { ConnectionProvider } from '../../common/connection.provider';
  * - Command messages → commandMessages$ subject (ack after handler success).
  */
 @Injectable()
-export class PullProvider implements OnModuleDestroy {
-  private readonly logger = new Logger(PullProvider.name);
+export class MessageProvider implements OnModuleDestroy {
+  private readonly logger = new Logger(MessageProvider.name);
 
   private readonly destroy$ = new Subject<void>();
   private readonly subscription?: Subscription;
