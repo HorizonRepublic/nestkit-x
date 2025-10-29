@@ -74,22 +74,26 @@ export class ConnectionProvider implements OnModuleDestroy {
   }
 
   protected setupConnection(): void {
-    const connected$ = from(connect(this.options));
+    const connected$ = from(connect({ ...this.options }));
 
     this.nc$ = connected$.pipe(
       catchError((err: NatsError) => this.handleError(err)),
+
       tap((connection) => {
         this.unwrappedConnection = connection;
         this.logger.log(`NATS connection established: ${connection.getServer()}`);
       }),
+
       shareReplay({ bufferSize: 1, refCount: false }),
     );
 
     this.jsm$ = this.nc$.pipe(
       switchMap((c: NatsConnection) => from(c.jetstreamManager())),
+
       tap(() => {
         this.logger.log(`NATS JetStream manager initialized`);
       }),
+
       shareReplay({ bufferSize: 1, refCount: false }),
     );
 

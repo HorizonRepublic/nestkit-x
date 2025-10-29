@@ -23,7 +23,7 @@ export class ConsumerProvider {
     private readonly streamProvider: StreamProvider,
   ) {}
 
-  public get ready$(): Observable<Map<JetStreamKind, ConsumerInfo>> {
+  public get consumerMap$(): Observable<Map<JetStreamKind, ConsumerInfo>> {
     return this.consumers$.asObservable();
   }
 

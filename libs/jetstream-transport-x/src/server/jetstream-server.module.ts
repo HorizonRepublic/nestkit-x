@@ -6,6 +6,7 @@ import { IJetstreamTransportOptions } from './types/jetstream-transport.options'
 import { ConnectionProvider } from '../common/connection.provider';
 import { StreamProvider } from './providers/stream.provider';
 import { ConsumerProvider } from './providers/consumer.provider';
+import { PullProvider } from './providers/pull.provider';
 
 @Module({})
 export class JetstreamServerModule {
@@ -25,6 +26,7 @@ export class JetstreamServerModule {
         ConnectionProvider,
         StreamProvider,
         ConsumerProvider,
+        PullProvider,
       ],
 
       exports: [JETSTREAM_TRANSPORT],
