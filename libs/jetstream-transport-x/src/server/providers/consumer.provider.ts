@@ -13,7 +13,6 @@ import { JetStreamErrorCode } from '../enum';
 export class ConsumerProvider {
   private readonly logger = new Logger(ConsumerProvider.name);
 
-  // Subject для емітингу готових consumers
   private readonly consumers$ = new Subject<Map<JetStreamKind, ConsumerInfo>>();
 
   public constructor(
