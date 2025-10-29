@@ -13,6 +13,7 @@
     "lib": ["ES2024"],
     "skipLibCheck": true,
     "baseUrl": ".",
+    "useDefineForClassFields": true,
     "paths": {
       "@nestkit-x/compression": ["libs/compression/src/index.ts"],
       "@nestkit-x/config": ["libs/config/src/index.ts"],

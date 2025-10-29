@@ -7,7 +7,7 @@ import { JetStreamKind } from '../enum';
  *
  * @example -
  */
-export class JsPatternRegistry {
+export class PatternRegistry {
   public constructor(
     private readonly serviceName: string,
     private readonly handlers: Map<string, MessageHandler>,

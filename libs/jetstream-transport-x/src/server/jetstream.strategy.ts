@@ -37,6 +37,7 @@ export class JetstreamStrategy
         startWith(void 0),
         switchMap(() => this.streamProvider.create()),
         switchMap(() => this.consumerProvider.create()),
+        // start loop, register listeners
         tap(done),
         takeUntil(this.destroy$),
       )
@@ -49,10 +50,10 @@ export class JetstreamStrategy
     this.connectionProvider.gracefulShutdown().subscribe();
   }
 
-  public on<
-    EventKey extends keyof INatsEventsMap,
-    EventCallback extends INatsEventsMap[EventKey] = INatsEventsMap[EventKey],
-  >(event: EventKey, callback: EventCallback): void {
+  public on<EventKey extends keyof INatsEventsMap>(
+    event: EventKey,
+    callback: INatsEventsMap[EventKey],
+  ): void {
     this.connectionProvider.status
       .pipe(
         filter((status) => status.type == event),
