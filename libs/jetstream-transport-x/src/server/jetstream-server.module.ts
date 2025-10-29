@@ -8,6 +8,7 @@ import { StreamProvider } from './providers/stream.provider';
 import { ConsumerProvider } from './providers/consumer.provider';
 import { MessageProvider } from './providers/message.provider';
 import { MessageHandlerProvider } from './providers/message-handler.provider';
+import { PatternRegistry } from './pattern-registry';
 
 @Module({})
 export class JetstreamServerModule {
@@ -24,7 +25,8 @@ export class JetstreamServerModule {
           useClass: JetstreamTransport,
         },
         JetstreamStrategy,
-        ConnectionProvider,
+        ConnectionProvider, // extract to top-level module
+        PatternRegistry, // possibly too
         StreamProvider,
         ConsumerProvider,
         MessageProvider,

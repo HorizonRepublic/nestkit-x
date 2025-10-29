@@ -3,7 +3,7 @@ import { JsMsg } from 'nats';
 
 export type NatsJetStreamContextArgs = [JsMsg];
 
-export class Context extends BaseRpcContext<NatsJetStreamContextArgs> {
+export class RpcContext extends BaseRpcContext<NatsJetStreamContextArgs> {
   public constructor(args: NatsJetStreamContextArgs) {
     super(args);
   }

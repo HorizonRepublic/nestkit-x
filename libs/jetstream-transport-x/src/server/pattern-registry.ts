@@ -1,17 +1,25 @@
 import { MessageHandler } from '@nestjs/microservices';
 import { JetStreamKind } from '../enum';
+import { Inject, Injectable } from '@nestjs/common';
+import { IJetstreamTransportOptions } from './types/jetstream-transport.options';
+import { JETSTREAM_TRANSPORT_OPTIONS } from '../const';
+import { JetstreamStrategy } from './jetstream.strategy';
 
 /**
  * Registry for managing NATS JetStream message patterns and their handlers.
  * Provides pattern-to-handler mapping and subject normalization for routing.
- *
- * @example -
  */
+@Injectable()
 export class PatternRegistry {
+  private readonly handlers: Map<string, MessageHandler>;
+
   public constructor(
-    private readonly serviceName: string,
-    private readonly handlers: Map<string, MessageHandler>,
-  ) {}
+    @Inject(JETSTREAM_TRANSPORT_OPTIONS)
+    private readonly options: IJetstreamTransportOptions,
+    private readonly strategy: JetstreamStrategy,
+  ) {
+    this.handlers = this.strategy.getHandlers();
+  }
 
   /**
    * Retrieves handler for a given subject by normalizing and matching patterns.
@@ -57,7 +65,7 @@ export class PatternRegistry {
    * @returns Formatted prefix string.
    */
   private buildPrefix(kind: JetStreamKind): string {
-    return `${this.serviceName}.${kind}.`;
+    return `${this.options.name}.${kind}.`;
   }
 
   /**
