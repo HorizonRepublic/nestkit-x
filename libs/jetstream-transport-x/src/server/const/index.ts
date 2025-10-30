@@ -18,9 +18,10 @@ const MB = 1024 * KB;
 const GB = 1024 * MB;
 
 // Time constants in nanoseconds (NATS JetStream format)
-const SEC = 1e9;
-const MIN = 60 * SEC;
-const DAY = 24 * 60 * MIN;
+const SEC = 1e9; // 1s in ns
+const MIN = 60 * SEC; // 1m in ns
+const HOUR = 60 * MIN; // 1h in ns
+const DAY = 24 * HOUR; // 1d in ns
 
 export const streamConfig: StreamConfigRecord = Object.freeze({
   base: {
@@ -76,9 +77,6 @@ export const streamConfig: StreamConfigRecord = Object.freeze({
   },
 });
 
-const RPC_TIMEOUT_MS = 180_000; // 3 minutes
-const EVENT_TIMEOUT_MS = 60_000; // 1 minute
-
 const baseConsumerConfig = (
   name: string,
   kind: JetStreamKind,
@@ -93,9 +91,9 @@ const baseConsumerConfig = (
 export const consumerConfig: ConsumerConfigRecord = {
   [JetStreamKind.Event]: (name, kind) => ({
     ...baseConsumerConfig(name, kind),
-    ack_wait: EVENT_TIMEOUT_MS * 1_000_000,
+    ack_wait: 2 * SEC,
     max_deliver: 5,
-    max_ack_pending: 50,
+    max_ack_pending: 20,
     ack_policy: AckPolicy.Explicit,
     deliver_policy: DeliverPolicy.All,
     replay_policy: ReplayPolicy.Instant,
@@ -103,9 +101,9 @@ export const consumerConfig: ConsumerConfigRecord = {
 
   [JetStreamKind.Command]: (name, kind) => ({
     ...baseConsumerConfig(name, kind),
-    ack_wait: RPC_TIMEOUT_MS * 1_000_000,
+    ack_wait: 120 * SEC,
     max_deliver: 1,
-    max_ack_pending: 5,
+    max_ack_pending: 200,
     ack_policy: AckPolicy.Explicit,
     deliver_policy: DeliverPolicy.All,
     replay_policy: ReplayPolicy.Instant,

@@ -2,7 +2,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import { MessageProvider } from './message.provider';
 import { headers, JsMsg, JSONCodec } from 'nats';
 import { PatternRegistry } from '../pattern-registry';
-import { catchError, EMPTY, from, mergeMap, Observable, of, switchMap } from 'rxjs';
+import {
+  catchError,
+  EMPTY,
+  from,
+  mergeMap,
+  Observable,
+  of,
+  switchMap,
+  timeout,
+  TimeoutError,
+} from 'rxjs';
 import { RpcContext } from '../../common/rpc-context';
 import { JetstreamHeaders } from '../../enum';
 import { ConnectionProvider } from '../../common/connection.provider';
@@ -46,6 +56,7 @@ export class MessageHandlerProvider {
 
     if (!handler) {
       msg.term(`No handler found for subject: ${msg.subject}`);
+      this.logger.error(`No handler found for subject: ${msg.subject}`);
 
       return of(void 0);
     }
@@ -78,6 +89,7 @@ export class MessageHandlerProvider {
       switchMap((nc) =>
         from(handlerResult).pipe(
           switchMap((inner) => from(inner)),
+          timeout(5 * 60 * 1000), // 5 min
           switchMap((actualResponse) => {
             const encodedResponse = this.codec.encode(actualResponse);
 
@@ -88,8 +100,13 @@ export class MessageHandlerProvider {
           }),
 
           catchError((error) => {
-            this.logger.error(`Error handling RPC for ${msg.subject}:`, error);
-            msg.term(`Handler error: ${error.message}`);
+            if (error instanceof TimeoutError) {
+              this.logger.error(`Handler timeout for ${msg.subject} (5 minutes)`);
+              msg.term(`Handler timeout: exceeded 5 minutes`);
+            } else {
+              this.logger.error(`Error handling RPC for ${msg.subject}:`, error);
+              msg.nak();
+            }
 
             return EMPTY;
           }),
