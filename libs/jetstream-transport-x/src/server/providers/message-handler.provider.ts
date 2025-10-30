@@ -10,6 +10,7 @@ import {
   Observable,
   of,
   switchMap,
+  take,
   timeout,
   TimeoutError,
 } from 'rxjs';
@@ -55,7 +56,7 @@ export class MessageHandlerProvider {
     const handler = this.patternRegistry.getHandler(msg.subject);
 
     if (!handler) {
-      msg.term(`No handler found for subject: ${msg.subject}`);
+      msg.term(`No handler found for RPC subject: ${msg.subject}`);
       this.logger.error(`No handler found for subject: ${msg.subject}`);
 
       return of(void 0);
@@ -89,7 +90,27 @@ export class MessageHandlerProvider {
       switchMap((nc) =>
         from(handlerResult).pipe(
           switchMap((inner) => from(inner)),
-          timeout(5 * 60 * 1000), // 5 min
+          take(1),
+          timeout(3 * 60 * 1000), // 3 min
+
+          // answer with error, if the handler returned it
+          catchError((error: unknown) => {
+            if (error instanceof TimeoutError) {
+              this.logger.error(`Handler timeout for ${msg.subject} (3 minutes)`);
+              msg.term(`Handler timeout: exceeded 3 minutes`);
+
+              return EMPTY;
+            }
+
+            const rpcError = this.codec.encode(error);
+
+            nc.publish(replyTo, rpcError, { headers: hdrs });
+            msg.term(`Handler ${msg.subject} responded with error`);
+
+            return EMPTY;
+          }),
+
+          // success path
           switchMap((actualResponse) => {
             const encodedResponse = this.codec.encode(actualResponse);
 
@@ -98,24 +119,21 @@ export class MessageHandlerProvider {
 
             return of(void 0);
           }),
-
-          catchError((error) => {
-            if (error instanceof TimeoutError) {
-              this.logger.error(`Handler timeout for ${msg.subject} (5 minutes)`);
-              msg.term(`Handler timeout: exceeded 5 minutes`);
-            } else {
-              this.logger.error(`Error handling RPC for ${msg.subject}:`, error);
-              msg.nak();
-            }
-
-            return EMPTY;
-          }),
         ),
       ),
     );
   }
 
   protected handleEvent(msg: JsMsg): Observable<void> {
+    const handler = this.patternRegistry.getHandler(msg.subject);
+
+    if (!handler) {
+      msg.term(`No handler found for RPC subject: ${msg.subject}`);
+      this.logger.error(`No handler found for subject: ${msg.subject}`);
+
+      return of(void 0);
+    }
+
     msg.ack();
 
     return of(void 0);

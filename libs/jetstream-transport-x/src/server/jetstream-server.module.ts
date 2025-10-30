@@ -18,7 +18,7 @@ export class JetstreamServerModule {
       providers: [
         {
           provide: JETSTREAM_TRANSPORT_OPTIONS,
-          useValue: options,
+          useValue: { options, name: `${options.name}__microservice` },
         },
         {
           provide: JETSTREAM_TRANSPORT,

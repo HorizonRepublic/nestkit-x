@@ -74,8 +74,7 @@ export class ConnectionProvider implements OnModuleDestroy {
   }
 
   protected setupConnection(): void {
-    const name = `${this.options.name}__microservice`;
-    const connected$ = from(connect({ ...this.options, name }));
+    const connected$ = from(connect({ ...this.options }));
 
     this.nc$ = connected$.pipe(
       catchError((err: NatsError) => this.handleError(err)),

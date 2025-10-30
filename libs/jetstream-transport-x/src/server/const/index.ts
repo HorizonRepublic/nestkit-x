@@ -91,7 +91,7 @@ const baseConsumerConfig = (
 export const consumerConfig: ConsumerConfigRecord = {
   [JetStreamKind.Event]: (name, kind) => ({
     ...baseConsumerConfig(name, kind),
-    ack_wait: 2 * SEC,
+    ack_wait: 2 * SEC, // 2 seconds
     max_deliver: 5,
     max_ack_pending: 20,
     ack_policy: AckPolicy.Explicit,
@@ -101,7 +101,7 @@ export const consumerConfig: ConsumerConfigRecord = {
 
   [JetStreamKind.Command]: (name, kind) => ({
     ...baseConsumerConfig(name, kind),
-    ack_wait: 120 * SEC,
+    ack_wait: 60 * 5 * SEC, // 5 minutes
     max_deliver: 1,
     max_ack_pending: 200,
     ack_policy: AckPolicy.Explicit,
