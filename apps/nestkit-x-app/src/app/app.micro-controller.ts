@@ -13,8 +13,14 @@ export class AppMicroController {
   }
 
   @EventPattern('test-event')
-  public eventTest(@Payload() data: unknown): number {
+  public async eventTest(@Payload() data: unknown): Promise<number> {
     console.log('EVENT received', data);
+
+    const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+    await sleep(3000);
+
+    console.log('Timeout end', data);
 
     return 1;
   }
