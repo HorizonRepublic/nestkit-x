@@ -64,12 +64,12 @@ export class MessageProvider implements OnModuleDestroy {
    * through the `repeat()` operator, ensuring continuous message delivery even
    * when NATS restarts.
    *
-   * @param consumerProvider Consumer provider.
    * @param connectionProvider Connection provider.
+   * @param consumerProvider Consumer provider.
    */
   public constructor(
-    private readonly consumerProvider: ConsumerProvider,
     private readonly connectionProvider: ConnectionProvider,
+    private readonly consumerProvider: ConsumerProvider,
   ) {
     this.subscription = this.consumerProvider.consumerMap$
       .pipe(

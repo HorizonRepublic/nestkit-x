@@ -16,12 +16,12 @@ import {
   timeout,
   TimeoutError,
 } from 'rxjs';
-import { RpcContext } from '../../common/rpc-context';
+import { RpcContext } from '../../common/rpc.context';
 import { JetstreamHeaders } from '../../enum';
 import { ConnectionProvider } from '../../common/connection.provider';
 
 /**
- * MessageHandlerProvider is the runtime layer that:
+ * MessageRoutingProvider is the runtime layer that:
  * - subscribes on messages from JetStream
  * - finds the matching NestJS handler
  * - executes it under the correct delivery semantics
@@ -170,9 +170,9 @@ import { ConnectionProvider } from '../../common/connection.provider';
  *                                 it's now up to the business code.
  */
 @Injectable()
-export class MessageHandlerProvider {
+export class MessageRoutingProvider {
   private readonly codec = JSONCodec(); // JSON codec for (de)serializing payloads
-  private readonly logger = new Logger(MessageHandlerProvider.name);
+  private readonly logger = new Logger(MessageRoutingProvider.name);
 
   /**
    * Wire up streams of incoming messages.
@@ -198,9 +198,9 @@ export class MessageHandlerProvider {
    * @param connectionProvider
    */
   public constructor(
+    private readonly connectionProvider: ConnectionProvider,
     private readonly messageProvider: MessageProvider,
     private readonly patternRegistry: PatternRegistry,
-    private readonly connectionProvider: ConnectionProvider,
   ) {
     this.messageProvider.commands$
       .pipe(

@@ -1,10 +1,9 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConnectionProvider } from '../../common/connection.provider';
 import { JetStreamKind } from '../../enum';
 import { catchError, forkJoin, from, map, Observable, Subject, switchMap, tap } from 'rxjs';
 import { StreamProvider } from './stream.provider';
 import { consumerConfig } from '../const';
-import { JETSTREAM_TRANSPORT_OPTIONS } from '../../common/const';
 import { IJetstreamTransportOptions } from '../../common/types';
 import { ConsumerInfo, NatsError } from 'nats';
 import { JetStreamErrorCode } from '../enum';
@@ -16,7 +15,6 @@ export class ConsumerProvider {
   private readonly consumers$ = new Subject<Map<JetStreamKind, ConsumerInfo>>();
 
   public constructor(
-    @Inject(JETSTREAM_TRANSPORT_OPTIONS)
     private readonly options: IJetstreamTransportOptions,
     private readonly connectionProvider: ConnectionProvider,
     private readonly streamProvider: StreamProvider,

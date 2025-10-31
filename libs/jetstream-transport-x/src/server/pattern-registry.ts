@@ -1,8 +1,7 @@
 import { MessageHandler } from '@nestjs/microservices';
 import { JetStreamKind } from '../enum';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { IJetstreamTransportOptions } from '../common/types';
-import { JETSTREAM_TRANSPORT_OPTIONS } from '../common/const';
 import { JetstreamStrategy } from './jetstream.strategy';
 
 /**
@@ -14,7 +13,6 @@ export class PatternRegistry {
   private readonly handlers: Map<string, MessageHandler>;
 
   public constructor(
-    @Inject(JETSTREAM_TRANSPORT_OPTIONS)
     private readonly options: IJetstreamTransportOptions,
     private readonly strategy: JetstreamStrategy,
   ) {

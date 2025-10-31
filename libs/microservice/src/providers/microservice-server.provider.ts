@@ -4,9 +4,9 @@ import { from, map, Observable } from 'rxjs';
 
 import { MICROSERVICE_OPTIONS } from '../const';
 import { IMicroserviceModuleOptions } from '../types/microservice-module.options';
-import { JETSTREAM_TRANSPORT } from '@nestkit-x/jetstream-transport-x';
 import { CustomStrategy } from '@nestjs/microservices';
 import { Events } from 'nats';
+import { getJetStreamTransportToken } from '@nestkit-x/jetstream-transport-x';
 
 @Injectable()
 export class MicroserviceServerProvider {
@@ -24,7 +24,7 @@ export class MicroserviceServerProvider {
   }
 
   private serveMicroservice(app: INestApplication): Observable<void> {
-    const transport = app.get<CustomStrategy>(JETSTREAM_TRANSPORT);
+    const transport = app.get<CustomStrategy>(getJetStreamTransportToken(this.options.name));
 
     const microservice = app.connectMicroservice<CustomStrategy>(transport, {
       inheritAppConfig: true,

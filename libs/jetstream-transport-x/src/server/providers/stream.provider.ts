@@ -1,10 +1,9 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConnectionProvider } from '../../common/connection.provider';
 import { catchError, forkJoin, from, map, Observable, switchMap, tap } from 'rxjs';
 import { NatsError, StreamInfo, StreamUpdateConfig } from 'nats';
 import { StreamConfig } from 'nats/lib/jetstream/jsapi_types';
 import { IJetstreamTransportOptions } from '../../common/types';
-import { JETSTREAM_TRANSPORT_OPTIONS } from '../../common/const';
 import { JetStreamKind } from '../../enum';
 import { streamConfig } from '../const';
 import { JetStreamErrorCode } from '../enum';
@@ -14,7 +13,6 @@ export class StreamProvider {
   private readonly logger = new Logger(StreamProvider.name);
 
   public constructor(
-    @Inject(JETSTREAM_TRANSPORT_OPTIONS)
     private readonly options: IJetstreamTransportOptions,
     private readonly connectionProvider: ConnectionProvider,
   ) {}

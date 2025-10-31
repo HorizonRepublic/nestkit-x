@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 
-@Module({
-  providers: [],
-})
-export class JetstreamClientModule {}
+@Module({})
+export class JetstreamClientModule {
+  public static forRoot() {}
+}

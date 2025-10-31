@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { connect, JetStreamManager, NatsConnection, NatsError, Status } from 'nats';
 import {
   catchError,
@@ -15,7 +15,6 @@ import {
   tap,
 } from 'rxjs';
 import { IJetstreamTransportOptions } from './types';
-import { JETSTREAM_TRANSPORT_OPTIONS } from './const';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
 
 @Injectable()
@@ -29,10 +28,7 @@ export class ConnectionProvider implements OnModuleDestroy {
 
   private readonly subscription?: Subscription;
 
-  public constructor(
-    @Inject(JETSTREAM_TRANSPORT_OPTIONS)
-    private readonly options: IJetstreamTransportOptions,
-  ) {
+  public constructor(private readonly options: IJetstreamTransportOptions) {
     this.setupConnection();
   }
 
@@ -74,7 +70,8 @@ export class ConnectionProvider implements OnModuleDestroy {
   }
 
   protected setupConnection(): void {
-    const connected$ = from(connect({ ...this.options }));
+    const name = `${this.options.name}_${this.options.serviceType}`;
+    const connected$ = from(connect({ ...this.options, name }));
 
     this.nc$ = connected$.pipe(
       catchError((err: NatsError) => this.handleError(err)),
