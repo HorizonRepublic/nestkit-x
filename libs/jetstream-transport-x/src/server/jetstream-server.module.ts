@@ -1,8 +1,8 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { JetstreamTransport } from './jetstream.transport';
-import { JETSTREAM_TRANSPORT, JETSTREAM_TRANSPORT_OPTIONS } from '../const';
+import { JETSTREAM_TRANSPORT, JETSTREAM_TRANSPORT_OPTIONS } from '../common/const';
 import { JetstreamStrategy } from './jetstream.strategy';
-import { IJetstreamTransportOptions } from './types/jetstream-transport.options';
+import { IJetstreamTransportOptions } from '../common/types';
 import { ConnectionProvider } from '../common/connection.provider';
 import { StreamProvider } from './providers/stream.provider';
 import { ConsumerProvider } from './providers/consumer.provider';

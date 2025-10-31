@@ -4,8 +4,8 @@ import { JetStreamKind } from '../../enum';
 import { catchError, forkJoin, from, map, Observable, Subject, switchMap, tap } from 'rxjs';
 import { StreamProvider } from './stream.provider';
 import { consumerConfig } from '../const';
-import { JETSTREAM_TRANSPORT_OPTIONS } from '../../const';
-import { IJetstreamTransportOptions } from '../types/jetstream-transport.options';
+import { JETSTREAM_TRANSPORT_OPTIONS } from '../../common/const';
+import { IJetstreamTransportOptions } from '../../common/types';
 import { ConsumerInfo, NatsError } from 'nats';
 import { JetStreamErrorCode } from '../enum';
 

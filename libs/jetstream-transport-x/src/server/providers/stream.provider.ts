@@ -3,8 +3,8 @@ import { ConnectionProvider } from '../../common/connection.provider';
 import { catchError, forkJoin, from, map, Observable, switchMap, tap } from 'rxjs';
 import { NatsError, StreamInfo, StreamUpdateConfig } from 'nats';
 import { StreamConfig } from 'nats/lib/jetstream/jsapi_types';
-import { IJetstreamTransportOptions } from '../types/jetstream-transport.options';
-import { JETSTREAM_TRANSPORT_OPTIONS } from '../../const';
+import { IJetstreamTransportOptions } from '../../common/types';
+import { JETSTREAM_TRANSPORT_OPTIONS } from '../../common/const';
 import { JetStreamKind } from '../../enum';
 import { streamConfig } from '../const';
 import { JetStreamErrorCode } from '../enum';
@@ -49,6 +49,7 @@ export class StreamProvider {
       .pipe(
         // if not, create it
         switchMap(() => this.update(config.name, config)),
+
         catchError((err: NatsError) => {
           if (err.api_error?.err_code == JetStreamErrorCode.StreamNotFound) {
             return this.new(config);
@@ -64,6 +65,7 @@ export class StreamProvider {
       tap(() => {
         this.logger.debug(`Checking stream existence: ${streamName}`);
       }),
+
       switchMap((jsm) => from(jsm.streams.info(streamName))),
     );
   }
@@ -71,6 +73,7 @@ export class StreamProvider {
   protected new(config: StreamConfig): Observable<StreamInfo> {
     return this.connectionProvider.jsm.pipe(
       switchMap((jsm) => from(jsm.streams.add(config))),
+
       tap(() => {
         this.logger.log(`New stream created: ${config.name}`);
       }),
@@ -84,6 +87,7 @@ export class StreamProvider {
           `Stream exists, updating: ${streamName} (subjects: ${config.subjects.length})`,
         );
       }),
+
       switchMap((jsm) => from(jsm.streams.update(streamName, config))),
     );
   }

@@ -14,8 +14,8 @@ import {
   take,
   tap,
 } from 'rxjs';
-import { IJetstreamTransportOptions } from '../server/types/jetstream-transport.options';
-import { JETSTREAM_TRANSPORT_OPTIONS } from '../const';
+import { IJetstreamTransportOptions } from './types';
+import { JETSTREAM_TRANSPORT_OPTIONS } from './const';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
 
 @Injectable()

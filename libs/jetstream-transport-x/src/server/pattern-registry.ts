@@ -1,8 +1,8 @@
 import { MessageHandler } from '@nestjs/microservices';
 import { JetStreamKind } from '../enum';
 import { Inject, Injectable } from '@nestjs/common';
-import { IJetstreamTransportOptions } from './types/jetstream-transport.options';
-import { JETSTREAM_TRANSPORT_OPTIONS } from '../const';
+import { IJetstreamTransportOptions } from '../common/types';
+import { JETSTREAM_TRANSPORT_OPTIONS } from '../common/const';
 import { JetstreamStrategy } from './jetstream.strategy';
 
 /**
