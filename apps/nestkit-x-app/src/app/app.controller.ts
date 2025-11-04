@@ -22,22 +22,25 @@ export class AppController {
   @TypedRoute.Get()
   public async getData(): Promise<any> {
     await firstValueFrom(
-      this.testService.emit('test-event', { data: 'HELLO FROM CONTROLLER EVENT!!!' }).pipe(
+      this.testService
+        .emit('test-event', {
+          data: 'HELLO FROM CONTROLLER EVENT!!!',
+        })
+        .pipe(
+          tap(() => {
+            this.stats.incrementEventsSent();
+          }),
+        ),
+    );
+
+    const data = await firstValueFrom(
+      this.testService.send('test-cmd', { data: 'HELLO FROM CONTROLLER CMD!!!' }).pipe(
         tap((data) => {
-          this.stats.incrementEventsSent();
+          this.stats.incrementRpcSent();
         }),
       ),
     );
 
-    // const data = await firstValueFrom(
-    //   this.testService.send('test-cmd', { data: 'HELLO FROM CONTROLLER CMD!!!' }).pipe(
-    //     tap((data) => {
-    //       console.log('cmd data', data);
-    //     }),
-    //   ),
-    // );
-
-    return {};
-    // return { dataFromRpc: data };
+    return { data };
   }
 }

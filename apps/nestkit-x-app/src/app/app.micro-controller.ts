@@ -1,6 +1,5 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
-import * as console from 'node:console';
 import { Observable, of } from 'rxjs';
 import { MessageStats } from './msg-stats';
 
@@ -10,7 +9,9 @@ export class AppMicroController {
 
   @MessagePattern('test-cmd')
   public msgTest(@Payload() data: unknown): Observable<number> {
-    console.log('RPC received in controller with data', data);
+    // console.log('RPC received in controller with data', data);
+
+    this.stats.incrementRpcReceived();
 
     return of(1);
   }
