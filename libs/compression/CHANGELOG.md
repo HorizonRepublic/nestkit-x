@@ -1,6 +1,0 @@
-## 0.0.2-0 (2025-07-01)
-
-### 🏠 Chores
-
-- **semver:** setup semver ([6e5234b](https://github.com/HorizonRepublic/nestkit-x/commit/6e5234b))
-- **lint:** additional services scaffolding ([97b3910](https://github.com/HorizonRepublic/nestkit-x/commit/97b3910))

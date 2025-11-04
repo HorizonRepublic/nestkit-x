@@ -15,7 +15,6 @@
     "baseUrl": ".",
     "useDefineForClassFields": true,
     "paths": {
-      "@nestkit-x/compression": ["libs/compression/src/index.ts"],
       "@nestkit-x/config": ["libs/config/src/index.ts"],
       "@nestkit-x/core": ["libs/core/src/index.ts"],
       "@nestkit-x/jetstream-transport": ["libs/jetstream-transport/src/index.ts"],
