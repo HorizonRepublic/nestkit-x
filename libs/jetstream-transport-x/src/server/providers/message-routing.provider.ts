@@ -202,6 +202,7 @@ export class MessageRoutingProvider {
     private readonly messageProvider: MessageProvider,
     private readonly patternRegistry: PatternRegistry,
   ) {
+    
     this.messageProvider.commands$
       .pipe(
         mergeMap((msg) => this.handleRpc(msg)),
@@ -277,6 +278,7 @@ export class MessageRoutingProvider {
    * @param msg
    */
   protected handleRpc(msg: JsMsg): Observable<void> {
+    console.log('HELLO?');
     // 1. Resolve handler
     const handler = this.patternRegistry.getHandler(msg.subject);
 

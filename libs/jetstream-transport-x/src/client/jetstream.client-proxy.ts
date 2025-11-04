@@ -1,14 +1,17 @@
 import { ClientProxy, ReadPacket, WritePacket } from '@nestjs/microservices';
-import { Logger } from '@nestjs/common';
+import { Logger, OnModuleInit } from '@nestjs/common';
 import { IClientProviders } from './types';
-import { firstValueFrom, Subject, takeUntil, tap } from 'rxjs';
-import { createInbox, NatsConnection } from 'nats';
+import { firstValueFrom, from, Subject, switchMap, takeUntil, tap } from 'rxjs';
+import { createInbox, headers, JSONCodec, NatsConnection, PubAck } from 'nats';
+import { JetStreamKind } from '../enum';
+import { v7 } from 'uuid';
+import { JetstreamHeaders } from '@nestkit-x/jetstream-transport';
 
-export class JetstreamClientProxy extends ClientProxy {
+export class JetstreamClientProxy extends ClientProxy implements OnModuleInit {
   private readonly logger = new Logger(JetstreamClientProxy.name);
-
   private readonly destroy$ = new Subject<void>();
   private readonly inbox: string = createInbox();
+  private readonly codec = JSONCodec();
 
   private isConnected = false;
 
@@ -18,9 +21,14 @@ export class JetstreamClientProxy extends ClientProxy {
     this.logger.debug(`Microservice client created (inbox: ${this.inbox})`);
   }
 
+  public onModuleInit(): void {
+    void this.connect();
+  }
+
   public async close(): Promise<void> {
-    this.logger.log('close() called');
-    return Promise.resolve();
+    return firstValueFrom(
+      this.providers.connectionProvider.nc.pipe(switchMap((nc) => from(nc.close()))),
+    );
   }
 
   public async connect(): Promise<NatsConnection> {
@@ -50,6 +58,47 @@ export class JetstreamClientProxy extends ClientProxy {
     return firstValueFrom(this.providers.connectionProvider.nc);
   }
 
+  public override unwrap<T = NatsConnection>(): T {
+    return this.providers.connectionProvider.unwrap as T;
+  }
+
+  protected async dispatchEvent<T = PubAck>(packet: ReadPacket<T>): Promise<T> {
+    const subject = this.buildSubject(JetStreamKind.Event, packet.pattern);
+    const connection = await this.connect();
+    const messageId = v7();
+
+    const hdrs = headers();
+
+    hdrs.set(JetstreamHeaders.MessageId, messageId);
+    hdrs.set(JetstreamHeaders.Subject, subject);
+
+    this.logger.verbose(`Event sent: ${subject} (${messageId})`);
+
+    try {
+      const result = (await connection
+        .jetstream()
+        .publish(subject, this.codec.encode(packet.data), { headers: hdrs })) as T;
+
+      return result;
+    } catch (error) {
+      this.logger.error('Error sending event:', error);
+
+      throw error;
+    }
+  }
+
+  protected publish<T = unknown>(
+    packet: ReadPacket<T>,
+    callback: (packet: WritePacket) => void,
+  ): () => void {
+    this.logger.log('publish() called', packet);
+
+    // Повертаємо функцію-cleanup
+    return () => {
+      this.logger.log('cleanup function called');
+    };
+  }
+
   private setupInboxSubscription(nc: NatsConnection): void {
     this.logger.log(`Subscribing to inbox: ${this.inbox}`);
 
@@ -71,25 +120,7 @@ export class JetstreamClientProxy extends ClientProxy {
     });
   }
 
-  public unwrap<T = unknown>(): T {
-    this.logger.log('unwrap() called');
-    return undefined as T;
-  }
-
-  protected async dispatchEvent<T = unknown>(packet: ReadPacket<T>): Promise<T> {
-    this.logger.log('dispatchEvent() called', packet);
-    return undefined as T;
-  }
-
-  protected publish<T = unknown>(
-    packet: ReadPacket<T>,
-    callback: (packet: WritePacket) => void,
-  ): () => void {
-    this.logger.log('publish() called', packet);
-
-    // Повертаємо функцію-cleanup
-    return () => {
-      this.logger.log('cleanup function called');
-    };
+  private buildSubject(kind: JetStreamKind, pattern: string): string {
+    return `${this.providers.options.name}.${kind}.${pattern}`;
   }
 }

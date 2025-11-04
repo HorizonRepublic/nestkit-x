@@ -6,6 +6,7 @@ import { Events, NatsConnection } from 'nats';
 import { filter, startWith, Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { INatsEventsMap } from './types/nats.events-map';
 import { ConsumerProvider } from './providers/consumer.provider';
+import { JetStreamKind } from '../enum';
 
 @Injectable()
 export class JetstreamStrategy
@@ -37,7 +38,6 @@ export class JetstreamStrategy
         startWith(void 0),
         switchMap(() => this.streamProvider.create()),
         switchMap(() => this.consumerProvider.create()),
-        // start loop, register listeners
         tap(done),
         takeUntil(this.destroy$),
       )

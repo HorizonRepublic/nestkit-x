@@ -2,25 +2,24 @@ import { Controller } from '@nestjs/common';
 import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
 import * as console from 'node:console';
 import { Observable, of } from 'rxjs';
+import { MessageStats } from './msg-stats';
 
 @Controller()
 export class AppMicroController {
+  private readonly stats = MessageStats.getInstance();
+
   @MessagePattern('test-cmd')
   public msgTest(@Payload() data: unknown): Observable<number> {
-    console.log('RPC received', data);
+    console.log('RPC received in controller with data', data);
 
     return of(1);
   }
 
   @EventPattern('test-event')
   public async eventTest(@Payload() data: unknown): Promise<number> {
-    console.log('EVENT received', data);
+    // console.log(`Event received in controller with data`, data);
 
-    const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
-
-    await sleep(3000);
-
-    console.log('Timeout end', data);
+    this.stats.incrementEventsReceived();
 
     return 1;
   }

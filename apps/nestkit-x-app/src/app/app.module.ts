@@ -9,10 +9,8 @@ import { appConfig } from '../configs/app.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppMicroController } from './app.micro-controller';
-import {
-  NestKitMicroserviceClientModule,
-  NestKitMicroserviceServerModule,
-} from '@nestkit-x/microservice';
+import { NestKitMicroserviceServerModule } from '@nestkit-x/microservice';
+import { JetstreamClientModule } from '@nestkit-x/jetstream-transport-x';
 
 @Module({
   controllers: [AppController, AppMicroController],
@@ -20,14 +18,14 @@ import {
     ConfigModule.forFeature(appConfig),
 
     // server
-    NestKitConfigModule.forRoot({ exampleGenerationEnv: Environment.Local }),
-
-    NestKitLoggerModule.forRoot(),
-
-    NestKitMicroserviceClientModule.forRoot({
+    JetstreamClientModule.forFeature({
       servers: ['localhost:4222'],
       name: 'test-service',
     }),
+
+    NestKitConfigModule.forRoot({ exampleGenerationEnv: Environment.Local }),
+
+    NestKitLoggerModule.forRoot(),
 
     NestKitMicroserviceServerModule.forRoot({
       servers: ['localhost:4222'],
