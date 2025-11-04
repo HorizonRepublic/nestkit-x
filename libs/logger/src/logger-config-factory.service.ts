@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { APP_CONFIG, Environment, IAppConfig } from '@nestkit-x/core';
 import { Params as PinoParams } from 'nestjs-pino/params';
+import type { LoggerOptions } from 'pino';
 import * as pino from 'pino';
 
 import { REDACTED_MSG, redactedPaths } from './const';
@@ -17,9 +18,8 @@ export class LoggerConfigFactory {
   public get(): PinoParams {
     const isProduction = this.config.env === Environment.Prod;
 
-    const baseConfig: PinoParams['pinoHttp'] = {
-      autoLogging: false,
-      level: isProduction ? 'warn' : 'debug', // add log level to env (optional)
+    const baseConfig: LoggerOptions = {
+      level: isProduction ? 'warn' : 'debug',
       name: this.config.name,
       redact: {
         censor: REDACTED_MSG,
@@ -32,11 +32,11 @@ export class LoggerConfigFactory {
       timestamp: pino.stdTimeFunctions.isoTime,
     };
 
-    const productionConfig = isProduction
+    const productionConfig: Partial<LoggerOptions> = isProduction
       ? {
           formatters: {
-            level: (label: string): { level: string } => ({ level: label }),
-            log: (object: Record<string, unknown>): Record<string, unknown> => ({
+            level: (label: string) => ({ level: label }),
+            log: (object: Record<string, unknown>) => ({
               ...object,
               service: this.config.name,
               version: this.config.version,
@@ -45,9 +45,10 @@ export class LoggerConfigFactory {
         }
       : {};
 
-    const developmentConfig = !isProduction
+    const developmentConfig: Partial<LoggerOptions> = !isProduction
       ? {
           transport: {
+            target: 'pino-pretty',
             options: {
               colorize: true,
               errorLikeObjectKeys: ['err', 'error'],
@@ -57,13 +58,13 @@ export class LoggerConfigFactory {
               singleLine: true,
               translateTime: 'SYS:dd.mm.yyyy HH:MM:ss.l',
             },
-            target: 'pino-pretty',
           },
         }
       : {};
 
     return {
       pinoHttp: {
+        autoLogging: false,
         ...baseConfig,
         ...productionConfig,
         ...developmentConfig,

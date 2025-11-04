@@ -2,7 +2,12 @@ export const getJetStreamTransportToken = (name: string): string => `jetstream-t
 
 export const getJetStreamClientToken = (name: string): string => `jetstream-client-proxy-${name}`;
 
-export const getJetStreamOptionsToken = (name: string): string => `jetstream-options-${name}`;
+export const getJetStreamServerOptionsToken = (name: string): string =>
+  `jetstream-server-options-${name}`;
+
+export const getJetStreamClientOptionsToken = <T extends string>(
+  name: T,
+): `jetstream-client-options-${T}` => `jetstream-client-options-${name}`;
 
 export const getToken = {
   connection: (name: string): string => `jetstream-connection-${name}`,

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MessageProvider } from './message.provider';
 import { headers, JsMsg, JSONCodec } from 'nats';
-import { PatternRegistry } from '../pattern-registry';
+import { PatternRegistry } from '../../common/pattern-registry';
 import {
   catchError,
   EMPTY,

@@ -5,7 +5,7 @@ import { from, map, Observable } from 'rxjs';
 import { MICROSERVICE_OPTIONS } from '../const';
 import { IMicroserviceModuleOptions } from '../types/microservice-module.options';
 import { CustomStrategy } from '@nestjs/microservices';
-import { Events } from 'nats';
+import { DebugEvents, Events } from 'nats';
 import { getJetStreamTransportToken } from '@nestkit-x/jetstream-transport-x';
 
 @Injectable()
@@ -32,6 +32,10 @@ export class MicroserviceServerProvider {
 
     microservice.on(Events.Reconnect, () => {
       this.logger.log('(client log) Reconnected to NATS');
+    });
+
+    microservice.on(DebugEvents.PingTimer, () => {
+      this.logger.log('(client log) PING NATS');
     });
 
     return from(app.startAllMicroservices()).pipe(map(() => void 0));

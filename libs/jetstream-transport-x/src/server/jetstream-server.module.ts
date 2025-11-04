@@ -7,9 +7,9 @@ import { StreamProvider } from './providers/stream.provider';
 import { ConsumerProvider } from './providers/consumer.provider';
 import { MessageProvider } from './providers/message.provider';
 import { MessageRoutingProvider } from './providers/message-routing.provider';
-import { PatternRegistry } from './pattern-registry';
+import { PatternRegistry } from '../common/pattern-registry';
 import { ServiceType } from '../common/enum/service-type.enum';
-import { getJetStreamOptionsToken, getJetStreamTransportToken, getToken } from '../common/helpers';
+import { getJetStreamServerOptionsToken, getJetStreamTransportToken, getToken } from '../common/helpers';
 
 @Module({})
 export class JetstreamServerModule {
@@ -18,7 +18,7 @@ export class JetstreamServerModule {
       module: JetstreamServerModule,
       providers: [
         {
-          provide: getJetStreamOptionsToken(options.name),
+          provide: getJetStreamServerOptionsToken(options.name),
           useValue: {
             ...options,
             name: `${options.name}__microservice`,
@@ -28,7 +28,7 @@ export class JetstreamServerModule {
 
         {
           provide: getJetStreamTransportToken(options.name),
-          inject: [getJetStreamOptionsToken(options.name), getToken.strategy(options.name)],
+          inject: [getJetStreamServerOptionsToken(options.name), getToken.strategy(options.name)],
           useFactory: (
             options: IJetstreamTransportOptions,
             strategy: JetstreamStrategy,
@@ -39,7 +39,7 @@ export class JetstreamServerModule {
 
         {
           provide: getToken.stream(options.name),
-          inject: [getJetStreamOptionsToken(options.name), getToken.connection(options.name)],
+          inject: [getJetStreamServerOptionsToken(options.name), getToken.connection(options.name)],
           useFactory: (
             options: IJetstreamTransportOptions,
             connection: ConnectionProvider,
@@ -51,7 +51,7 @@ export class JetstreamServerModule {
         {
           provide: getToken.consumer(options.name),
           inject: [
-            getJetStreamOptionsToken(options.name),
+            getJetStreamServerOptionsToken(options.name),
             getToken.connection(options.name),
             getToken.stream(options.name),
           ],
@@ -64,7 +64,7 @@ export class JetstreamServerModule {
 
         {
           provide: getToken.connection(options.name),
-          inject: [getJetStreamOptionsToken(options.name)],
+          inject: [getJetStreamServerOptionsToken(options.name)],
           useFactory: (options: IJetstreamTransportOptions) => new ConnectionProvider(options),
         } satisfies Provider<ConnectionProvider>,
 
@@ -84,7 +84,7 @@ export class JetstreamServerModule {
 
         {
           provide: getToken.patternRegistry(options.name),
-          inject: [getJetStreamOptionsToken(options.name), getToken.strategy(options.name)],
+          inject: [getJetStreamServerOptionsToken(options.name), getToken.strategy(options.name)],
           useFactory: (
             options: IJetstreamTransportOptions,
             strategy: JetstreamStrategy,

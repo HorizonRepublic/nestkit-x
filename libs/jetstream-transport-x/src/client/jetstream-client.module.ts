@@ -1,6 +1,65 @@
-import { Module } from '@nestjs/common';
+import { DynamicModule, Module } from '@nestjs/common';
+import { IJetstreamTransportOptions } from '../common/types';
+import { ClientsModule } from '@nestjs/microservices';
+import { JetstreamClientProxy } from './jetstream.client-proxy';
+import { getJetStreamClientOptionsToken, getToken } from '../common/helpers';
+import { ConnectionProvider } from '../common/connection.provider';
+import { ServiceType } from '../common/enum/service-type.enum';
+import { CustomClientOptions } from '@nestjs/microservices/interfaces/client-metadata.interface';
+import { IClientProviders } from './types';
 
 @Module({})
 export class JetstreamClientModule {
-  public static forRoot() {}
+  public static forFeature(
+    options: Omit<IJetstreamTransportOptions, 'serviceType'>,
+  ): DynamicModule {
+    return {
+      module: JetstreamClientModule,
+      imports: [
+        ClientsModule.registerAsync({
+          clients: [
+            {
+              name: options.name,
+              extraProviders: [
+                {
+                  provide: getJetStreamClientOptionsToken(options.name),
+                  useValue: {
+                    ...options,
+                    name: `${options.name}__microservice`,
+                    serviceType: ServiceType.Producer,
+                  },
+                },
+
+                {
+                  provide: getToken.connection(options.name),
+                  inject: [getJetStreamClientOptionsToken(options.name)],
+                  useFactory: (options: IJetstreamTransportOptions): ConnectionProvider => {
+                    return new ConnectionProvider(options);
+                  },
+                },
+              ],
+
+              inject: [
+                getJetStreamClientOptionsToken(options.name),
+                getToken.connection(options.name),
+              ],
+              useFactory: (
+                options: IJetstreamTransportOptions,
+                connectionProvider: ConnectionProvider,
+              ): CustomClientOptions => {
+                return {
+                  customClass: JetstreamClientProxy,
+                  options: {
+                    options,
+                    connectionProvider,
+                  } satisfies IClientProviders,
+                };
+              },
+            },
+          ],
+        }),
+      ],
+      exports: [ClientsModule],
+    };
+  }
 }

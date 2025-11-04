@@ -1,8 +1,8 @@
 import { MessageHandler } from '@nestjs/microservices';
 import { JetStreamKind } from '../enum';
 import { Injectable } from '@nestjs/common';
-import { IJetstreamTransportOptions } from '../common/types';
-import { JetstreamStrategy } from './jetstream.strategy';
+import { IJetstreamTransportOptions } from './types';
+import { JetstreamStrategy } from '../server/jetstream.strategy';
 
 /**
  * Registry for managing NATS JetStream message patterns and their handlers.

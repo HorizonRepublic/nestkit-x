@@ -6,8 +6,6 @@ import {
   IAppRefService,
   IAppStateService,
 } from '@nestkit-x/core';
-
-import { CompressionProvider } from './providers/compression.provider';
 import { KernelProvider } from './providers/kernel.provider';
 import { AppRefService } from './services/app-ref.service';
 import { AppStateService } from './services/app-state.service';
@@ -42,7 +40,6 @@ export class KernelModule {
         } satisfies Provider<IAppRefService>,
 
         KernelProvider,
-        CompressionProvider,
       ],
     };
   }

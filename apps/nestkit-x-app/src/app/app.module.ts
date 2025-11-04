@@ -9,7 +9,10 @@ import { appConfig } from '../configs/app.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppMicroController } from './app.micro-controller';
-import { NestKitMicroserviceServerModule } from '@nestkit-x/microservice';
+import {
+  NestKitMicroserviceClientModule,
+  NestKitMicroserviceServerModule,
+} from '@nestkit-x/microservice';
 
 @Module({
   controllers: [AppController, AppMicroController],
@@ -20,6 +23,11 @@ import { NestKitMicroserviceServerModule } from '@nestkit-x/microservice';
     NestKitConfigModule.forRoot({ exampleGenerationEnv: Environment.Local }),
 
     NestKitLoggerModule.forRoot(),
+
+    NestKitMicroserviceClientModule.forRoot({
+      servers: ['localhost:4222'],
+      name: 'test-service',
+    }),
 
     NestKitMicroserviceServerModule.forRoot({
       servers: ['localhost:4222'],

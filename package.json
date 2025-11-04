@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Ultra-performant modules kit for NestJS",
   "scripts": {
-    "prepare": "husky",
+    "prepare": "husky && ts-patch install && typia patch",
     "lint": "nx run-many -t lint --parallel=5 --fix"
   },
   "devDependencies": {
@@ -83,7 +83,7 @@
     "helmet": "^8.1.0",
     "luxon": "^3.6.1",
     "nats": "^2.29.3",
-    "nestjs-pino": "^4.4.0",
+    "nestjs-pino": "^4.4.1",
     "npm": "^11.4.2",
     "pino": "^10.0.0",
     "pino-http": "^10.5.0",
