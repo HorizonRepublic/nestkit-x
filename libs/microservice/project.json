@@ -1,7 +1,7 @@
 {
-  "name": "compression",
+  "name": "microservice",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/compression/src",
+  "sourceRoot": "libs/microservice/src",
   "projectType": "library",
   "release": {
     "version": {
@@ -16,11 +16,11 @@
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/libs/compression",
-        "tsConfig": "libs/compression/tsconfig.lib.json",
-        "packageJson": "libs/compression/package.json",
-        "main": "libs/compression/src/index.ts",
-        "assets": ["libs/compression/*.md"]
+        "outputPath": "dist/libs/microservice",
+        "tsConfig": "libs/microservice/tsconfig.lib.json",
+        "packageJson": "libs/microservice/package.json",
+        "main": "libs/microservice/src/index.ts",
+        "assets": ["libs/microservice/*.md"]
       }
     },
     "nx-release-publish": {

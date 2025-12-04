@@ -1,7 +1,6 @@
 import nx from '@nx/eslint-plugin';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import jsdoc from 'eslint-plugin-jsdoc';
-import perfectionist from 'eslint-plugin-perfectionist';
 import preferArrowPlugin from 'eslint-plugin-prefer-arrow';
 import eslintPluginPrettier from 'eslint-plugin-prettier';
 import sonarjs from 'eslint-plugin-sonarjs';
@@ -17,22 +16,25 @@ export default [
   ...nx.configs['flat/javascript'],
   ...tseslint.configs.recommended,
   jsdoc.configs['flat/recommended-typescript'],
-  perfectionist.configs['recommended-natural'],
 
   {
     ...sonarjs.configs.recommended,
     files: ['**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      ...sonarjs.configs.recommended.rules,
+      // Disable TODO tag rule - TODOs are meant to be done later
+      'sonarjs/todo-tag': 'off',
+    },
   },
 
   // Ignored paths
   {
     ignores: [
-      '**/dist',
-      '**/node_modules',
-      '**/coverage',
-      'docs/**/*', // Exclude entire docs folder
-      '**/*.md',
-      '**/*.mdx',
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.nx/**',
+      '**/tmp/**',
+      '**/.docusaurus/**',
     ],
   },
 
@@ -111,12 +113,7 @@ export default [
       'jsdoc/require-description': 'error',
       'jsdoc/require-description-complete-sentence': 'error',
 
-      'jsdoc/require-example': [
-        'warn',
-        {
-          contexts: ['ClassDeclaration', 'MethodDefinition[kind="method"]'],
-        },
-      ],
+      'jsdoc/require-example': ['off'],
       'jsdoc/require-hyphen-before-param-description': ['error', 'never'],
       'jsdoc/require-jsdoc': [
         'off', // enable later
@@ -174,26 +171,6 @@ export default [
         { blankLine: 'always', next: 'export', prev: '*' },
         { blankLine: 'always', next: '*', prev: 'block-like' },
       ],
-      // Replaced import sorting with perfectionist
-      'perfectionist/sort-imports': [
-        'error',
-        {
-          groups: [
-            'builtin',
-            'external',
-            'internal',
-            'parent',
-            'sibling',
-            'index',
-            'object',
-            'type',
-            'unknown',
-          ],
-          order: 'asc',
-          type: 'natural',
-        },
-      ],
-
       'prefer-arrow-callback': 'error',
 
       // Prefer arrow functions

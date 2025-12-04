@@ -11,11 +11,10 @@ import {
   IAppRefService,
   IAppStateService,
 } from '@nestkit-x/core';
-import { UltimateExpressAdapter } from '@stigma.io/nestjs-ultimate-express';
 import { defer, from, map, Observable, shareReplay, switchMap, tap } from 'rxjs';
-import * as UltimateExpress from 'ultimate-express';
 
 import { KernelModule } from './kernel.module';
+import { FastifyAdapter } from '@nestjs/platform-fastify';
 
 export class NestKitKernel {
   private static bootstrapResult$?: Observable<NestKitKernel>;
@@ -45,9 +44,7 @@ export class NestKitKernel {
   }
 
   private bootstrap$(appModule: Type<unknown>): Observable<void> {
-    const ultimateExpressInstance = UltimateExpress({ threads: 0 });
-
-    const adapter = new UltimateExpressAdapter(ultimateExpressInstance) as AbstractHttpAdapter;
+    const adapter = new FastifyAdapter() as AbstractHttpAdapter;
 
     const appFactory = NestFactory.create(KernelModule.forRoot(appModule), adapter, {
       abortOnError: false,

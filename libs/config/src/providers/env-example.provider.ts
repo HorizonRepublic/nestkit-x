@@ -10,7 +10,7 @@ import { catchError, defer, EMPTY, from, map, Observable, of, switchMap, tap } f
 
 import { CONFIG_MODULE_OPTIONS, ENV_METADATA_KEY } from '../const';
 import { IEnvFieldMetadata } from '../types';
-import { IConfigModuleOptions } from '../types/i-config-module.options';
+import { IConfigModuleOptions } from '../types/config-module.options';
 
 /**
  * Environment Example File Generator.
@@ -395,7 +395,7 @@ export class EnvExampleProvider implements OnModuleInit {
    * @example -
    */
   private shouldGenerateExamples(currentEnv: Environment): boolean {
-    return currentEnv === this.options.generateExampleIn;
+    return currentEnv === this.options.exampleGenerationEnv;
   }
 
   /**
