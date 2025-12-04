@@ -1,5 +1,5 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigFactory, ConfigModule } from '@nestjs/config';
 import { Environment } from '@nestkit-x/core';
 
 import { CONFIG_MODULE_OPTIONS } from './const';
@@ -9,10 +9,21 @@ import { IConfigModuleOptions } from './types/config-module.options';
 @Module({})
 export class NestKitConfigModule {
   public static forRoot(
-    options: IConfigModuleOptions = { exampleGenerationEnv: Environment.Local },
+    options: IConfigModuleOptions = {
+      exampleGenerationEnv: Environment.Local,
+      load: [],
+    },
   ): DynamicModule {
     return {
-      imports: [ConfigModule],
+      global: false,
+      imports: [
+        ConfigModule.forRoot({
+          cache: true,
+          load: options.load ?? [],
+          isGlobal: true,
+          expandVariables: true,
+        }),
+      ],
       module: NestKitConfigModule,
       providers: [
         {
@@ -21,6 +32,13 @@ export class NestKitConfigModule {
         },
         EnvExampleProvider,
       ],
+    };
+  }
+
+  public static forFeature(config: ConfigFactory): DynamicModule {
+    return {
+      module: NestKitConfigModule,
+      imports: [ConfigModule.forFeature(config)],
     };
   }
 }

@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { NestKitConfigModule } from '@nestkit-x/config';
 import { Environment } from '@nestkit-x/core';
 import { NestKitLoggerModule } from '@nestkit-x/logger';
@@ -15,15 +14,13 @@ import { JetstreamClientModule } from '@horizon-republic/nestjs-jetstream';
 @Module({
   controllers: [AppController, AppMicroController],
   imports: [
-    ConfigModule.forFeature(appConfig),
-
     // server
     JetstreamClientModule.forFeature({
       servers: ['localhost:4222'],
       name: 'test-service',
     }),
 
-    NestKitConfigModule.forRoot({ exampleGenerationEnv: Environment.Local }),
+    NestKitConfigModule.forRoot({ load: [appConfig], exampleGenerationEnv: Environment.Local }),
 
     NestKitLoggerModule.forRoot(),
 
