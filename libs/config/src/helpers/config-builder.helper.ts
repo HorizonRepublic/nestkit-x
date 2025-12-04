@@ -83,7 +83,7 @@ export class ConfigBuilder<T extends object> {
    * @param value The string value from process.env.
    * @param type The constructor type or enum to convert to.
    * @returns The converted value as string, number, or boolean.
-   * @throws RuntimeException If conversion fails.
+   * @throws {RuntimeException} - If conversion fails.
    * @example -
    */
   private convertValue(
@@ -112,7 +112,7 @@ export class ConfigBuilder<T extends object> {
    *
    * @param configClass Configuration class constructor.
    * @returns Fully initialized configuration instance.
-   * @throws RuntimeException If required environment variables are missing or invalid.
+   * @throws {RuntimeException} If required environment variables are missing or invalid.
    * @example -
    */
   private initializeConfig(configClass: new () => T): T {

@@ -20,7 +20,7 @@ export type EnumType = Record<number | string, number | string>;
 export type EnvTypeConstructor = typeof Boolean | typeof Number | typeof String;
 
 /**
- * Metadata stored for each environment variable field decorated with @Env.
+ * Metadata stored for each environment variable field decorated with Env decorator.
  */
 export interface IEnvFieldMetadata {
   /** Environment variable key name. */
