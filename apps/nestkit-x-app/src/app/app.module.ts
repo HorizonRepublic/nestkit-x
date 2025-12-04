@@ -1,15 +1,14 @@
 import { Module } from '@nestjs/common';
-import { NestKitConfigModule } from '@nestkit-x/config';
-import { Environment } from '@nestkit-x/core';
 import { NestKitLoggerModule } from '@nestkit-x/logger';
-
-import { appConfig } from '../configs/app.config';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppMicroController } from './app.micro-controller';
 import { NestKitMicroserviceServerModule } from '@nestkit-x/microservice';
 import { JetstreamClientModule } from '@horizon-republic/nestjs-jetstream';
+import { SubModule } from './submodule/sub.module';
+import { NestKitConfigModule } from '@nestkit-x/config';
+import { appConfig } from '../configs/app.config';
 
 @Module({
   controllers: [AppController, AppMicroController],
@@ -20,7 +19,7 @@ import { JetstreamClientModule } from '@horizon-republic/nestjs-jetstream';
       name: 'test-service',
     }),
 
-    NestKitConfigModule.forRoot({ load: [appConfig], exampleGenerationEnv: Environment.Local }),
+    NestKitConfigModule.forFeature(appConfig),
 
     NestKitLoggerModule.forRoot(),
 
@@ -28,6 +27,9 @@ import { JetstreamClientModule } from '@horizon-republic/nestjs-jetstream';
       servers: ['localhost:4222'],
       name: 'test-service',
     }),
+
+    // app layer
+    SubModule,
   ],
   providers: [AppService],
 })
