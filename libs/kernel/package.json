@@ -6,7 +6,7 @@
     "url": "git+https://github.com/HorizonRepublic/nestkit-x.git",
     "directory": "libs/core"
   },
-  "homepage": "https://github.com/HorizonRepublic/nestkit-x#readme",
+  "homepage": "https://github.com/HorizonRepublic/nestkit-x/blob/main/libs/kernel/README.md",
   "bugs": {
     "url": "https://github.com/HorizonRepublic/nestkit-x/issues"
   },
