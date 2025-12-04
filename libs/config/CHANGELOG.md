@@ -1,3 +1,14 @@
+## 0.3.0 (2025-12-04)
+
+### Features
+
+- **config:** export ConfigFactory type ([af76cd0](https://github.com/HorizonRepublic/nestkit-x/commit/af76cd0))
+- **config:** refactor type definitions for ConfigFactory and ConfigFactoryKeyHost ([fd124ec](https://github.com/HorizonRepublic/nestkit-x/commit/fd124ec))
+
+### ❤️ Thank You
+
+- Kyrylo Lytvynov @themaiby
+
 ## 0.2.2 (2025-12-04)
 
 ### Documentation
