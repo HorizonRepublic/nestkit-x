@@ -1,3 +1,13 @@
+## 0.2.2 (2025-12-04)
+
+### Documentation
+
+- **config:** fix README badge formatting ([e425ac1](https://github.com/HorizonRepublic/nestkit-x/commit/e425ac1))
+
+### ❤️ Thank You
+
+- Kyrylo Lytvynov @themaiby
+
 ## 0.2.1 (2025-12-04)
 
 ### Documentation
