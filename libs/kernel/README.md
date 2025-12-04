@@ -1,11 +1,43 @@
-# kernel
+# @nestkit-x/kernel
+Core kernel for NestJS applications with reactive lifecycle management based on RxJS.
 
-This library was generated with [Nx](https://nx.dev).
+## Installation
+```shell
+npm install @nestkit-x/kernel
+```
 
-## Building
+## Usage
 
-Run `nx build kernel` to build the library.
+```typescript
+import { NestKitKernel } from '@nestkit-x/kernel';
+import { AppModule } from './app.module';
 
-## Running unit tests
+NestKitKernel.init(AppModule).subscribe({
+  next: () => console.log('Application started'),
+  error: (err) => console.error('Bootstrap failed:', err),
+});
+```
 
-Run `nx test kernel` to execute the unit tests via [Jest](https://jestjs.io).
+## Features
+
+- Reactive bootstrap based on RxJS
+- Application state management through AppState
+- Fastify adapter integration
+- Centralized lifecycle management
+- Type-safe configuration
+
+## Development
+
+### Building
+```shell
+nx build kernel
+```
+
+### Running unit tests
+
+```shell
+nx test kernel
+```
+## License
+
+MIT © Horizon Republic
