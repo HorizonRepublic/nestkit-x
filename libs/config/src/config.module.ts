@@ -11,7 +11,6 @@ export class NestKitConfigModule {
   public static forRoot(
     options: IConfigModuleOptions = {
       exampleGenerationEnv: Environment.Local,
-      load: [],
     },
   ): DynamicModule {
     return {
@@ -19,7 +18,6 @@ export class NestKitConfigModule {
       imports: [
         ConfigModule.forRoot({
           cache: true,
-          load: options.load ?? [],
           isGlobal: true,
           expandVariables: true,
         }),
@@ -32,6 +30,7 @@ export class NestKitConfigModule {
         },
         EnvExampleProvider,
       ],
+      exports: [ConfigModule],
     };
   }
 
@@ -39,6 +38,7 @@ export class NestKitConfigModule {
     return {
       module: NestKitConfigModule,
       imports: [ConfigModule.forFeature(config)],
+      exports: [ConfigModule],
     };
   }
 }
