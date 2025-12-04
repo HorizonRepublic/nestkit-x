@@ -1,6 +1,6 @@
 # @nestkit-x/config
 
-`[![npm version](https://img.shields.io/npm/v/@nestkit-x/config.svg)](https://www.npmjs.com/package/@nestkit-x/config)`
+[![npm version](https://img.shields.io/npm/v/@nestkit-x/config.svg)](https://www.npmjs.com/package/@nestkit-x/config)
 
 Enhanced configuration module for NestJS applications with automatic `.env.example` generation based on decorated
 configuration classes.
