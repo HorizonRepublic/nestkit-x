@@ -1,0 +1,31 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "automerge": true,
+  "labels": ["dependencies"],
+  "dependencyDashboard": true,
+  "commitMessagePrefix": "deps():",
+  "automergeStrategy": "squash",
+  "rebaseWhen": "conflicted",
+  "baseBranches": ["dev"],
+  "branchPrefix": "renovate/",
+  "osvVulnerabilityAlerts": true,
+  "assignees": ["@themaiby"],
+  "reviewers": ["@themaiby"],
+  "addLabels": ["automated-pr"],
+  "packageRules": [
+    {
+      "enabled": true,
+      "matchPackageNames": ["^@nestkit-x/", "^@nx/", "^nx"]
+    },
+    {
+      "groupName": "minor and patch dependencies",
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupSlug": "all-minor-patch"
+    },
+    {
+      "groupName": "major dependencies",
+      "matchUpdateTypes": ["major"]
+    }
+  ]
+}

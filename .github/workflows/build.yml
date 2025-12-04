@@ -1,0 +1,88 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'libs/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'nx.json'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'libs/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'nx.json'
+      - '.github/workflows/**'
+  workflow_call:
+    outputs:
+      build-success:
+        description: Build success status
+        value: ${{ jobs.build.outputs.success }}
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and test (libs/*)
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'chore(release): publish')"
+    outputs:
+      success: ${{ steps.mark.outputs.success }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Restore pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Restore Nx cache
+        uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: ${{ runner.os }}-nx-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-nx-
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm nx run-many -t lint -p libs/* --parallel=5
+
+      # - name: Test
+      #   run: pnpm nx run-many -t test -p libs/* --parallel=5
+
+      - name: Build
+        run: pnpm nx run-many -t build -p libs/* --parallel=3
+
+      - name: Show build artifacts
+        run: |
+          echo "Built packages:"
+          ls -R dist | head
+
+      - name: Mark success
+        id: mark
+        run: echo "success=true" >> "$GITHUB_OUTPUT"

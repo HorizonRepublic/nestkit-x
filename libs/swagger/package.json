@@ -1,0 +1,35 @@
+{
+  "name": "@nestkit-x/swagger",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HorizonRepublic/nestkit-x.git",
+    "directory": "libs/core"
+  },
+  "homepage": "https://github.com/HorizonRepublic/nestkit-x#readme",
+  "bugs": {
+    "url": "https://github.com/HorizonRepublic/nestkit-x/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "nestjs",
+    "typescript",
+    "nestkit-x",
+    "framework",
+    "library"
+  ],
+  "author": {
+    "name": "Horizon Republic",
+    "url": "https://github.com/HorizonRepublic"
+  },
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "@nestjs/common": "^11.1.3"
+  }
+}

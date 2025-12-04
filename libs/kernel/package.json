@@ -1,0 +1,43 @@
+{
+  "name": "@nestkit-x/kernel",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HorizonRepublic/nestkit-x.git",
+    "directory": "libs/core"
+  },
+  "homepage": "https://github.com/HorizonRepublic/nestkit-x#readme",
+  "bugs": {
+    "url": "https://github.com/HorizonRepublic/nestkit-x/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "nestjs",
+    "typescript",
+    "nestkit-x",
+    "framework",
+    "library"
+  ],
+  "author": {
+    "name": "Horizon Republic",
+    "url": "https://github.com/HorizonRepublic"
+  },
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "@nestjs/platform-fastify": "^11.1.9"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^11.1.3",
+    "@nestjs/core": "^11.1.3",
+    "@nestjs/config": "^4.0.2",
+    "@nestkit-x/core": "0.0.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  }
+}
