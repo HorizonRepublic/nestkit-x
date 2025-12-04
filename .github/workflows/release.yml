@@ -1,10 +1,9 @@
 name: Release
 
 on:
-  workflow_run:
-    workflows: ['Build']
-    types: [completed]
-    branches: [main]
+  push:
+    branches:
+      - main
 
 concurrency:
   group: release-main
@@ -12,42 +11,27 @@ concurrency:
 
 jobs:
   release:
-    name: Version, tag, changelog, publish
+    name: Version, changelog, tag, push
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success'
+
+    if: "!startsWith(github.event.head_commit.message, 'chore(release): publish')"
 
     permissions:
       contents: write
-      packages: write
       pull-requests: write
       issues: write
       id-token: write
 
     steps:
-      - name: Checkout trigger commit
-        uses: actions/checkout@v6
+      - name: Checkout main
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event.workflow_run.head_sha }}
+          filter: tree:0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Fetch tags
-        run: |
-          git fetch --tags --force
-          echo "Existing tags:"
-          git tag -l
-
-      - name: Read commit message
-        id: commit
-        run: echo "msg=$(git log -1 --pretty=format:%s)" >> "$GITHUB_OUTPUT"
-
-      - name: Skip release for release commit
-        if: |
-          contains(steps.commit.outputs.msg, 'chore(release): publish')
-        run: exit 0
-
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: 22
 
@@ -59,16 +43,13 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        
+
       - name: Configure git user for release commits
         run: |
           git config user.name "Release Bot"
           git config user.email "release-bot@users.noreply.github.com"
 
-      - name: Run nx release
-        run: pnpm nx release --verbose
+      - name: Run nx release (version + changelog + git)
+        run: pnpm nx release --verbose --skip-publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
