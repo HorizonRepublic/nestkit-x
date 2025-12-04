@@ -1,3 +1,13 @@
+## 0.1.1 (2025-12-04)
+
+### Chores
+
+- **package.json:** update repository metadata, add keywords, and enhance library configuration ([84bee73](https://github.com/HorizonRepublic/nestkit-x/commit/84bee73))
+
+### ❤️ Thank You
+
+- Kyrylo Lytvynov @themaiby
+
 ## 0.1.0 (2025-12-04)
 
 ### Features
