@@ -1,10 +1,11 @@
 import 'reflect-metadata';
 import { Type } from '@nestjs/common';
-import { ConfigFactory, ConfigFactoryKeyHost, registerAs } from '@nestjs/config';
+import { registerAs } from '@nestjs/config';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
 
 import { ENV_METADATA_KEY } from '../const';
 import { EnumType, EnvTypeConstructor, IEnvFieldMetadata } from '../types';
+import { ConfigFactory, ConfigFactoryKeyHost } from '../types/config-factory.type';
 
 /**
  * Builder class for fluent configuration creation.
