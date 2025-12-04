@@ -6,7 +6,7 @@ import { MICROSERVICE_OPTIONS } from '../const';
 import { IMicroserviceModuleOptions } from '../types/microservice-module.options';
 import { CustomStrategy } from '@nestjs/microservices';
 import { DebugEvents, Events } from 'nats';
-import { getJetStreamTransportToken } from '@nestkit-x/jetstream-transport-x';
+import { getJetStreamTransportToken } from '@horizon-republic/nestjs-jetstream';
 
 @Injectable()
 export class MicroserviceServerProvider {

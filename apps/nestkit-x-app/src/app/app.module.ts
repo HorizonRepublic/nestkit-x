@@ -10,7 +10,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppMicroController } from './app.micro-controller';
 import { NestKitMicroserviceServerModule } from '@nestkit-x/microservice';
-import { JetstreamClientModule } from '@nestkit-x/jetstream-transport-x';
+import { JetstreamClientModule } from '@horizon-republic/nestjs-jetstream';
 
 @Module({
   controllers: [AppController, AppMicroController],

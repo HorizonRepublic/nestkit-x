@@ -17,8 +17,6 @@
     "paths": {
       "@nestkit-x/config": ["libs/config/src/index.ts"],
       "@nestkit-x/core": ["libs/core/src/index.ts"],
-      "@nestkit-x/jetstream-transport": ["libs/jetstream-transport/src/index.ts"],
-      "@nestkit-x/jetstream-transport-x": ["libs/jetstream-transport-x/src/index.ts"],
       "@nestkit-x/kernel": ["libs/kernel/src/index.ts"],
       "@nestkit-x/logger": ["libs/logger/src/index.ts"],
       "@nestkit-x/microservice": ["libs/microservice/src/index.ts"],

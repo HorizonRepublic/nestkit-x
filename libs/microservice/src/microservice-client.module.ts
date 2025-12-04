@@ -1,6 +1,6 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { JetstreamClientModule } from '@nestkit-x/jetstream-transport-x';
 import { IMicroserviceModuleOptions } from './types/microservice-module.options';
+import { JetstreamClientModule } from '@horizon-republic/nestjs-jetstream';
 
 @Module({})
 export class NestKitMicroserviceClientModule {
