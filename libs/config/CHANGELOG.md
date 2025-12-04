@@ -1,3 +1,13 @@
+## 0.2.0 (2025-12-04)
+
+### Features
+
+- **config:** enhance configuration module with dynamic load support and update app module ([2bab7f9](https://github.com/HorizonRepublic/nestkit-x/commit/2bab7f9))
+
+### ❤️ Thank You
+
+- Kyrylo Lytvynov @themaiby
+
 ## 0.1.1 (2025-12-04)
 
 ### Chores
