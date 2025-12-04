@@ -1,3 +1,13 @@
+## 0.1.0 (2025-12-04)
+
+### Features
+
+- **kernel:** add standalone bootstrap support for NestKitKernel ([4216903](https://github.com/HorizonRepublic/nestkit-x/commit/4216903))
+
+### ❤️ Thank You
+
+- Kyrylo Lytvynov @themaiby
+
 ## 0.0.3 (2025-12-04)
 
 ### Documentation
