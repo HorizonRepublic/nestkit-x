@@ -1,3 +1,17 @@
+## 0.2.1 (2025-12-04)
+
+### Documentation
+
+- **config:** update README with detailed usage guide, features, and examples ([a3f737b](https://github.com/HorizonRepublic/nestkit-x/commit/a3f737b))
+
+### Chores
+
+- **deps:** update dependencies and repository metadata for config module ([916b1b5](https://github.com/HorizonRepublic/nestkit-x/commit/916b1b5))
+
+### ❤️ Thank You
+
+- Kyrylo Lytvynov @themaiby
+
 ## 0.2.0 (2025-12-04)
 
 ### Features
