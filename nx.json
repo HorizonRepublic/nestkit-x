@@ -49,9 +49,22 @@
     },
 
     "changelog": {
-      "workspaceChangelog": false,
-      "projectChangelogs": {
+      "workspaceChangelog": {
+        "file": "CHANGELOG.md",
         "createRelease": "github",
+        "entryWhenNoChanges": "This release contains no new changes.",
+        "renderOptions": {
+          "authors": true,
+          "commitReferences": true,
+          "versionTitleDate": true,
+          "mapAuthorsToGitHubUsernames": true
+        },
+        "git": {
+          "commit": true,
+          "commitMessage": "docs(changelog): update workspace changelog for v{version}"
+        }
+      },
+      "projectChangelogs": {
         "file": "{projectRoot}/CHANGELOG.md",
         "entryWhenNoChanges": "This release contains no new changes.",
         "renderOptions": {
