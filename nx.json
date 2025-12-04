@@ -55,7 +55,7 @@
         "file": "{projectRoot}/CHANGELOG.md",
         "entryWhenNoChanges": "This release contains no new changes.",
         "renderOptions": {
-          "authors": false,
+          "authors": true,
           "commitReferences": true,
           "versionTitleDate": true,
           "mapAuthorsToGitHubUsernames": true

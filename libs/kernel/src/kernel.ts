@@ -11,7 +11,7 @@ import {
   IAppRefService,
   IAppStateService,
 } from '@nestkit-x/core';
-import { defer, from, map, Observable, shareReplay, switchMap, tap } from 'rxjs';
+import { defer, from, map, Observable, of, shareReplay, switchMap, tap } from 'rxjs';
 
 import { KernelModule } from './kernel.module';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
@@ -43,6 +43,24 @@ export class NestKitKernel {
     return this.bootstrapResult$;
   }
 
+  public static standalone(appModule: Type<unknown>): Observable<NestKitKernel> {
+    const kernel = new NestKitKernel();
+
+    const bootstrap$ = kernel.bootstrapStandalone$(appModule).pipe(
+      map(() => kernel),
+      shareReplay(1),
+    );
+
+    bootstrap$.subscribe({
+      error: (err) => {
+        console.error('Standalone app bootstrap failed:', err);
+        process.exit(1);
+      },
+    });
+
+    return bootstrap$;
+  }
+
   private bootstrap$(appModule: Type<unknown>): Observable<void> {
     const adapter = new FastifyAdapter() as AbstractHttpAdapter;
 
@@ -64,6 +82,19 @@ export class NestKitKernel {
 
       switchMap(() => this.listen$()),
     );
+  }
+
+  private bootstrapStandalone$(standaloneModule: Type<unknown>): Observable<void> {
+    const appFactory = NestFactory.createApplicationContext(
+      KernelModule.forRoot(standaloneModule),
+      {
+        abortOnError: false,
+        autoFlushLogs: true,
+        bufferLogs: true,
+      },
+    );
+
+    return defer(() => from(appFactory).pipe(switchMap(() => of(void 0))));
   }
 
   private listen$(): Observable<void> {
