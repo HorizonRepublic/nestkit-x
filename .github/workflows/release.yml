@@ -11,15 +11,14 @@ concurrency:
 
 jobs:
   release:
-    name: Version, changelog, tag, push
+    name: Version, changelog, tag, push, publish
     runs-on: ubuntu-latest
 
     if: "!startsWith(github.event.head_commit.message, 'chore(release): publish')"
 
     permissions:
       contents: write
-      pull-requests: write
-      issues: write
+      packages: write
       id-token: write
 
     steps:
@@ -34,6 +33,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          registry-url: https://registry.npmjs.org/
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -53,3 +53,9 @@ jobs:
         run: pnpm nx release --verbose --skip-publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish packages to npm
+        run: pnpm nx release publish --verbose
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
