@@ -1,13 +1,11 @@
 import { TypedRoute } from '@nestia/core';
 import { Controller, Inject, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { firstValueFrom, tap } from 'rxjs';
-import { MessageStats } from './msg-stats';
+import { firstValueFrom } from 'rxjs';
 
 @Controller()
 export class AppController {
   private readonly logger = new Logger(AppController.name);
-  private readonly stats = MessageStats.getInstance();
 
   public constructor(
     @Inject('test-service')
@@ -15,8 +13,8 @@ export class AppController {
   ) {}
 
   @TypedRoute.Get('stats')
-  public getStats(): any {
-    return this.stats.getStats();
+  public getStats() {
+    return {};
   }
 
   @TypedRoute.Get()
@@ -26,19 +24,11 @@ export class AppController {
         .emit('test-event', {
           data: 'HELLO FROM CONTROLLER EVENT!!!',
         })
-        .pipe(
-          tap(() => {
-            this.stats.incrementEventsSent();
-          }),
-        ),
+        .pipe(),
     );
 
     const data = await firstValueFrom(
-      this.testService.send('test-cmd', { data: 'HELLO FROM CONTROLLER CMD!!!' }).pipe(
-        tap((data) => {
-          this.stats.incrementRpcSent();
-        }),
-      ),
+      this.testService.send('test-cmd', { data: 'HELLO FROM CONTROLLER CMD!!!' }).pipe(),
     );
 
     return { data };
