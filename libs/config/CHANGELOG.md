@@ -1,3 +1,13 @@
+## 0.4.0 (2025-12-04)
+
+### Features
+
+- **config:** remove `load` option and restrict config usage to service-only imports ([da76617](https://github.com/HorizonRepublic/nestkit-x/commit/da76617))
+
+### ❤️ Thank You
+
+- Kyrylo Lytvynov @themaiby
+
 ## 0.3.0 (2025-12-04)
 
 ### Features
