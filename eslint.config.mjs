@@ -1,6 +1,5 @@
 import nx from '@nx/eslint-plugin';
 import eslintConfigPrettier from 'eslint-config-prettier';
-import jsdoc from 'eslint-plugin-jsdoc';
 import preferArrowPlugin from 'eslint-plugin-prefer-arrow';
 import eslintPluginPrettier from 'eslint-plugin-prettier';
 import sonarjs from 'eslint-plugin-sonarjs';
@@ -15,7 +14,6 @@ export default [
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],
   ...tseslint.configs.recommended,
-  jsdoc.configs['flat/recommended-typescript'],
 
   {
     ...sonarjs.configs.recommended,
@@ -57,7 +55,6 @@ export default [
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     plugins: {
       '@nx': nx,
-      jsdoc,
       'prefer-arrow': preferArrowPlugin,
       prettier: eslintPluginPrettier,
       'unused-imports': unusedImports,
@@ -101,39 +98,6 @@ export default [
       complexity: ['warn', 10],
       // Function structure rules
       'function-call-argument-newline': ['error', 'consistent'],
-      'jsdoc/check-alignment': 'error',
-      'jsdoc/check-indentation': 'error',
-      'jsdoc/check-line-alignment': ['error', 'never'],
-      'jsdoc/check-param-names': 'error',
-      'jsdoc/check-property-names': 'error',
-      'jsdoc/check-tag-names': 'error',
-      'jsdoc/check-types': 'off',
-      'jsdoc/no-undefined-types': 'off',
-      // JSDoc rules (adapted for NestJS-style code)
-      'jsdoc/require-description': 'error',
-      'jsdoc/require-description-complete-sentence': 'error',
-
-      'jsdoc/require-example': ['off'],
-      'jsdoc/require-hyphen-before-param-description': ['error', 'never'],
-      'jsdoc/require-jsdoc': [
-        'off', // enable later
-        {
-          contexts: ['PropertyDefinition', 'TSPropertySignature'],
-          publicOnly: true,
-          require: {
-            ArrowFunctionExpression: true,
-            ClassDeclaration: true,
-            FunctionDeclaration: true,
-            MethodDefinition: true,
-          },
-        },
-      ],
-      'jsdoc/require-param-description': 'error',
-      'jsdoc/require-returns-description': 'error',
-      'jsdoc/require-throws': 'error',
-
-      'jsdoc/tag-lines': ['error', 'any', { startLines: 1 }],
-
       'lines-between-class-members': [
         'error',
         {
@@ -290,10 +254,6 @@ export default [
 
       // Disable base rules that conflict with TS equivalents
       'comma-dangle': 'off',
-
-      'jsdoc/no-types': 'error',
-      'jsdoc/require-param-type': 'off',
-      'jsdoc/require-returns-type': 'off',
 
       'no-duplicate-imports': 'off',
       'no-unused-vars': 'off',

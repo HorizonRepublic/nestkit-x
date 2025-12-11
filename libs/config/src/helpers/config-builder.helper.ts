@@ -53,11 +53,12 @@ export class ConfigBuilder<T extends object> {
    * .build()
    * ```
    */
+
   public build(): ConfigFactory & ConfigFactoryKeyHost<T> {
     const instance = this.initializeConfig(this.configClass);
     const finalConfig = this.validator ? this.validator(instance) : instance;
 
-    return registerAs(this.token, () => finalConfig);
+    return registerAs(this.token, () => Object.freeze(finalConfig));
   }
 
   /**
