@@ -1,3 +1,13 @@
+## 0.5.0 (2025-12-11)
+
+### Features
+
+- **config:** freeze config output in `ConfigBuilder` ([1afbdec](https://github.com/HorizonRepublic/nestkit-x/commit/1afbdec))
+
+### ❤️ Thank You
+
+- Kyrylo Lytvynov @themaiby
+
 ## 0.4.0 (2025-12-04)
 
 ### Features
