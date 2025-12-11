@@ -7,7 +7,7 @@
   "commitMessagePrefix": "deps():",
   "automergeStrategy": "squash",
   "rebaseWhen": "conflicted",
-  "baseBranches": ["dev"],
+  "baseBranchPatterns": ["dev"],
   "branchPrefix": "renovate/",
   "osvVulnerabilityAlerts": true,
   "assignees": ["@themaiby"],
