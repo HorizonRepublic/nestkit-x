@@ -31,7 +31,7 @@
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
-    "typia": "^9.0.0",
+    "typia": "^9.0.0 || ^11.0.0",
     "rxjs": "^7.8.0",
     "@nestjs/common": "^11.1.0"
   }
