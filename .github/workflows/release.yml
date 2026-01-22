@@ -26,7 +26,7 @@ jobs:
     steps:
       # ---------- checkout потрібного SHA ----------
       - name: 📦 Checkout trigger commit
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: ${{ github.event.workflow_run.head_sha }}
@@ -43,7 +43,7 @@ jobs:
         run: exit 0
 
       # ---------- toolchain ---------------------------
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 23
 
