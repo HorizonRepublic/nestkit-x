@@ -11,10 +11,10 @@ npm install @zerly/kernel
 ## Usage
 
 ```typescript
-import { NestKitKernel } from '@zerly/kernel';
+import { Kernel } from '@zerly/kernel';
 import { AppModule } from './app.module';
 
-NestKitKernel.init(AppModule).subscribe({
+Kernel.init(AppModule).subscribe({
   next: () => console.log('Application started'),
   error: (err) => console.error('Bootstrap failed:', err),
 });

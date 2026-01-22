@@ -1,5 +1,5 @@
 {
-  "name": "nestkit-x-app",
+  "name": "example-app",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/example-app/src",
   "projectType": "application",
@@ -33,16 +33,16 @@
       "defaultConfiguration": "development",
       "dependsOn": ["build"],
       "options": {
-        "buildTarget": "nestkit-x-app:build",
+        "buildTarget": "example-app:build",
         "runBuildTargetDependencies": false
       },
       "configurations": {
         "development": {
           "runtimeArgs": [],
-          "buildTarget": "nestkit-x-app:build:development"
+          "buildTarget": "example-app:build:development"
         },
         "production": {
-          "buildTarget": "nestkit-x-app:build:production"
+          "buildTarget": "example-app:build:production"
         }
       }
     },

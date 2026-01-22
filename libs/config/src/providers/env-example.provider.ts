@@ -2,15 +2,14 @@ import { createHash } from 'crypto';
 import * as fs from 'fs/promises';
 import { dirname } from 'path';
 
-import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { APP_CONFIG, Environment, IAppConfig } from '@zerly/core';
+import { APP_CONFIG, IAppConfig } from '@zerly/core';
 import { rootPath } from 'get-root-path';
 import { catchError, defer, EMPTY, from, map, Observable, of, switchMap, tap } from 'rxjs';
 
-import { CONFIG_MODULE_OPTIONS, ENV_METADATA_KEY } from '../const';
+import { ENV_METADATA_KEY } from '../tokens';
 import { IEnvFieldMetadata } from '../types';
-import { IConfigModuleOptions } from '../types/config-module.options';
 
 /**
  * Environment Example File Generator.
@@ -65,18 +64,14 @@ export class EnvExampleProvider implements OnModuleInit {
   private static readonly templateHeader = `###
 #
 # This is auto generated file based on all config registered. Do not edit it manually.
-# If some of configs are not presented here, it means that they are not used @Env() decorator or 
+# If some of configs are not presented here, it means that they are not used @Env() decorator or
 # not registered with ConfigBuilder.
 #
 ###` as const;
 
   private readonly logger = new Logger(EnvExampleProvider.name);
 
-  public constructor(
-    @Inject(CONFIG_MODULE_OPTIONS)
-    private readonly options: IConfigModuleOptions,
-    private readonly configService: ConfigService,
-  ) {}
+  public constructor(private readonly configService: ConfigService) {}
 
   /**
    * Lifecycle hook that runs after module initialization.
@@ -285,7 +280,7 @@ export class EnvExampleProvider implements OnModuleInit {
       return of(appConfig);
     }).pipe(
       switchMap((appConfig) => {
-        if (!this.shouldGenerateExamples(appConfig.env)) return EMPTY;
+        if (!appConfig.generateEnvExample) return EMPTY;
 
         const configSections = this.extractConfigurationSections();
         const templateContent = this.buildTemplate(configSections);
@@ -385,17 +380,6 @@ export class EnvExampleProvider implements OnModuleInit {
       map((existingContent) => this.generateContentHash(existingContent)),
       catchError(() => of(null)),
     );
-  }
-
-  /**
-   * Determines if environment examples should be generated based on the current environment.
-   *
-   * @param currentEnv The current application environment.
-   * @returns True if examples should be generated, false otherwise.
-   * @example -
-   */
-  private shouldGenerateExamples(currentEnv: Environment): boolean {
-    return currentEnv === this.options.exampleGenerationEnv;
   }
 
   /**

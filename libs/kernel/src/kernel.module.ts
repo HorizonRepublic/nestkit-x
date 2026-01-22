@@ -1,14 +1,17 @@
 import { DynamicModule, Module, Provider, Type } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { APP_REF_SERVICE, APP_STATE_SERVICE, IAppRefService, IAppStateService } from '@zerly/core';
 import { KernelProvider } from './providers/kernel.provider';
 import { AppRefService } from './services/app-ref.service';
 import { AppStateService } from './services/app-state.service';
+import { ZerlyConfigModule } from '@zerly/config';
+import { appConfig } from './config/app.config';
 
 @Module({})
 export class KernelModule {
   public static forRoot(appModule: Type<unknown>): DynamicModule {
     return {
+      global: true,
+      imports: [ZerlyConfigModule.forRoot([appConfig]), appModule],
       exports: [
         {
           provide: APP_REF_SERVICE,
@@ -20,8 +23,6 @@ export class KernelModule {
           useClass: AppStateService,
         } satisfies Provider<IAppStateService>,
       ],
-      global: true,
-      imports: [ConfigModule.forRoot({ cache: true, isGlobal: false }), appModule],
       module: KernelModule,
       providers: [
         {

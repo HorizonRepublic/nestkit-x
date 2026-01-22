@@ -16,15 +16,15 @@ import { defer, from, map, Observable, of, shareReplay, switchMap, tap } from 'r
 import { KernelModule } from './kernel.module';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 
-export class NestKitKernel {
-  private static bootstrapResult$?: Observable<NestKitKernel>;
-  private static instance?: NestKitKernel;
+export class Kernel {
+  private static bootstrapResult$?: Observable<Kernel>;
+  private static instance?: Kernel;
 
   private appRef!: IAppRefService;
   private appState!: IAppStateService;
 
-  public static init(appModule: Type<unknown>): Observable<NestKitKernel> {
-    const kernel = (this.instance ??= new NestKitKernel());
+  public static init(appModule: Type<unknown>): Observable<Kernel> {
+    const kernel = (this.instance ??= new Kernel());
 
     if (this.bootstrapResult$) return this.bootstrapResult$;
 
@@ -43,8 +43,8 @@ export class NestKitKernel {
     return this.bootstrapResult$;
   }
 
-  public static standalone(appModule: Type<unknown>): Observable<NestKitKernel> {
-    const kernel = new NestKitKernel();
+  public static standalone(appModule: Type<unknown>): Observable<Kernel> {
+    const kernel = new Kernel();
 
     const bootstrap$ = kernel.bootstrapStandalone$(appModule).pipe(
       map(() => kernel),

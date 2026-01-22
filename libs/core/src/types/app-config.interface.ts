@@ -1,21 +1,16 @@
 import { tags } from 'typia';
-
-import { constants } from '../constants/index';
 import { Environment } from '../enums';
+import { Pattern } from 'typia/lib/tags/Pattern';
+import { Default } from 'typia/lib/tags/Default';
 
 export interface IAppConfig {
   readonly env: Environment;
 
-  readonly host: string & tags.Default<typeof constants.network.host>;
+  readonly host: string & tags.Default<'127.0.0.1'>;
 
-  readonly name: string &
-    tags.MaxLength<20> &
-    tags.MinLength<3> &
-    tags.Pattern<typeof constants.patterns.kebabPattern>;
+  readonly name: string & Pattern<'^[a-z][a-z0-9]*(-[a-z0-9]+)*$'>;
 
-  readonly port: number &
-    tags.Default<typeof constants.network.ports.nest> &
-    tags.Maximum<typeof constants.network.ports.maximal> &
-    tags.Minimum<typeof constants.network.ports.minimal> &
-    tags.Type<'uint32'>;
+  readonly port: number & tags.Type<'uint32'>;
+
+  readonly generateEnvExample: boolean & Default<true>;
 }

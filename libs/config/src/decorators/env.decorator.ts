@@ -1,5 +1,5 @@
-import { ENV_METADATA_KEY } from '../const';
 import { EnumType, EnvTypeConstructor, IEnvFieldMetadata, IEnvOptions } from '../types';
+import { ENV_METADATA_KEY } from '../tokens';
 
 /**
  * Property decorator for mapping environment variables to class properties.
