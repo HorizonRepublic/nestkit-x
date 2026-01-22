@@ -18,8 +18,4 @@ export interface IAppConfig {
     tags.Maximum<typeof constants.network.ports.maximal> &
     tags.Minimum<typeof constants.network.ports.minimal> &
     tags.Type<'uint32'>;
-
-  readonly version: string &
-    tags.Default<'0.0.1'> &
-    tags.Pattern<typeof constants.patterns.semverPattern>;
 }

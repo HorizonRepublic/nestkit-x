@@ -37,17 +37,14 @@
   "release": {
     "projects": ["libs/*"],
     "projectsRelationship": "fixed",
-
     "releaseTag": {
       "pattern": "v{version}",
       "requireSemver": true
     },
-
     "version": {
       "preVersionCommand": "pnpm dlx nx run-many -t build",
       "conventionalCommits": true
     },
-
     "changelog": {
       "workspaceChangelog": {
         "file": "CHANGELOG.md",
@@ -79,7 +76,6 @@
         }
       }
     },
-
     "conventionalCommits": {
       "types": {
         "feat": {

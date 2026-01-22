@@ -6,7 +6,7 @@ import {
   IAppConfig,
   IAppStateService,
   LoadPriority,
-} from '@nestkit-x/core';
+} from '@zerly/core';
 import { Logger } from 'nestjs-pino';
 
 import { HttpLogInterceptor } from './inetceptors/http-log.interceptor';

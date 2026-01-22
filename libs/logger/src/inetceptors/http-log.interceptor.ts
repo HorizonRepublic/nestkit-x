@@ -8,7 +8,7 @@ import {
   Logger,
   NestInterceptor,
 } from '@nestjs/common';
-import { Environment, IAppConfig } from '@nestkit-x/core';
+import { Environment, IAppConfig } from '@zerly/core';
 import { LevelWithSilent } from 'pino';
 import { catchError, Observable, throwError } from 'rxjs';
 

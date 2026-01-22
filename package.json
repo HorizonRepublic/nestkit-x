@@ -32,7 +32,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-functional": "^9.0.2",
     "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-jsdoc": "^62.3.0",
+    "eslint-plugin-jsdoc": "^62.3.1",
     "eslint-plugin-perfectionist": "^5.4.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-prettier": "^5.5.5",
@@ -90,7 +90,7 @@
   },
   "pnpm": {
     "overrides": {
-      "glob": "^11.0.0",
+      "glob": "^13.0.0",
       "inflight": "^1.0.7",
       "multer": "^2.0.0"
     },
@@ -107,5 +107,8 @@
   },
   "nx": {
     "includedScripts": []
+  },
+  "engines": {
+    "node": ">= 20"
   }
 }

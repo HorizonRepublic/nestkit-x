@@ -1,31 +1,63 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
-  "automerge": true,
-  "labels": ["dependencies"],
-  "dependencyDashboard": true,
+  "extends": ["config:recommended", ":disableRateLimiting", ":semanticCommits"],
+  "baseBranchPatterns": ["dev"],
   "commitMessagePrefix": "deps():",
-  "automergeStrategy": "squash",
-  "rebaseWhen": "conflicted",
-  "baseBranches": ["dev"],
   "branchPrefix": "renovate/",
+  "labels": ["dependencies", "renovate"],
+  "addLabels": ["automated-pr"],
+  "dependencyDashboard": true,
   "osvVulnerabilityAlerts": true,
   "assignees": ["@themaiby"],
   "reviewers": ["@themaiby"],
-  "addLabels": ["automated-pr"],
+  "automerge": true,
+  "automergeStrategy": "squash",
+  "rebaseWhen": "conflicted",
   "packageRules": [
     {
-      "enabled": true,
-      "matchPackageNames": ["^@nestkit-x/", "^@nx/", "^nx"]
-    },
-    {
-      "groupName": "minor and patch dependencies",
+      "groupName": "NestJS ecosystem",
       "matchUpdateTypes": ["minor", "patch"],
-      "groupSlug": "all-minor-patch"
+      "matchPackageNames": ["/^@nestjs//", "/^nestjs-/", "/^@nestia//"]
     },
     {
-      "groupName": "major dependencies",
-      "matchUpdateTypes": ["major"]
+      "enabled": false,
+      "matchPackageNames": ["/^@nx//", "/^nx$/", "/^@nrwl//"]
+    },
+    {
+      "groupName": "Testing and Linting",
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchPackageNames": [
+        "/^jest/",
+        "/^@types/jest/",
+        "/^eslint/",
+        "/^prettier/",
+        "/^@swc//"
+      ]
+    },
+    {
+      "groupName": "Internal packages",
+      "enabled": false,
+      "matchPackageNames": ["/^@zerly//"]
+    },
+    {
+      "groupName": "Major updates",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["dependencies", "major-update"]
+    },
+    {
+      "groupName": "Other dependencies",
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchPackageNames": [
+        "!/^@nestjs//",
+        "!/^nestjs-/",
+        "!/^@nestia//",
+        "!/^@nx//",
+        "!/^nx$/",
+        "!/^jest/",
+        "!/^eslint/",
+        "!/^prettier/"
+      ]
     }
   ]
 }
