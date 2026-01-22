@@ -282,6 +282,12 @@ importers:
       '@nestjs/config':
         specifier: ^4.0.2
         version: 4.0.2(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@nestjs/core':
+        specifier: '>= 11.0.0'
+        version: 11.1.12(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/microservices@11.1.12)(@nestjs/platform-express@11.1.9)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@zerly/core':
+        specifier: workspace:*
+        version: link:../core
       get-root-path:
         specifier: ^3.0.1
         version: 3.0.1(lodash@4.17.23)
@@ -297,6 +303,12 @@ importers:
 
   libs/core:
     dependencies:
+      '@nestjs/common':
+        specifier: '>= 11.1.0'
+        version: 11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      rxjs:
+        specifier: '>= 7.8.0'
+        version: 7.8.2
       tslib:
         specifier: ^2.8.1
         version: 2.8.1
@@ -308,19 +320,25 @@ importers:
   libs/kernel:
     dependencies:
       '@nestjs/common':
-        specifier: ^11.1.3
+        specifier: '>= 11.0.0'
         version: 11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/config':
+        specifier: '>= 4.0.0'
+        version: 4.0.2(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
       '@nestjs/core':
-        specifier: ^11.1.3
+        specifier: '>= 11.0.0'
         version: 11.1.12(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/microservices@11.1.12)(@nestjs/platform-express@11.1.9)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/platform-fastify':
-        specifier: ^11.1.12
+        specifier: '>= 11.0.0'
         version: 11.1.12(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)
+      '@zerly/core':
+        specifier: workspace:*
+        version: link:../core
       reflect-metadata:
-        specifier: ^0.2.2
+        specifier: '>= 0.2.0'
         version: 0.2.2
       rxjs:
-        specifier: ^7.8.2
+        specifier: '>= 7.8.0'
         version: 7.8.2
       tslib:
         specifier: ^2.8.1
@@ -328,6 +346,24 @@ importers:
 
   libs/logger:
     dependencies:
+      '@nestjs/common':
+        specifier: '>= 11.0.0'
+        version: 11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/config':
+        specifier: '>= 4.0.0'
+        version: 4.0.2(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@zerly/core':
+        specifier: workspace:*
+        version: link:../core
+      nestjs-pino:
+        specifier: '>= 4.4.0'
+        version: 4.5.0(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(pino-http@11.0.0)(pino@10.2.1)(rxjs@7.8.2)
+      pino:
+        specifier: '>= 10.0.0'
+        version: 10.2.1
+      rxjs:
+        specifier: '>= 7.8.0'
+        version: 7.8.2
       tslib:
         specifier: ^2.8.1
         version: 2.8.1
