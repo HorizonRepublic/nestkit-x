@@ -73,14 +73,14 @@ jobs:
         uses: nrwl/nx-set-shas@v4
 
       - name: Lint
-        run: pnpm nx affected -t lint --parallel=5
+        run: pnpm nx affected -t lint --parallel=4
       
       # Temporarily disabled due to no tests :)
       # - name: Test
       #   run: pnpm nx run-many -t test -p libs/* --parallel=5
 
       - name: Build affected
-        run: pnpm nx affected -t build --parallel=3
+        run: pnpm nx affected -t build --parallel=4
 
       - name: Show build artifacts
         run: |

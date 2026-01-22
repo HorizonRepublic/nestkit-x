@@ -27,13 +27,7 @@ export default [
 
   // Ignored paths
   {
-    ignores: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/.nx/**',
-      '**/tmp/**',
-      '**/.docusaurus/**',
-    ],
+    ignores: ['**/node_modules/**', '**/dist/**', '**/.nx/**', '**/tmp/**', '**/.docusaurus/**'],
   },
 
   // JSON files - dependency checks
@@ -46,7 +40,16 @@ export default [
       '@nx': nx,
     },
     rules: {
-      '@nx/dependency-checks': 'error',
+      '@nx/dependency-checks': [
+        'error',
+        {
+          ignoredDependencies: ['typia'],
+          buildTargets: ['build'],
+          checkMissingDependencies: true,
+          checkObsoleteDependencies: true,
+          checkVersionMismatches: true,
+        },
+      ],
     },
   },
 
