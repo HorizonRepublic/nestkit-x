@@ -1,7 +1,9 @@
 # @nestkit-x/kernel
+
 Core kernel for NestJS applications with reactive lifecycle management based on RxJS.
 
 ## Installation
+
 ```shell
 npm install @nestkit-x/kernel
 ```
@@ -29,6 +31,7 @@ NestKitKernel.init(AppModule).subscribe({
 ## Development
 
 ### Building
+
 ```shell
 nx build kernel
 ```
@@ -38,6 +41,7 @@ nx build kernel
 ```shell
 nx test kernel
 ```
+
 ## License
 
 MIT © Horizon Republic

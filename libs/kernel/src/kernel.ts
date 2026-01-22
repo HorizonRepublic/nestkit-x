@@ -10,7 +10,7 @@ import {
   IAppConfig,
   IAppRefService,
   IAppStateService,
-} from '@nestkit-x/core';
+} from '@zerly/core';
 import { defer, from, map, Observable, of, shareReplay, switchMap, tap } from 'rxjs';
 
 import { KernelModule } from './kernel.module';

@@ -6,7 +6,7 @@ import {
   IAppStateService,
   IPrioritizedCallback,
   IStateCallback,
-} from '@nestkit-x/core';
+} from '@zerly/core';
 import {
   catchError,
   concatMap,

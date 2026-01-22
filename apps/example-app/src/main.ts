@@ -1,4 +1,4 @@
-import { NestKitKernel } from '@nestkit-x/kernel';
+import { NestKitKernel } from '@zerly/kernel';
 
 import { AppModule } from './app/app.module';
 

@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { NestKitLoggerModule } from '@nestkit-x/logger';
+import { NestKitLoggerModule } from '@zerly/logger';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppMicroController } from './app.micro-controller';
-import { NestKitMicroserviceServerModule } from '@nestkit-x/microservice';
+import { NestKitMicroserviceServerModule } from '@zerly/microservice';
 import { JetstreamClientModule } from '@horizon-republic/nestjs-jetstream';
 import { SubModule } from './submodule/sub.module';
-import { NestKitConfigModule } from '@nestkit-x/config';
+import { NestKitConfigModule } from '@zerly/config';
 import { appConfig } from '../configs/app.config';
 
 @Module({

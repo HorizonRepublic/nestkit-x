@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { APP_CONFIG, Environment, IAppConfig } from '@nestkit-x/core';
+import { APP_CONFIG, Environment, IAppConfig } from '@zerly/core';
 import { Params as PinoParams } from 'nestjs-pino/params';
 import type { LoggerOptions } from 'pino';
 import * as pino from 'pino';

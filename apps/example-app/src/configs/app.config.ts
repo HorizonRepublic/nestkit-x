@@ -1,5 +1,5 @@
-import { ConfigBuilder, Env } from '@nestkit-x/config';
-import { APP_CONFIG, Environment, IAppConfig } from '@nestkit-x/core';
+import { ConfigBuilder, Env } from '@zerly/config';
+import { APP_CONFIG, Environment, IAppConfig } from '@zerly/core';
 import typia from 'typia';
 
 class AppConfig implements IAppConfig {

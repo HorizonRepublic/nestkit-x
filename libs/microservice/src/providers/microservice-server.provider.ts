@@ -1,5 +1,5 @@
 import { INestApplication, Inject, Injectable, Logger } from '@nestjs/common';
-import { APP_STATE_SERVICE, IAppStateService } from '@nestkit-x/core';
+import { APP_STATE_SERVICE, IAppStateService } from '@zerly/core';
 import { from, map, Observable } from 'rxjs';
 
 import { MICROSERVICE_OPTIONS } from '../const';

@@ -1,11 +1,6 @@
 import { DynamicModule, Module, Provider, Type } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import {
-  APP_REF_SERVICE,
-  APP_STATE_SERVICE,
-  IAppRefService,
-  IAppStateService,
-} from '@nestkit-x/core';
+import { APP_REF_SERVICE, APP_STATE_SERVICE, IAppRefService, IAppStateService } from '@zerly/core';
 import { KernelProvider } from './providers/kernel.provider';
 import { AppRefService } from './services/app-ref.service';
 import { AppStateService } from './services/app-state.service';

@@ -6,7 +6,7 @@ import {
   Environment,
   IAppConfig,
   IAppStateService,
-} from '@nestkit-x/core';
+} from '@zerly/core';
 
 @Injectable()
 export class KernelProvider {

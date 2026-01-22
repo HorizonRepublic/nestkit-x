@@ -1,6 +1,6 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigFactory, ConfigModule } from '@nestjs/config';
-import { Environment } from '@nestkit-x/core';
+import { Environment } from '@zerly/core';
 
 import { CONFIG_MODULE_OPTIONS } from './const';
 import { EnvExampleProvider } from './providers/env-example.provider';

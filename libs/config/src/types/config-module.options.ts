@@ -1,4 +1,4 @@
-import { Environment } from '@nestkit-x/core';
+import { Environment } from '@zerly/core';
 
 export interface IConfigModuleOptions {
   /**
