@@ -1,6 +1,6 @@
-# @nestkit-x/config
+# @zerly/config
 
-[![npm version](https://img.shields.io/npm/v/@nestkit-x/config.svg)](https://www.npmjs.com/package/@nestkit-x/config)
+[![npm version](https://img.shields.io/npm/v/@zerly/config.svg)](https://www.npmjs.com/package/@zerly/config)
 
 Enhanced configuration module for NestJS applications with automatic `.env.example` generation based on decorated
 configuration classes.
@@ -8,7 +8,7 @@ configuration classes.
 ## Installation
 
 ```shell
-npm install @nestkit-x/config
+npm install @zerly/config
 ```
 
 ## Features
@@ -26,7 +26,7 @@ npm install @nestkit-x/config
 ### 1. Define Configuration Class
 
 ```typescript
-import { Env, ConfigBuilder } from '@nestkit-x/config';
+import { Env, ConfigBuilder } from '@zerly/config';
 
 export class DatabaseConfig {
   @Env('DATABASE_HOST', {
@@ -72,8 +72,8 @@ export const databaseConfig = ConfigBuilder.from(DatabaseConfig, 'DATABASE_CONFI
 
 ```typescript
 import { Module } from '@nestjs/common';
-import { NestKitConfigModule } from '@nestkit-x/config';
-import { Environment } from '@nestkit-x/core';
+import { NestKitConfigModule } from '@zerly/config';
+import { Environment } from '@zerly/core';
 import { databaseConfig } from './configs/database.config';
 import { appConfig } from './configs/app.config';
 
@@ -200,7 +200,7 @@ interface IEnvOptions<TType = typeof String> {
 Utility class for building configuration factories with validation support.
 
 ```typescript
-import { ConfigBuilder } from '@nestkit-x/config';
+import { ConfigBuilder } from '@zerly/config';
 
 const configFactory = ConfigBuilder.from<T>(ConfigClass, token)
   .validate((config: T) => T)

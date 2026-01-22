@@ -1,17 +1,17 @@
-# @nestkit-x/kernel
+# @zerly/kernel
 
 Core kernel for NestJS applications with reactive lifecycle management based on RxJS.
 
 ## Installation
 
 ```shell
-npm install @nestkit-x/kernel
+npm install @zerly/kernel
 ```
 
 ## Usage
 
 ```typescript
-import { NestKitKernel } from '@nestkit-x/kernel';
+import { NestKitKernel } from '@zerly/kernel';
 import { AppModule } from './app.module';
 
 NestKitKernel.init(AppModule).subscribe({
