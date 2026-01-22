@@ -39,7 +39,6 @@ export class LoggerConfigFactory {
             log: (object: Record<string, unknown>) => ({
               ...object,
               service: this.config.name,
-              version: this.config.version,
             }),
           },
         }
