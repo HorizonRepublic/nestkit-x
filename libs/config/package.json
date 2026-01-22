@@ -34,7 +34,7 @@
   "peerDependencies": {
     "@nestjs/common": "^11.1.3",
     "@nestjs/config": "^4.0.2",
-    "@nestkit-x/core": "0.0.1",
+    "@nestkit-x/core": "0.4.0",
     "reflect-metadata": "^0.2.2",
     "@nestjs/core": "^11.1.3",
     "get-root-path": "^3.0.1",
