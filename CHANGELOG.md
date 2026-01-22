@@ -1,3 +1,13 @@
+## 0.5.1 (2026-01-22)
+
+### Chores
+
+- **config:** rename example app ([2acc78a](https://github.com/HorizonRepublic/zerly/commit/2acc78a))
+
+### ❤️ Thank You
+
+- Kyrylo Lytvynov @themaiby
+
 ## 0.5.0 (2025-12-11)
 
 ### Features

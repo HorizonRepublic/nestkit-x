@@ -1,3 +1,7 @@
+## 0.5.1 (2026-01-22)
+
+This release contains no new changes.
+
 ## 0.5.0 (2025-12-11)
 
 This release contains no new changes.
