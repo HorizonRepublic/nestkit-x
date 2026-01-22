@@ -3,15 +3,15 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
-    "@nestia/core": "^10.0.0",
-    "@nestjs/common": "^11.1.3",
-    "@nestkit-x/core": "0.0.1",
-    "@nestkit-x/kernel": "0.0.1",
-    "@nestkit-x/logger": "0.0.1"
+    "@nestia/core": "^10.0.2",
+    "@nestjs/common": "^11.1.12",
+    "@zerly/core": "workspace:*",
+    "@zerly/kernel": "workspace:*",
+    "@zerly/logger": "workspace:*"
   },
   "devDependencies": {
-    "@darraghor/eslint-plugin-nestjs-typed": "^7.0.0",
+    "@darraghor/eslint-plugin-nestjs-typed": "^7.1.16",
     "tslib": "^2.8.1",
-    "typia": "^11.0.0"
+    "typia": "^11.0.1"
   }
 }

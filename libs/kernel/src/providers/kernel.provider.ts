@@ -6,16 +6,15 @@ import {
   Environment,
   IAppConfig,
   IAppStateService,
-} from '@nestkit-x/core';
+} from '@zerly/core';
 
 @Injectable()
 export class KernelProvider {
   private readonly basicConfig: IAppConfig = {
     env: Environment.Local,
     host: '0.0.0.0',
-    name: 'NestKit-X App',
+    name: 'zerly App',
     port: 3000,
-    version: '0.0.0',
   } as const;
 
   private readonly logger = new Logger(KernelProvider.name);

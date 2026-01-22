@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SubService } from './sub.service';
-import { NestKitConfigModule } from '@nestkit-x/config';
+import { NestKitConfigModule } from '@zerly/config';
 import { appConfig } from '../../configs/app.config';
 
 @Module({

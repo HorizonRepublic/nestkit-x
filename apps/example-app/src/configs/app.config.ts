@@ -1,5 +1,5 @@
-import { ConfigBuilder, Env } from '@nestkit-x/config';
-import { APP_CONFIG, Environment, IAppConfig } from '@nestkit-x/core';
+import { ConfigBuilder, Env } from '@zerly/config';
+import { APP_CONFIG, Environment, IAppConfig } from '@zerly/core';
 import typia from 'typia';
 
 class AppConfig implements IAppConfig {
@@ -14,9 +14,6 @@ class AppConfig implements IAppConfig {
 
   @Env('APP_PORT', { default: 3000, type: Number })
   public port!: number;
-
-  @Env('APP_VERSION', { default: '0.0.1' })
-  public version!: string;
 }
 
 export const appConfig = ConfigBuilder.from(AppConfig, APP_CONFIG)

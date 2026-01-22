@@ -4,7 +4,7 @@ import { dirname } from 'path';
 
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { APP_CONFIG, Environment, IAppConfig } from '@nestkit-x/core';
+import { APP_CONFIG, Environment, IAppConfig } from '@zerly/core';
 import { rootPath } from 'get-root-path';
 import { catchError, defer, EMPTY, from, map, Observable, of, switchMap, tap } from 'rxjs';
 

@@ -180,8 +180,8 @@ importers:
         specifier: ^2.32.0
         version: 2.32.0(@typescript-eslint/parser@8.53.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))
       eslint-plugin-jsdoc:
-        specifier: ^62.3.0
-        version: 62.3.0(eslint@9.39.2(jiti@2.6.1))
+        specifier: ^62.3.1
+        version: 62.3.1(eslint@9.39.2(jiti@2.6.1))
       eslint-plugin-perfectionist:
         specifier: ^5.4.0
         version: 5.4.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
@@ -245,6 +245,160 @@ importers:
       verdaccio:
         specifier: ^6.2.4
         version: 6.2.4(typanion@3.14.0)
+
+  apps/example-app:
+    dependencies:
+      '@nestia/core':
+        specifier: ^10.0.2
+        version: 10.0.2(@nestia/fetcher@10.0.2)(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typia@11.0.1(@types/node@25.0.10)(typescript@5.9.3))
+      '@nestjs/common':
+        specifier: ^11.1.12
+        version: 11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@zerly/core':
+        specifier: workspace:*
+        version: link:../../libs/core
+      '@zerly/kernel':
+        specifier: workspace:*
+        version: link:../../libs/kernel
+      '@zerly/logger':
+        specifier: workspace:*
+        version: link:../../libs/logger
+    devDependencies:
+      '@darraghor/eslint-plugin-nestjs-typed':
+        specifier: ^7.1.16
+        version: 7.1.16(@typescript-eslint/parser@8.53.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(class-validator@0.14.3)(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+      tslib:
+        specifier: ^2.8.1
+        version: 2.8.1
+      typia:
+        specifier: ^11.0.1
+        version: 11.0.1(@types/node@25.0.10)(typescript@5.9.3)
+
+  libs/config:
+    dependencies:
+      '@nestjs/common':
+        specifier: '>= 11.0.0'
+        version: 11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/config':
+        specifier: ^4.0.2
+        version: 4.0.2(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@nestjs/core':
+        specifier: '>= 11.0.0'
+        version: 11.1.12(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/microservices@11.1.12)(@nestjs/platform-express@11.1.9)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@zerly/core':
+        specifier: workspace:*
+        version: link:../core
+      get-root-path:
+        specifier: ^3.0.1
+        version: 3.0.1(lodash@4.17.23)
+      reflect-metadata:
+        specifier: '>= 0.2.2'
+        version: 0.2.2
+      rxjs:
+        specifier: '>= 7.8.0'
+        version: 7.8.2
+      tslib:
+        specifier: ^2.8.1
+        version: 2.8.1
+
+  libs/core:
+    dependencies:
+      '@nestjs/common':
+        specifier: '>= 11.1.0'
+        version: 11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      rxjs:
+        specifier: '>= 7.8.0'
+        version: 7.8.2
+      tslib:
+        specifier: ^2.8.1
+        version: 2.8.1
+      typia:
+        specifier: ^11.0.1
+        version: 11.0.1(@types/node@25.0.10)(typescript@5.9.3)
+
+  libs/kernel:
+    dependencies:
+      '@nestjs/common':
+        specifier: '>= 11.0.0'
+        version: 11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/config':
+        specifier: '>= 4.0.0'
+        version: 4.0.2(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@nestjs/core':
+        specifier: '>= 11.0.0'
+        version: 11.1.12(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/microservices@11.1.12)(@nestjs/platform-express@11.1.9)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/platform-fastify':
+        specifier: '>= 11.0.0'
+        version: 11.1.12(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)
+      '@zerly/core':
+        specifier: workspace:*
+        version: link:../core
+      reflect-metadata:
+        specifier: '>= 0.2.0'
+        version: 0.2.2
+      rxjs:
+        specifier: '>= 7.8.0'
+        version: 7.8.2
+      tslib:
+        specifier: ^2.8.1
+        version: 2.8.1
+
+  libs/logger:
+    dependencies:
+      '@nestjs/common':
+        specifier: '>= 11.0.0'
+        version: 11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/config':
+        specifier: '>= 4.0.0'
+        version: 4.0.2(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@zerly/core':
+        specifier: workspace:*
+        version: link:../core
+      nestjs-pino:
+        specifier: '>= 4.4.0'
+        version: 4.5.0(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(pino-http@11.0.0)(pino@10.2.1)(rxjs@7.8.2)
+      pino:
+        specifier: '>= 10.0.0'
+        version: 10.2.1
+      rxjs:
+        specifier: '>= 7.8.0'
+        version: 7.8.2
+      tslib:
+        specifier: ^2.8.1
+        version: 2.8.1
+
+  libs/microservice:
+    dependencies:
+      '@horizon-republic/nestjs-jetstream':
+        specifier: ^1.0.6
+        version: 1.0.6(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(@nestjs/microservices@11.1.12)(nats@2.29.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)(uuid@13.0.0)
+      '@nestjs/common':
+        specifier: ^11.1.12
+        version: 11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/microservices':
+        specifier: ^11.1.12
+        version: 11.1.12(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(nats@2.29.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@zerly/core':
+        specifier: workspace:*
+        version: link:../core
+      nats:
+        specifier: ^2.29.3
+        version: 2.29.3
+      rxjs:
+        specifier: ^7.8.2
+        version: 7.8.2
+      tslib:
+        specifier: ^2.8.1
+        version: 2.8.1
+
+  libs/swagger:
+    dependencies:
+      '@nestjs/common':
+        specifier: ^11.1.12
+        version: 11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      tslib:
+        specifier: ^2.8.1
+        version: 2.8.1
 
 packages:
 
@@ -3039,6 +3193,10 @@ packages:
     resolution: {integrity: sha512-0D6qSQ5IkeRrGJFHRClzaMOenMeT0gErz3zIw3AprKMqhRN6LNU2jQOdkPG/FZ+8bCgXE1VidrgSzlBBDZRr8A==}
     engines: {node: '>= 12.0.0'}
 
+  comment-parser@1.4.5:
+    resolution: {integrity: sha512-aRDkn3uyIlCFfk5NUA+VdwMmMsh8JGhc4hapfV4yxymHGQ3BVskMQfoXGpCo5IoBuQ9tS5iiVKhCpTcB4pW4qw==}
+    engines: {node: '>= 12.0.0'}
+
   common-constants@4.1.0:
     resolution: {integrity: sha512-u8ZY68a5+8SLC4Tv+ny8UFAFIxk6HN4ybvBselFwn42TmO62QCxTOSUzhJ7lUqVkXWnTuniUQRI9cPRjRPfnXQ==}
     peerDependencies:
@@ -3679,8 +3837,8 @@ packages:
       '@typescript-eslint/parser':
         optional: true
 
-  eslint-plugin-jsdoc@62.3.0:
-    resolution: {integrity: sha512-Gc5Ls5qQC6NwqtQTtJ2JE5BwvX348ZCZ+4+QiZ9RpoQ1TCcxFF8Z0E5jaLkTyYNqyhx+uKAvljNHE0B7PBw+iw==}
+  eslint-plugin-jsdoc@62.3.1:
+    resolution: {integrity: sha512-eQzrU7Z8FFSKdUgurmz8XZMz25GC5807uPmAV1x/Dw+xLteJEqPjbsdBT1pYB5p3uSsD4q3tCbJOpVLMNiTSSw==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0 || ^9.0.0
@@ -10933,6 +11091,8 @@ snapshots:
 
   comment-parser@1.4.4: {}
 
+  comment-parser@1.4.5: {}
+
   common-constants@4.1.0(lodash@4.17.23):
     dependencies:
       lodash: 4.17.23
@@ -11611,12 +11771,12 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-plugin-jsdoc@62.3.0(eslint@9.39.2(jiti@2.6.1)):
+  eslint-plugin-jsdoc@62.3.1(eslint@9.39.2(jiti@2.6.1)):
     dependencies:
       '@es-joy/jsdoccomment': 0.82.0
       '@es-joy/resolve.exports': 1.2.0
       are-docs-informative: 0.0.2
-      comment-parser: 1.4.4
+      comment-parser: 1.4.5
       debug: 4.4.3
       escape-string-regexp: 4.0.0
       eslint: 9.39.2(jiti@2.6.1)
