@@ -1,5 +1,5 @@
 export default {
-  coverageDirectory: '../../coverage/apps/nestkit-x-app',
+  coverageDirectory: '../../coverage/apps/example-app',
   displayName: 'nestkit-x-app',
   moduleFileExtensions: ['ts', 'js', 'html'],
   preset: '../../jest.preset.js',

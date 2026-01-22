@@ -1,16 +1,16 @@
 {
   "name": "nestkit-x-app",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/nestkit-x-app/src",
+  "sourceRoot": "apps/example-app/src",
   "projectType": "application",
   "tags": [],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
       "options": {
-        "outputPath": "dist/apps/nestkit-x-app",
-        "main": "apps/nestkit-x-app/src/main.ts",
-        "tsConfig": "apps/nestkit-x-app/tsconfig.app.json",
+        "outputPath": "dist/apps/example-app",
+        "main": "apps/example-app/src/main.ts",
+        "tsConfig": "apps/example-app/tsconfig.app.json",
         "assets": [
           {
             "input": "src/assets",

@@ -12,7 +12,7 @@
       {
         "transform": "@nestia/core/lib/transform",
         "validate": "validate",
-        "stringify": "assert",
+        "stringify": "assert"
       }
     ]
   },
