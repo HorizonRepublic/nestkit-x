@@ -3,6 +3,9 @@
   "cli": {
     "packageManager": "pnpm"
   },
+  "tui": {
+    "enabled": false
+  },
   "plugins": [
     {
       "plugin": "@nx/webpack/plugin",

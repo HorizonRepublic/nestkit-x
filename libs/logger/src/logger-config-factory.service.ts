@@ -6,6 +6,7 @@ import type { LoggerOptions } from 'pino';
 import * as pino from 'pino';
 
 import { REDACTED_MSG, redactedPaths } from './const';
+import { randomUUID } from 'node:crypto';
 
 @Injectable()
 export class LoggerConfigFactory {
@@ -19,7 +20,7 @@ export class LoggerConfigFactory {
     const isProduction = this.config.env === Environment.Prod;
 
     const baseConfig: LoggerOptions = {
-      level: isProduction ? 'warn' : 'debug',
+      level: isProduction ? 'info' : 'debug',
       name: this.config.name,
       redact: {
         censor: REDACTED_MSG,
@@ -28,8 +29,11 @@ export class LoggerConfigFactory {
       serializers: {
         err: pino.stdSerializers.err,
         error: pino.stdSerializers.err,
+        req: pino.stdSerializers.req,
+        res: pino.stdSerializers.res,
       },
       timestamp: pino.stdTimeFunctions.isoTime,
+      mixin: () => ({ traceId: randomUUID() }), // todo: to cls
     };
 
     const productionConfig: Partial<LoggerOptions> = isProduction
@@ -39,6 +43,7 @@ export class LoggerConfigFactory {
             log: (object: Record<string, unknown>) => ({
               ...object,
               service: this.config.name,
+              env: this.config.env,
             }),
           },
         }
@@ -52,7 +57,7 @@ export class LoggerConfigFactory {
               colorize: true,
               errorLikeObjectKeys: ['err', 'error'],
               errorProps: 'stack,name,message,type',
-              ignore: 'pid,hostname,req,res',
+              ignore: 'pid,hostname,req,res,service,env',
               messageFormat: '[{context}] {msg}',
               singleLine: true,
               translateTime: 'SYS:dd.mm.yyyy HH:MM:ss.l',

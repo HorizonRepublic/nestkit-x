@@ -53,6 +53,9 @@ export interface IEnvOptions<TType extends EnumType | EnvTypeConstructor = typeo
 
   /** Type constructor or enum for value conversion. */
   type?: TType;
+
+  /** Optional comment to be appended to the generated .env.example line. */
+  comment?: string;
 }
 
 /**

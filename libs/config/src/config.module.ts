@@ -1,42 +1,30 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigFactory, ConfigModule } from '@nestjs/config';
-import { Environment } from '@zerly/core';
-
-import { CONFIG_MODULE_OPTIONS } from './const';
 import { EnvExampleProvider } from './providers/env-example.provider';
-import { IConfigModuleOptions } from './types/config-module.options';
+import { ConfigModuleOptions } from '@nestjs/config/dist/interfaces/config-module-options.interface';
 
 @Module({})
-export class NestKitConfigModule {
-  public static forRoot(
-    options: IConfigModuleOptions = {
-      exampleGenerationEnv: Environment.Local,
-    },
-  ): DynamicModule {
+export class ZerlyConfigModule {
+  public static forRoot(load: ConfigModuleOptions['load'] = []): DynamicModule {
     return {
+      module: ZerlyConfigModule,
       global: false,
       imports: [
         ConfigModule.forRoot({
           cache: true,
           isGlobal: true,
           expandVariables: true,
+          load,
         }),
       ],
-      module: NestKitConfigModule,
-      providers: [
-        {
-          provide: CONFIG_MODULE_OPTIONS,
-          useValue: options,
-        },
-        EnvExampleProvider,
-      ],
+      providers: [EnvExampleProvider],
       exports: [ConfigModule],
     };
   }
 
   public static forFeature(config: ConfigFactory): DynamicModule {
     return {
-      module: NestKitConfigModule,
+      module: ZerlyConfigModule,
       imports: [ConfigModule.forFeature(config)],
       exports: [ConfigModule],
     };

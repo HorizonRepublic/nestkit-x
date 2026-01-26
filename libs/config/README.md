@@ -72,20 +72,21 @@ export const databaseConfig = ConfigBuilder.from(DatabaseConfig, 'DATABASE_CONFI
 
 ```typescript
 import { Module } from '@nestjs/common';
-import { NestKitConfigModule } from '@zerly/config';
+import { ZerlyConfigModule } from '@zerly/config';
 import { Environment } from '@zerly/core';
 import { databaseConfig } from './configs/database.config';
 import { appConfig } from './configs/app.config';
 
 @Module({
   imports: [
-    NestKitConfigModule.forRoot({
+    ZerlyConfigModule.forRoot({
       load: [databaseConfig, appConfig],
       exampleGenerationEnv: Environment.Local,
     }),
   ],
 })
-export class AppModule {}
+export class AppModule {
+}
 ```
 
 For feature modules:

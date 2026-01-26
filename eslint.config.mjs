@@ -27,7 +27,14 @@ export default [
 
   // Ignored paths
   {
-    ignores: ['**/node_modules/**', '**/dist/**', '**/.nx/**', '**/tmp/**', '**/.docusaurus/**'],
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.nx/**',
+      '**/tmp/**',
+      '**/.docusaurus/**',
+      '**/webpack.config.js',
+    ],
   },
 
   // JSON files - dependency checks
@@ -252,6 +259,7 @@ export default [
       '@typescript-eslint/prefer-readonly': 'error',
       '@typescript-eslint/prefer-string-starts-ends-with': 'error',
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
+      '@typescript-eslint/no-empty-function': 'off',
 
       camelcase: 'off',
 
