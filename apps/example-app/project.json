@@ -43,6 +43,24 @@
     },
 
     "serve": {
+      "executor": "nx:noop",
+      "dependsOn": ["serve:bun"]
+    },
+
+    "serve:bun": {
+      "executor": "nx:run-commands",
+      "defaultConfiguration": "development",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "parallel": true,
+        "commands": [
+          "nx build example-app --configuration=development --watch",
+          "rm -f dist/apps/example-app/main.js && while [ ! -f dist/apps/example-app/main.js ]; do sleep 0.2; done && sleep 0.5 && bun --watch dist/apps/example-app/main.js"
+        ]
+      }
+    },
+
+    "serve:node": {
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
       "dependsOn": ["build"],
@@ -61,6 +79,7 @@
         }
       }
     },
+
     "test": {
       "options": {
         "passWithNoTests": true

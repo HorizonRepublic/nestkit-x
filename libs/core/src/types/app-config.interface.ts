@@ -2,6 +2,7 @@ import { tags } from 'typia';
 import { Environment } from '../enums';
 import { Pattern } from 'typia/lib/tags/Pattern';
 import { Default } from 'typia/lib/tags/Default';
+import { LevelWithSilent } from 'pino';
 
 export interface IAppConfig {
   readonly env: Environment;
@@ -13,4 +14,6 @@ export interface IAppConfig {
   readonly port: number & tags.Type<'uint32'>;
 
   readonly generateEnvExample: boolean & Default<true>;
+
+  readonly logLever: LevelWithSilent & Default<'info'>;
 }
