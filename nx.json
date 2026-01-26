@@ -38,7 +38,7 @@
     }
   },
   "release": {
-    "projects": ["libs/*"],
+    "projects": ["libs/*", "auth"],
     "projectsRelationship": "fixed",
     "releaseTag": {
       "pattern": "v{version}",

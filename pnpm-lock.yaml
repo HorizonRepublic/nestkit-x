@@ -46,6 +46,9 @@ importers:
       '@nestjs/microservices':
         specifier: ^11.1.12
         version: 11.1.12(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(@nestjs/websockets@11.1.12)(nats@2.29.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/platform-express':
+        specifier: ^11.0.0
+        version: 11.1.9(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)
       '@nestjs/platform-fastify':
         specifier: ^11.1.12
         version: 11.1.12(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)
@@ -220,6 +223,9 @@ importers:
         version: 30.2.0(@types/node@25.0.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.15.10(@swc/helpers@0.5.18))(@types/node@25.0.10)(typescript@5.9.3))
       jest-environment-node:
         specifier: ^30.2.0
+        version: 30.2.0
+      jest-util:
+        specifier: ^30.0.2
         version: 30.2.0
       jsonc-eslint-parser:
         specifier: ^2.4.2
@@ -9721,7 +9727,6 @@ snapshots:
       tslib: 2.8.1
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   '@nestjs/platform-fastify@11.1.12(@nestjs/common@11.1.12(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)':
     dependencies:
@@ -11106,7 +11111,6 @@ snapshots:
     dependencies:
       mime-types: 3.0.2
       negotiator: 1.0.0
-    optional: true
 
   acorn-import-phases@1.0.4(acorn@8.15.0):
     dependencies:
@@ -11188,8 +11192,7 @@ snapshots:
 
   app-root-path@2.2.1: {}
 
-  append-field@1.0.0:
-    optional: true
+  append-field@1.0.0: {}
 
   are-docs-informative@0.0.2: {}
 
@@ -11499,7 +11502,6 @@ snapshots:
       type-is: 2.0.1
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   bonjour-service@1.3.0:
     dependencies:
@@ -11564,7 +11566,6 @@ snapshots:
   busboy@1.6.0:
     dependencies:
       streamsearch: 1.1.0
-    optional: true
 
   bytes@3.1.2: {}
 
@@ -11798,7 +11799,6 @@ snapshots:
       inherits: 2.0.4
       readable-stream: 3.6.2
       typedarray: 0.0.6
-    optional: true
 
   concurrently@9.2.1:
     dependencies:
@@ -11819,8 +11819,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  content-disposition@1.0.1:
-    optional: true
+  content-disposition@1.0.1: {}
 
   content-type@1.0.5: {}
 
@@ -11845,8 +11844,7 @@ snapshots:
 
   cookie-signature@1.0.7: {}
 
-  cookie-signature@1.2.2:
-    optional: true
+  cookie-signature@1.2.2: {}
 
   cookie@0.7.1: {}
 
@@ -12763,7 +12761,6 @@ snapshots:
       vary: 1.1.2
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   extend@3.0.2: {}
 
@@ -12923,7 +12920,6 @@ snapshots:
       statuses: 2.0.2
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   find-cache-dir@4.0.0:
     dependencies:
@@ -13024,8 +13020,7 @@ snapshots:
 
   fresh@0.5.2: {}
 
-  fresh@2.0.0:
-    optional: true
+  fresh@2.0.0: {}
 
   front-matter@4.0.2:
     dependencies:
@@ -13622,8 +13617,7 @@ snapshots:
 
   is-promise@2.2.2: {}
 
-  is-promise@4.0.0:
-    optional: true
+  is-promise@4.0.0: {}
 
   is-regex@1.2.1:
     dependencies:
@@ -14378,8 +14372,7 @@ snapshots:
 
   media-typer@0.3.0: {}
 
-  media-typer@1.1.0:
-    optional: true
+  media-typer@1.1.0: {}
 
   memfs@3.5.3:
     dependencies:
@@ -14406,8 +14399,7 @@ snapshots:
 
   merge-descriptors@1.0.3: {}
 
-  merge-descriptors@2.0.0:
-    optional: true
+  merge-descriptors@2.0.0: {}
 
   merge-stream@2.0.0: {}
 
@@ -14476,7 +14468,6 @@ snapshots:
   mkdirp@0.5.6:
     dependencies:
       minimist: 1.2.8
-    optional: true
 
   mkdirp@1.0.4: {}
 
@@ -14495,7 +14486,6 @@ snapshots:
       object-assign: 4.1.1
       type-is: 1.6.18
       xtend: 4.0.2
-    optional: true
 
   multicast-dns@7.2.5:
     dependencies:
@@ -14528,8 +14518,7 @@ snapshots:
 
   negotiator@0.6.4: {}
 
-  negotiator@1.0.0:
-    optional: true
+  negotiator@1.0.0: {}
 
   neo-async@2.6.2: {}
 
@@ -15326,7 +15315,6 @@ snapshots:
       http-errors: 2.0.1
       iconv-lite: 0.7.2
       unpipe: 1.0.0
-    optional: true
 
   react-dom@19.2.3(react@19.2.3):
     dependencies:
@@ -15497,7 +15485,6 @@ snapshots:
       path-to-regexp: 8.3.0
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   run-applescript@7.1.0: {}
 
@@ -15745,7 +15732,6 @@ snapshots:
       statuses: 2.0.2
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   serialize-javascript@6.0.2:
     dependencies:
@@ -15789,7 +15775,6 @@ snapshots:
       send: 1.2.1
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   set-cookie-parser@2.7.2: {}
 
@@ -15979,8 +15964,7 @@ snapshots:
 
   stream-shift@1.0.3: {}
 
-  streamsearch@1.1.0:
-    optional: true
+  streamsearch@1.1.0: {}
 
   streamx@2.23.0:
     dependencies:
@@ -16399,7 +16383,6 @@ snapshots:
       content-type: 1.0.5
       media-typer: 1.1.0
       mime-types: 3.0.2
-    optional: true
 
   typed-array-buffer@1.0.3:
     dependencies:
@@ -16436,8 +16419,7 @@ snapshots:
 
   typed-assert@1.0.9: {}
 
-  typedarray@0.0.6:
-    optional: true
+  typedarray@0.0.6: {}
 
   typescript-eslint@8.53.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3):
     dependencies:

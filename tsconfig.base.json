@@ -20,7 +20,8 @@
       "@zerly/config": ["libs/config/src/index.ts"],
       "@zerly/logger": ["libs/logger/src/index.ts"],
       "@zerly/microservice": ["libs/microservice/src/index.ts"],
-      "@zerly/swagger": ["libs/swagger/src/index.ts"]
+      "@zerly/swagger": ["libs/swagger/src/index.ts"],
+      "@zerly/auth-module": ["libs/modules/auth/src/index.ts"]
     },
     "noImplicitAny": true,
     "strict": true,
