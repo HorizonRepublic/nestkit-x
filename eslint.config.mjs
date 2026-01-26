@@ -27,7 +27,14 @@ export default [
 
   // Ignored paths
   {
-    ignores: ['**/node_modules/**', '**/dist/**', '**/.nx/**', '**/tmp/**', '**/.docusaurus/**'],
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.nx/**',
+      '**/tmp/**',
+      '**/.docusaurus/**',
+      '**/webpack.config.js',
+    ],
   },
 
   // JSON files - dependency checks

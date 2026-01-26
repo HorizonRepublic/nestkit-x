@@ -5,7 +5,6 @@ import { dirname } from 'path';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { APP_CONFIG, IAppConfig } from '@zerly/core';
-import { rootPath } from 'get-root-path';
 import { catchError, defer, EMPTY, from, map, Observable, of, switchMap, tap } from 'rxjs';
 
 import { ENV_METADATA_KEY } from '../tokens';
@@ -115,7 +114,7 @@ export class EnvExampleProvider implements OnModuleInit {
   private buildOutputPath(appName: string): string {
     const fileName = `${appName}${EnvExampleProvider.fileExtension}`;
 
-    return `${rootPath}/${EnvExampleProvider.examplesDir}/${fileName}`;
+    return `${fileName}`;
   }
 
   /**

@@ -6,28 +6,42 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nx/js:tsc",
+      "executor": "@nx/webpack:webpack",
+      "deleteOutputPath": false,
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "development",
       "options": {
+        "target": "node",
         "outputPath": "dist/apps/example-app",
         "main": "apps/example-app/src/main.ts",
         "tsConfig": "apps/example-app/tsconfig.app.json",
-        "assets": [
-          {
-            "input": "src/assets",
-            "glob": "**/*",
-            "output": "assets"
-          }
-        ]
+        "webpackConfig": "apps/example-app/webpack.config.js",
+        "externalDependencies": "all"
       },
       "configurations": {
-        "production": {
-          "sourceMap": false
-        },
         "development": {
-          "watch": true
+          "optimization": false,
+          "extractLicenses": false,
+          "inspect": false,
+          "sourceMap": true
+        },
+        "production": {
+          "optimization": false,
+          "extractLicenses": true,
+          "inspect": false,
+          "sourceMap": false
         }
       }
     },
+
+    "postbuild": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsc-alias -p apps/example-app/tsconfig.app.json --outDir dist/apps/example-app"
+      },
+      "dependsOn": ["build"]
+    },
+
     "serve": {
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
@@ -39,7 +53,8 @@
       "configurations": {
         "development": {
           "runtimeArgs": [],
-          "buildTarget": "example-app:build:development"
+          "buildTarget": "example-app:build:development",
+          "watch": true
         },
         "production": {
           "buildTarget": "example-app:build:production"
