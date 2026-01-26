@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { NestKitLoggerModule } from '@zerly/logger';
+import { LoggerModule } from '@zerly/logger';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -8,7 +8,7 @@ import { SubModule } from './submodule/sub.module';
 @Module({
   controllers: [AppController],
   imports: [
-    NestKitLoggerModule.forRoot(),
+    LoggerModule.forRoot(),
 
     // app layer
     SubModule,

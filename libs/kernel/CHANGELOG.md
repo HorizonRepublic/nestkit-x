@@ -40,7 +40,7 @@ This release contains no new changes.
 
 ### Features
 
-- **kernel:** add standalone bootstrap support for NestKitKernel ([4216903](https://github.com/HorizonRepublic/zerly/commit/4216903))
+- **kernel:** add standalone bootstrap support for ZerlyKernel ([4216903](https://github.com/HorizonRepublic/zerly/commit/4216903))
 
 ### ❤️ Thank You
 

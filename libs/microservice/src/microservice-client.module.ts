@@ -3,10 +3,10 @@ import { IMicroserviceModuleOptions } from './types/microservice-module.options'
 import { JetstreamClientModule } from '@horizon-republic/nestjs-jetstream';
 
 @Module({})
-export class NestKitMicroserviceClientModule {
+export class MicroserviceClientModule {
   public static forRoot(options: IMicroserviceModuleOptions): DynamicModule {
     return {
-      module: NestKitMicroserviceClientModule,
+      module: MicroserviceClientModule,
       imports: [JetstreamClientModule.forFeature(options)],
     };
   }
