@@ -3,7 +3,7 @@ import { APP_REF_SERVICE, APP_STATE_SERVICE, IAppRefService, IAppStateService } 
 import { KernelProvider } from './providers/kernel.provider';
 import { AppRefService } from './services/app-ref.service';
 import { AppStateService } from './services/app-state.service';
-import { ZerlyConfigModule } from '@zerly/config';
+import { ConfigModule } from '@zerly/config';
 import { appConfig } from './config/app.config';
 
 @Module({})
@@ -11,7 +11,7 @@ export class KernelModule {
   public static forRoot(appModule: Type<unknown>): DynamicModule {
     return {
       global: true,
-      imports: [ZerlyConfigModule.forRoot([appConfig]), appModule],
+      imports: [ConfigModule.forRoot([appConfig]), appModule],
       exports: [
         {
           provide: APP_REF_SERVICE,

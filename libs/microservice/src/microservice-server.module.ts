@@ -6,10 +6,10 @@ import { IMicroserviceModuleOptions } from './types/microservice-module.options'
 import { JetstreamServerModule } from '@horizon-republic/nestjs-jetstream';
 
 @Module({})
-export class ZerlyMicroserviceServerModule {
+export class MicroserviceServerModule {
   public static forRoot(options: IMicroserviceModuleOptions): DynamicModule {
     return {
-      module: ZerlyMicroserviceServerModule,
+      module: MicroserviceServerModule,
       imports: [JetstreamServerModule.forRoot(options)],
       providers: [
         {
@@ -25,7 +25,7 @@ export class ZerlyMicroserviceServerModule {
   // todo: make really async
   public forRootAsync(options: IMicroserviceModuleOptions): DynamicModule {
     return {
-      module: ZerlyMicroserviceServerModule,
+      module: MicroserviceServerModule,
       imports: [
         JetstreamServerModule.forRootAsync({
           name: options.name,
