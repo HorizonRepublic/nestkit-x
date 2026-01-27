@@ -1,24 +1,21 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { AuthController } from './controllers/auth.controller';
+import { AuthHttpController } from './controllers/auth.http-controller';
 import { IAuthModuleOptions } from './types';
 import { AUTH_SERVICE } from './tokens';
-import { AccountController } from './controllers/account.controller';
-import { PasswordController } from './controllers/password.controller';
 import { AuthService } from './auth.service';
+import { IAppModuleInterface } from '@zerly/core';
 
 @Module({})
 export class AuthModule {
-  public static forRoot(options: IAuthModuleOptions = {}): DynamicModule {
-    const authController = options.controllers?.auth ?? AuthController;
-    const accountController = options.controllers?.account ?? AccountController;
-    const passwordController = options.controllers?.password ?? PasswordController;
+  public static forHttp(options: IAuthModuleOptions = {}): DynamicModule {
+    const authHttpController = options.controller ?? AuthHttpController;
 
     const authService = options.service ?? AuthService;
 
     return {
       module: AuthModule,
       global: false,
-      controllers: [authController, accountController, passwordController],
+      controllers: [authHttpController],
 
       providers: [
         {
@@ -30,4 +27,21 @@ export class AuthModule {
       exports: [AUTH_SERVICE],
     };
   }
+
+  public static forGateway(): DynamicModule {
+    return {
+      module: AuthModule,
+      global: false,
+    };
+  }
+
+  public static forMicroservice(): DynamicModule {
+    return {
+      module: AuthModule,
+      global: false,
+    };
+  }
 }
+
+// eslint-disable-next-line unused-imports/no-unused-vars
+const typeCheck: IAppModuleInterface = AuthModule;

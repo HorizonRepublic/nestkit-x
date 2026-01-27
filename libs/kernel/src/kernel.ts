@@ -28,6 +28,7 @@ import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { genReqId } from './helpers/trace-id.helper';
 import { HeaderKeys } from './enum/header-keys.enum';
 import * as qs from 'qs';
+import { CommandFactory } from 'nest-commander';
 
 /**
  * The Kernel is the core entry point of the application.
@@ -100,6 +101,10 @@ export class Kernel {
    * ```
    */
   public static init(appModule: Type<unknown>): Observable<Kernel> {
+    if (process.argv.includes('--cli')) {
+      return this.standalone(appModule);
+    }
+
     const kernel = (this.instance ??= new Kernel());
 
     if (this.bootstrapResult$) return this.bootstrapResult$;
@@ -132,7 +137,7 @@ export class Kernel {
    * Kernel.standalone(WorkerModule).subscribe();
    * ```
    */
-  public static standalone(appModule: Type<unknown>): Observable<Kernel> {
+  private static standalone(appModule: Type<unknown>): Observable<Kernel> {
     const kernel = new Kernel();
 
     // Standalone does not share the global bootstrapResult$ to allow multiple contexts if needed
@@ -184,7 +189,7 @@ export class Kernel {
     });
 
     return from(
-      NestFactory.create(KernelModule.forRoot(appModule), adapter, this.defaultOptions),
+      NestFactory.create(KernelModule.forServe(appModule), adapter, this.defaultOptions),
     ).pipe(
       tap((app) => {
         this.registerKernelServices(app);
@@ -198,17 +203,19 @@ export class Kernel {
   /**
    * Internal bootstrap pipeline for standalone contexts.
    *
+   * Uses nest-commander to handle CLI commands.
+   *
    * @private
    * @param {Type<unknown>} standaloneModule - The root module.
    * @returns {Observable<void>} Observable stream of the context creation.
    */
   private bootstrapStandalone$(standaloneModule: Type<unknown>): Observable<void> {
-    return defer(() =>
-      NestFactory.createApplicationContext(
-        KernelModule.forRoot(standaloneModule),
-        this.defaultOptions,
-      ),
-    ).pipe(
+    return defer(() => {
+      // Remove the --cli flag from argv so the nest-commander doesn't complain about an unknown option
+      process.argv = process.argv.filter((arg) => arg !== '--cli');
+
+      return CommandFactory.run(KernelModule.forStandalone(standaloneModule), this.defaultOptions);
+    }).pipe(
       mergeMap(() => of(void 0)),
       catchError((err) =>
         throwError(() => new Error(`Standalone bootstrap failed: ${err.message}`)),

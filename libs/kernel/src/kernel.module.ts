@@ -8,7 +8,12 @@ import { appConfig } from './config/app.config';
 
 @Module({})
 export class KernelModule {
-  public static forRoot(appModule: Type<unknown>): DynamicModule {
+  /**
+   * Used for serving HTTP applications
+   *
+   * @param appModule
+   */
+  public static forServe(appModule: Type<unknown>): DynamicModule {
     return {
       global: true,
       imports: [ConfigModule.forRoot([appConfig]), appModule],
@@ -36,6 +41,41 @@ export class KernelModule {
         } satisfies Provider<IAppRefService>,
 
         KernelProvider,
+      ],
+    };
+  }
+
+  /**
+   * Used for standalone applications
+   *
+   * @param appModule
+   */
+  public static forStandalone(appModule: Type<unknown>): DynamicModule {
+    return {
+      global: true,
+      imports: [ConfigModule.forRoot([appConfig]), appModule],
+      exports: [
+        {
+          provide: APP_REF_SERVICE,
+          useClass: AppRefService,
+        } satisfies Provider<IAppRefService>,
+
+        {
+          provide: APP_STATE_SERVICE,
+          useClass: AppStateService,
+        } satisfies Provider<IAppStateService>,
+      ],
+      module: KernelModule,
+      providers: [
+        {
+          provide: APP_STATE_SERVICE,
+          useClass: AppStateService,
+        } satisfies Provider<IAppStateService>,
+
+        {
+          provide: APP_REF_SERVICE,
+          useClass: AppRefService,
+        } satisfies Provider<IAppRefService>,
       ],
     };
   }

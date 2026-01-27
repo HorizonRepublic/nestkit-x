@@ -12,7 +12,7 @@ import { AuthModule } from '@zerly/auth-module';
     LoggerModule.forRoot(),
 
     // modules
-    AuthModule.forRoot(),
+    AuthModule.forHttp(),
 
     // app layer
     SubModule,
