@@ -50,13 +50,17 @@ Application is listening on http://0.0.0.0:3000
 ### 3. Run in CLI / Standalone Mode
 
 Pass the `--cli` flag to start the application in **Standalone Mode**.
-This bypasses the HTTP server initialization, making it perfect for cron jobs, workers, or CLI commands (via `nest-commander`).
+This bypasses the HTTP server initialization, making it ideal for:
+- **System Scheduled Tasks:** Jobs triggered by OS cron, Kubernetes CronJobs, or cloud schedulers.
+- **CLI Utilities:** Database migrations, seeding scripts, or administrative commands.
+- **One-off Scripts:** CI/CD pipeline tasks.
 
-```shell
-bash node dist/apps/my-app/main.js --cli my-command
+```bash
+node dist/apps/my-app/main.js --cli my-command
 ```
 
-> **Note:** In CLI mode, the Kernel automatically strips the `--cli` flag before passing arguments to the command runner, ensuring compatibility with libraries like `nest-commander`.
+> **Note:** While Standalone mode is typically used for short-lived processes, you can also use it for long-running background workers (e.g., queue consumers) by ensuring your command keeps the process alive.
+
 
 ## Advanced Features
 
