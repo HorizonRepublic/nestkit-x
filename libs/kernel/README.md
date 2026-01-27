@@ -47,8 +47,15 @@ Application is listening on http://0.0.0.0:3000
 ```
 
 ### 3. Run in CLI or Standalone Mode
+You can also run the application in only **CLI Mode**:
+```typescript
+import { Kernel } from '@zerly/kernel';
+import { AppModule } from './app/app.module'; // <-- your root module
 
-Pass the `--cli` flag to start the application in **Standalone Mode**.  
+Kernel.standalone(AppModule);
+```
+
+Or pass the `--cli` flag to usual app to start the application in **Standalone Mode**.  
 In this mode the HTTP server is not started.
 
 This is intended for:
