@@ -25,11 +25,11 @@
       }
     },
 
-    "serve": {
+    "link": {
       "dependsOn": ["build"],
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm tsc-alias -p tsconfig.base.json --outDir dist && node dist/libs/cli/src/bin.js\n"
+        "command": "pnpm tsc-alias -p tsconfig.base.json --outDir dist"
       }
     },
 

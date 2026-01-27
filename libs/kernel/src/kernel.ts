@@ -29,6 +29,7 @@ import { genReqId } from './helpers/trace-id.helper';
 import { HeaderKeys } from './enum/header-keys.enum';
 import * as qs from 'qs';
 import { CommandFactory } from 'nest-commander';
+import { CommandFactoryRunOptions } from 'nest-commander/src/command-factory.interface';
 
 /**
  * The Kernel is the core entry point of the application.
@@ -214,7 +215,13 @@ export class Kernel {
       // Remove the --cli flag from argv so the nest-commander doesn't complain about an unknown option
       process.argv = process.argv.filter((arg) => arg !== '--cli');
 
-      return CommandFactory.run(KernelModule.forStandalone(standaloneModule), this.defaultOptions);
+      const cliOptions: CommandFactoryRunOptions = {
+        ...this.defaultOptions,
+        bufferLogs: false,
+        logger: ['error', 'warn'],
+      };
+
+      return CommandFactory.run(KernelModule.forStandalone(standaloneModule), cliOptions);
     }).pipe(
       mergeMap(() => of(void 0)),
       catchError((err) =>

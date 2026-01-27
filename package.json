@@ -7,7 +7,8 @@
     "prepare": "husky && ts-patch install && typia patch",
     "lint": "nx run-many -t lint --parallel=5 --fix",
     "build:local": "npx tsc -p apps/example-app/tsconfig.app.json && npx tsc-alias -p apps/example-app/tsconfig.app.json",
-    "cli": "pnpm dlx @zerly/cli --registry http://localhost:4873\n"
+    "cli": "pnpm dlx @zerly/cli --registry http://localhost:4873",
+    "zerly": "node dist/libs/cli/src/bin.js"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.3.1",
@@ -33,7 +34,6 @@
     "@types/luxon": "^3.7.1",
     "@types/node": "~25.0.10",
     "@types/qs": "^6.14.0",
-    "concurrently": "^9.2.1",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-functional": "^9.0.2",

@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
+import { GeneratorsModule } from './generators/generators.module';
 
 @Module({
-  controllers: [],
-  providers: [],
-  exports: [],
+  imports: [GeneratorsModule],
 })
-export class CliModule {}
+export class CliModule {
+}
