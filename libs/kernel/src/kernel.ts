@@ -137,7 +137,7 @@ export class Kernel {
    * Kernel.standalone(WorkerModule).subscribe();
    * ```
    */
-  private static standalone(appModule: Type<unknown>): Observable<Kernel> {
+  public static standalone(appModule: Type<unknown>): Observable<Kernel> {
     const kernel = new Kernel();
 
     // Standalone does not share the global bootstrapResult$ to allow multiple contexts if needed
@@ -209,7 +209,7 @@ export class Kernel {
    * @param {Type<unknown>} standaloneModule - The root module.
    * @returns {Observable<void>} Observable stream of the context creation.
    */
-  public bootstrapStandalone$(standaloneModule: Type<unknown>): Observable<void> {
+  private bootstrapStandalone$(standaloneModule: Type<unknown>): Observable<void> {
     return defer(() => {
       // Remove the --cli flag from argv so the nest-commander doesn't complain about an unknown option
       process.argv = process.argv.filter((arg) => arg !== '--cli');

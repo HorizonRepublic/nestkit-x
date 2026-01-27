@@ -20,7 +20,8 @@
         "tsConfig": "libs/modules/auth/tsconfig.lib.json",
         "packageJson": "libs/modules/auth/package.json",
         "main": "libs/modules/auth/src/index.ts",
-        "assets": ["libs/modules/auth/*.md"]
+        "assets": ["libs/modules/auth/*.md"],
+        "updateBuildableProjectDepsInPackageJson": true
       }
     },
     "nx-release-publish": {

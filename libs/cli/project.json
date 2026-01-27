@@ -1,7 +1,7 @@
 {
-  "name": "core",
+  "name": "cli",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/core/src",
+  "sourceRoot": "libs/cli/src",
   "projectType": "library",
   "release": {
     "version": {
@@ -16,17 +16,23 @@
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "generateExportsField": true,
-        "generateLockfile": true,
-        "generatePackageJson": true,
-        "outputPath": "dist/libs/core",
-        "tsConfig": "libs/core/tsconfig.lib.json",
-        "packageJson": "libs/core/package.json",
-        "main": "libs/core/src/index.ts",
-        "assets": ["libs/core/*.md"],
+        "outputPath": "dist/libs/cli",
+        "tsConfig": "libs/cli/tsconfig.lib.json",
+        "packageJson": "libs/cli/package.json",
+        "main": "libs/cli/src/bin.ts",
+        "assets": ["libs/cli/*.md"],
         "updateBuildableProjectDepsInPackageJson": true
       }
     },
+
+    "serve": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm tsc-alias -p tsconfig.base.json --outDir dist && node dist/libs/cli/src/bin.js\n"
+      }
+    },
+
     "nx-release-publish": {
       "options": {
         "packageRoot": "dist/{projectRoot}"

@@ -53,7 +53,7 @@ export class KernelModule {
   public static forStandalone(appModule: Type<unknown>): DynamicModule {
     return {
       global: true,
-      imports: [ConfigModule.forRoot([appConfig]), appModule],
+      imports: [appModule],
       exports: [
         {
           provide: APP_REF_SERVICE,
