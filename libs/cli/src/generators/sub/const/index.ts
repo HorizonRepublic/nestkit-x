@@ -34,7 +34,7 @@ services:
     # -js: Enable JetStream
     # -sd: Store Data directory (for persistence)
     # --max_payload: Increase max payload to 8MB
-    command: -js -sd /data --max_payload=8MB --name zerly-nats
+    command: -js -sd /data -n zerly-nats
     ports:
       - "4222:4222" # Client connection
       - "8222:8222" # Dashboard / Monitoring
