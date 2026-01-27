@@ -51,6 +51,7 @@ Application is listening on http://0.0.0.0:3000
 
 Pass the `--cli` flag to start the application in **Standalone Mode**.
 This bypasses the HTTP server initialization, making it ideal for:
+
 - **System Scheduled Tasks:** Jobs triggered by OS cron, Kubernetes CronJobs, or cloud schedulers.
 - **CLI Utilities:** Database migrations, seeding scripts, or administrative commands.
 - **One-off Scripts:** CI/CD pipeline tasks.
@@ -60,7 +61,6 @@ node dist/apps/my-app/main.js --cli my-command
 ```
 
 > **Note:** While Standalone mode is typically used for short-lived processes, you can also use it for long-running background workers (e.g., queue consumers) by ensuring your command keeps the process alive.
-
 
 ## Advanced Features
 
@@ -76,7 +76,10 @@ import { APP_STATE_SERVICE, IAppStateService } from '@zerly/core';
 
 @Injectable()
 export class AppSetupProvider {
-  constructor(@Inject(APP_STATE_SERVICE) private readonly appState: IAppStateService) {
+  constructor(
+    @Inject(APP_STATE_SERVICE)
+    private readonly appState: IAppStateService,
+  ) {
     // Executed after the app is created, but BEFORE it starts listening
     this.appState.onCreated((app) => {
       // Register Swagger
@@ -158,12 +161,13 @@ Set `APP_HOST` to change the binding interface (default: `0.0.0.0`).
 If no `.env` file is present, the kernel will generate a base `.env.example` file with the following defaults:
 
 ```dotenv 
-APP_ENV="production" # App environment. Possible values: local, production, stage, test. (Default: production) 
-APP_HOST="0.0.0.0" # (Default: 0.0.0.0) 
-APP_NAME="example-app" # kebab-case is recommended. (Default: example-app) 
-APP_PORT="3000" # (Default: 3000) 
-APP_GENERATE_ENV_EXAMPLE="true" # Use false in production. (Default: true) 
-APP_LOG_LEVEL="info" # (Default: info)
+# -- app-config
+APP_NAME="example-app"          # kebab-case is recommended. (Default: example-app)
+APP_ENV="production"            # App environment. Possible values: local, development, staging, production, test. (Default: production)
+APP_HOST="0.0.0.0"              # (Default: 0.0.0.0)
+APP_PORT="3000"                 # (Default: 3000)
+APP_LOG_LEVEL="info"            # Possible values: fatal, error, warn, info, debug, trace, silent. (Default: info)
+APP_GENERATE_ENV_EXAMPLE="true" # Use false in production. (Default: true)
 ```
 
 > **Important for NX Users:**

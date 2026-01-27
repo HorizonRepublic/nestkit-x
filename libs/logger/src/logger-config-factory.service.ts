@@ -17,7 +17,7 @@ export class LoggerConfigFactory {
   }
 
   public get(): PinoParams {
-    const isProduction = this.config.env === Environment.Prod;
+    const isProduction = this.config.env === Environment.Production;
 
     const baseConfig: LoggerOptions = {
       level: isProduction ? 'info' : 'debug',

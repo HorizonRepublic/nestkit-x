@@ -129,10 +129,13 @@ export class EnvExampleProvider implements OnModuleInit {
 
       const value = this.determineVariableValue(options, instanceValue);
 
+      const defaultValueForComment =
+        options.default !== undefined ? options.default : instanceValue;
+
       const commentsParts = [
         options.comment,
         this.extractEnumComment(options.type),
-        this.extractDefaultComment(instanceValue),
+        this.extractDefaultComment(defaultValueForComment),
       ].filter(Boolean);
 
       const combinedComment = commentsParts.length > 0 ? commentsParts.join('. ') : undefined;
@@ -154,8 +157,15 @@ export class EnvExampleProvider implements OnModuleInit {
     options: IEnvFieldMetadata['options'],
     instanceValue: unknown,
   ): string {
+    // Priority 1: Example value provided in decorator
     if (options.example !== undefined) return String(options.example);
+
+    // Priority 2: Default value provided in decorator
+    if (options.default !== undefined) return String(options.default);
+
+    // Priority 3: Runtime value (fallback, potentially dirty from .env)
     if (this.isValidValue(instanceValue)) return String(instanceValue);
+
     return '';
   }
 

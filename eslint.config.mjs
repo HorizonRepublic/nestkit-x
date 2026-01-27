@@ -230,21 +230,64 @@ export default [
       '@typescript-eslint/method-signature-style': ['error', 'method'],
       '@typescript-eslint/naming-convention': [
         'error',
+        // 1. Constants (UPPER_CASE), standard variables (camelCase), or "Enum-as-Const" (PascalCase)
         {
+          selector: 'variable',
+          modifiers: ['const'],
+          format: ['UPPER_CASE', 'camelCase', 'PascalCase'],
+          // Allow prefixes/suffixes for special tokens
           filter: {
             match: true,
-            regex: '^[A-Z][A-Z0-9_]*(_TOKEN|_KEY|_CONFIG)?$',
+            regex:
+              '^[A-Z][A-Z0-9_]*(_TOKEN|_KEY|_CONFIG)?$|^[a-z][a-zA-Z0-9]*$|^[A-Z][a-zA-Z0-9]*$',
           },
-          format: ['UPPER_CASE', 'camelCase'],
-          modifiers: ['const'],
-          selector: 'variable',
         },
-        { format: ['camelCase'], selector: 'variableLike' },
-        { format: ['camelCase'], selector: 'memberLike' },
-        { format: ['PascalCase'], selector: 'typeLike' },
-        { format: ['PascalCase'], selector: 'enumMember' },
-        { format: ['PascalCase'], prefix: ['I'], selector: 'interface' },
-        { format: ['PascalCase'], selector: 'typeAlias' },
+        // 2. Other variables (non-const) - only camelCase
+        {
+          selector: 'variable',
+          modifiers: ['let', 'var'],
+          format: ['camelCase'],
+        },
+        // 3. Functions and parameters - camelCase
+        {
+          selector: 'function',
+          format: ['camelCase'],
+        },
+        {
+          selector: 'parameter',
+          format: ['camelCase'],
+          leadingUnderscore: 'allow', // Allow _unusedParam
+        },
+        // 4. Classes, interfaces, types, enums - PascalCase
+        {
+          selector: 'typeLike',
+          format: ['PascalCase'],
+        },
+        {
+          selector: 'enumMember',
+          format: ['PascalCase', 'UPPER_CASE'],
+        },
+        {
+          selector: 'interface',
+          format: ['PascalCase'],
+          prefix: ['I'], // Require "I" prefix
+        },
+        // 5. Object properties - allow everything (for HTTP headers, enum-objects, etc.)
+        {
+          selector: 'objectLiteralProperty',
+          format: null,
+        },
+        // 6. Class methods and accessors - camelCase
+        {
+          selector: 'memberLike',
+          modifiers: ['private'],
+          format: ['camelCase'],
+          leadingUnderscore: 'allow', // Private members allow leading underscore
+        },
+        {
+          selector: 'memberLike',
+          format: ['camelCase'],
+        },
       ],
       '@typescript-eslint/no-confusing-void-expression': 'error',
       '@typescript-eslint/no-explicit-any': 'error',

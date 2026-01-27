@@ -97,7 +97,7 @@ export class HttpLogInterceptor implements NestInterceptor {
   private readonly logger: Logger = new Logger(HttpLogInterceptor.name);
 
   public constructor(appConfig: IAppConfig) {
-    this.isProd = appConfig.env === Environment.Prod;
+    this.isProd = appConfig.env === Environment.Production;
   }
 
   /**

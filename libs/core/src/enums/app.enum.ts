@@ -1,3 +1,5 @@
+import { LevelWithSilent } from 'pino';
+
 /**
  * Represents various states of an application lifecycle.
  */
@@ -32,8 +34,9 @@ export enum AppState {
  */
 export enum Environment {
   Local = 'local',
-  Prod = 'production',
-  Stage = 'stage',
+  Development = 'development',
+  Staging = 'staging',
+  Production = 'production',
   Test = 'test',
 }
 
@@ -48,3 +51,15 @@ export enum LoadPriority {
    */
   Logger = -10_000,
 }
+
+export const LogLevel = {
+  Fatal: 'fatal',
+  Error: 'error',
+  Warn: 'warn',
+  Info: 'info',
+  Debug: 'debug',
+  Trace: 'trace',
+  Silent: 'silent',
+} as const satisfies Record<string, LevelWithSilent>;
+
+export type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];
