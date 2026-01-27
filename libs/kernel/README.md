@@ -9,8 +9,6 @@ The beating heart of the **Zerly** ecosystem.
 - **Unified Entry Point:** Initialize your entire application with a single line of code.
 - **Dual Mode:** Seamlessly switch between **HTTP Server** (default) and **Standalone/CLI** modes using a simple flag.
 - **Lifecycle Management:** Advanced hooks (`onCreated`, `onListening`) for precise control over initialization (Swagger, Microservices, etc.).
-- **Runtime Agnostic:** Built-in detection for Node.js, Bun, and Deno (experimental).
-- **Integrated Config:** Automatic `.env.example` generation and type-safe configuration loading via `@zerly/config`.
 - **Fastify by Default:** Pre-configured `FastifyAdapter` with security best practices (body limits, timeouts, poisoning protection).
 
 ## Installation
@@ -33,7 +31,7 @@ Kernel.init(AppModule);
 ```
 
 That's it!
-Kernel handles platform selection, adapter creation, and error handling.
+Kernel handles adapter creation, configuration and error handling.
 
 ### 2. Run in HTTP Mode (Default)
 
@@ -148,10 +146,24 @@ This allows you to ensure that critical configurations (like database connection
 
 ### Where do I configure the listening port and host?
 
-Configuration is handled automatically via environment variables through @zerly/config.
-Set `APP_PORT` in your .env file to change the port (default: 3000).
-Set `APP_HOST` to change the binding interface (default: 0.0.0.0).
-The Kernel reads these values during the bootstrap phase automatically.
+Configuration is handled automatically via environment variables through `@zerly/config`.
+Set `APP_PORT` in your `.env` file to change the port (default: `3000`).
+Set `APP_HOST` to change the binding interface (default: `0.0.0.0`).
+
+**Auto-generation behavior:**
+If no `.env` file is present, the kernel will generate a base `.env.example` file with the following defaults:
+
+```dotenv 
+APP_ENV="production" # App environment. Possible values: local, production, stage, test. (Default: production) 
+APP_HOST="0.0.0.0" # (Default: 0.0.0.0) 
+APP_NAME="example-app" # kebab-case is recommended. (Default: example-app) 
+APP_PORT="3000" # (Default: 3000) 
+APP_GENERATE_ENV_EXAMPLE="true" # Use false in production. (Default: true) 
+APP_LOG_LEVEL="info" # (Default: info)
+```
+
+> **Important for NX Users:**
+> When running within an NX monorepo, the kernel attempts to detect the project root to place the `.env.example` correctly. To ensure accuracy, we recommend manually creating a `.env` file containing at least the `APP_NAME` variable (matching your project directory name) before the first run. This guarantees the generator resolves the correct path for the example file.
 
 ### How do I register global Pipes, Guards, or Interceptors?
 
