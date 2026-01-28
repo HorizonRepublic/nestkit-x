@@ -245,7 +245,6 @@ export default [
         // 2. Other variables (non-const) - only camelCase
         {
           selector: 'variable',
-          modifiers: ['let', 'var'],
           format: ['camelCase'],
         },
         // 3. Functions and parameters - camelCase
