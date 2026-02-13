@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 
 import { IAuthService } from './types';
 
 @Injectable()
 export class AuthService implements IAuthService {
-  public register(): void {
-    return void 0;
+  public register(): never {
+    throw new NotImplementedException();
   }
 }
