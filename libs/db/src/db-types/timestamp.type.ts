@@ -1,10 +1,8 @@
 import { EntityProperty, Platform, Type } from '@mikro-orm/core';
 
 export class TimestampType extends Type<number | null, string> {
-  public override convertToJSValue(value: string | number | null): number | null {
-    if (value === null || value === undefined) {
-      return value;
-    }
+  public override convertToJSValue(value: string | number | null | undefined): number | null {
+    if (value === null || value === undefined) return null;
 
     return Number(value);
   }

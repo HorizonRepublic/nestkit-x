@@ -5,7 +5,6 @@
   "dependencies": {
     "@nestia/core": "^10.0.2",
     "@nestjs/common": "^11.1.12",
-    "@zerly/core": "workspace:*",
     "@zerly/kernel": "workspace:*",
     "@zerly/logger": "workspace:*"
   },

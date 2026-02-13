@@ -4,7 +4,7 @@ export * from './auth.module';
 
 export * from './auth.service';
 
-export * from './entities/user.entity';
+export * from './db/user.entity';
 
 export * from './resources';
 

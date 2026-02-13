@@ -1,7 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Observable } from 'rxjs';
-
-import { AppState } from '../enums';
+import { AppState } from '../../../config/src/enums/kernel.enum';
 
 /**
  * Service for managing application lifecycle states and executing callbacks

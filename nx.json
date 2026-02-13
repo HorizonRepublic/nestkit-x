@@ -49,10 +49,9 @@
       "pattern": "v{version}",
       "requireSemver": true
     },
-
     "version": {
-      "preserveLocalDependencyProtocols": false,
       "preVersionCommand": "pnpm dlx nx run-many -t build",
+      "preserveLocalDependencyProtocols": false,
       "conventionalCommits": true,
       "manifestRootsToUpdate": [
         "{projectRoot}",

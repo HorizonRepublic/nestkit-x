@@ -1,10 +1,13 @@
 import { DynamicModule, Module, Provider, Type } from '@nestjs/common';
-import { APP_REF_SERVICE, APP_STATE_SERVICE, IAppRefService, IAppStateService } from '@zerly/core';
 import { KernelProvider } from './providers/kernel.provider';
 import { AppRefService } from './services/app-ref.service';
 import { AppStateService } from './services/app-state.service';
 import { ConfigModule } from '@zerly/config';
 import { appConfig } from './config/app.config';
+import { APP_FILTER } from '@nestjs/core';
+import { AllExceptionsFilter } from './filters/all-exceptions.filter';
+import { APP_REF_SERVICE, APP_STATE_SERVICE } from './tokens';
+import { IAppRefService, IAppStateService } from './types';
 
 @Module({})
 export class KernelModule {
@@ -17,17 +20,7 @@ export class KernelModule {
     return {
       global: true,
       imports: [ConfigModule.forRoot([appConfig]), appModule],
-      exports: [
-        {
-          provide: APP_REF_SERVICE,
-          useClass: AppRefService,
-        } satisfies Provider<IAppRefService>,
-
-        {
-          provide: APP_STATE_SERVICE,
-          useClass: AppStateService,
-        } satisfies Provider<IAppStateService>,
-      ],
+      exports: [APP_REF_SERVICE, APP_STATE_SERVICE],
       module: KernelModule,
       providers: [
         {
@@ -39,6 +32,10 @@ export class KernelModule {
           provide: APP_REF_SERVICE,
           useClass: AppRefService,
         } satisfies Provider<IAppRefService>,
+        {
+          provide: APP_FILTER,
+          useClass: AllExceptionsFilter,
+        },
 
         KernelProvider,
       ],

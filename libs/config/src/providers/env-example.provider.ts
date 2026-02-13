@@ -5,11 +5,11 @@ import { dirname, join, normalize, resolve, sep } from 'path';
 
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { APP_CONFIG, IAppConfig } from '@zerly/core';
+import { APP_CONFIG } from '../tokens/index';
 import { catchError, defer, EMPTY, from, map, Observable, of, switchMap, tap } from 'rxjs';
 
 import { ENV_METADATA_KEY } from '../tokens';
-import { EnumType, EnvTypeConstructor, IEnvFieldMetadata } from '../types';
+import { EnumType, EnvTypeConstructor, IAppConfig, IEnvFieldMetadata } from '../types';
 
 interface IFormattedLine {
   declaration: string;

@@ -3,7 +3,6 @@ import { AuthHttpController } from './controllers/auth.http-controller';
 import { IAuthModuleOptions } from './types';
 import { AUTH_SERVICE } from './tokens';
 import { AuthService } from './auth.service';
-import { IAppModuleInterface } from '@zerly/core';
 
 @Module({})
 export class AuthModule {
@@ -16,6 +15,10 @@ export class AuthModule {
       module: AuthModule,
       global: false,
       controllers: [authHttpController],
+
+      imports: [
+        //MikroOrmModule.forFeature([UserEntity])
+      ],
 
       providers: [
         {
@@ -42,6 +45,3 @@ export class AuthModule {
     };
   }
 }
-
-// eslint-disable-next-line unused-imports/no-unused-vars
-const typeCheck: IAppModuleInterface = AuthModule;

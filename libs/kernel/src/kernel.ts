@@ -3,15 +3,6 @@ import { INestApplication, Logger, NestApplicationOptions, Type } from '@nestjs/
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import {
-  APP_CONFIG,
-  APP_REF_SERVICE,
-  APP_STATE_SERVICE,
-  AppState,
-  IAppConfig,
-  IAppRefService,
-  IAppStateService,
-} from '@zerly/core';
-import {
   catchError,
   defer,
   from,
@@ -30,6 +21,9 @@ import { HeaderKeys } from './enum/header-keys.enum';
 import * as qs from 'qs';
 import { CommandFactory } from 'nest-commander';
 import { CommandFactoryRunOptions } from 'nest-commander/src/command-factory.interface';
+import { APP_REF_SERVICE, APP_STATE_SERVICE } from './tokens';
+import { APP_CONFIG, AppState, IAppConfig } from '@zerly/config';
+import { IAppRefService, IAppStateService } from './types';
 
 /**
  * The Kernel is the core entry point of the application.
