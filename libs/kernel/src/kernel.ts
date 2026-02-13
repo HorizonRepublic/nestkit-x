@@ -22,11 +22,12 @@ import {
 
 import { APP_CONFIG, AppState, IAppConfig } from '@zerly/config';
 
+import { AppMode } from './enum/app-mode.enum';
 import { HeaderKeys } from './enum/header-keys.enum';
 import { genReqId } from './helpers/trace-id.helper';
 import { KernelModule } from './kernel.module';
 import { APP_REF_SERVICE, APP_STATE_SERVICE } from './tokens';
-import { IAppRefService, IAppStateService } from './types';
+import { IAppRefService, IAppStateService, IKernelInitOptions } from './types';
 
 /**
  * The Kernel is the core entry point of the application.
@@ -88,6 +89,7 @@ export class Kernel {
    * State Initialization -> Event Listening -> HTTP Server Start.
    *
    * @param {Type<unknown>} appModule - The root module of the application (usually AppModule).
+   * @param options
    * @returns {Observable<Kernel>} An observable that emits the initialized Kernel instance.
    *
    * @example
@@ -95,13 +97,22 @@ export class Kernel {
    * import { Kernel } from '@zerly/kernel';
    * import { AppModule } from './app/app.module';
    *
-   * Kernel.init(AppModule).subscribe();
+   * Kernel.init(AppModule);
    * ```
    */
-  public static init(appModule: Type<unknown>): Observable<Kernel> {
-    if (process.argv.includes('--cli')) {
-      return this.standalone(appModule);
-    }
+  public static init(
+    appModule: Type<unknown>,
+    options: IKernelInitOptions = {},
+  ): Observable<Kernel> {
+    const opts: IKernelInitOptions = {
+      // default options
+      mode: AppMode.Server,
+
+      // override defaults with user-provided options
+      ...options,
+    };
+
+    if (opts.mode === AppMode.Cli) return this.standalone(appModule);
 
     const kernel = (this.instance ??= new Kernel());
 
