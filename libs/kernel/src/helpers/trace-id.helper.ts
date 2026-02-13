@@ -1,6 +1,8 @@
 import { IncomingMessage } from 'node:http';
-import { HeaderKeys } from '../enum/header-keys.enum';
+
 import { v7 } from 'uuid';
+
+import { HeaderKeys } from '../enum/header-keys.enum';
 
 export const genReqId = (req: IncomingMessage): string => {
   const headers = req.headers;

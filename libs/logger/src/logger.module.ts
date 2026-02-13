@@ -1,5 +1,6 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+
 import { LoggerModule as PinoModule } from 'nestjs-pino';
 import { Params } from 'nestjs-pino/params';
 

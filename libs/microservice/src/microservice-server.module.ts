@@ -1,9 +1,10 @@
 import { DynamicModule, Module } from '@nestjs/common';
 
+import { JetstreamServerModule } from '@horizon-republic/nestjs-jetstream';
+
 import { MICROSERVICE_OPTIONS } from './const';
 import { MicroserviceServerProvider } from './providers/microservice-server.provider';
 import { IMicroserviceModuleOptions } from './types/microservice-module.options';
-import { JetstreamServerModule } from '@horizon-republic/nestjs-jetstream';
 
 @Module({})
 export class MicroserviceServerModule {

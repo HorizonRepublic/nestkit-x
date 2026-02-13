@@ -1,1 +1,1 @@
-export * from './kernel.enum'
+export * from './kernel.enum';

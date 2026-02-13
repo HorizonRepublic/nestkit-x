@@ -1,6 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { APP_REF_SERVICE } from '../tokens';
-import { AppState } from '../../../config/src/enums/kernel.enum';
+
 import {
   catchError,
   concatMap,
@@ -12,6 +11,10 @@ import {
   of,
   toArray,
 } from 'rxjs';
+
+import { AppState } from '@zerly/config';
+
+import { APP_REF_SERVICE } from '../tokens';
 import { IAppRefService, IAppStateService, IPrioritizedCallback, IStateCallback } from '../types';
 
 /**

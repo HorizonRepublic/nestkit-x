@@ -2,6 +2,11 @@ import 'reflect-metadata';
 import { INestApplication, Logger, NestApplicationOptions, Type } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { FastifyAdapter } from '@nestjs/platform-fastify';
+
+import { CommandFactory } from 'nest-commander';
+import { CommandFactoryRunOptions } from 'nest-commander/src/command-factory.interface';
+import * as qs from 'qs';
 import {
   catchError,
   defer,
@@ -14,15 +19,13 @@ import {
   tap,
   throwError,
 } from 'rxjs';
-import { KernelModule } from './kernel.module';
-import { FastifyAdapter } from '@nestjs/platform-fastify';
-import { genReqId } from './helpers/trace-id.helper';
-import { HeaderKeys } from './enum/header-keys.enum';
-import * as qs from 'qs';
-import { CommandFactory } from 'nest-commander';
-import { CommandFactoryRunOptions } from 'nest-commander/src/command-factory.interface';
-import { APP_REF_SERVICE, APP_STATE_SERVICE } from './tokens';
+
 import { APP_CONFIG, AppState, IAppConfig } from '@zerly/config';
+
+import { HeaderKeys } from './enum/header-keys.enum';
+import { genReqId } from './helpers/trace-id.helper';
+import { KernelModule } from './kernel.module';
+import { APP_REF_SERVICE, APP_STATE_SERVICE } from './tokens';
 import { IAppRefService, IAppStateService } from './types';
 
 /**

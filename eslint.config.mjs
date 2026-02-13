@@ -6,6 +6,8 @@ import sonarjs from 'eslint-plugin-sonarjs';
 import unusedImports from 'eslint-plugin-unused-imports';
 import jsoncParser from 'jsonc-eslint-parser';
 import tseslint from 'typescript-eslint';
+import importPlugin from 'eslint-plugin-import-x';
+
 
 export default [
   // Base configurations from Nx and TypeScript
@@ -68,6 +70,7 @@ export default [
       'prefer-arrow': preferArrowPlugin,
       prettier: eslintPluginPrettier,
       'unused-imports': unusedImports,
+      'import-x': importPlugin,
     },
     rules: {
       '@nx/dependency-checks': [
@@ -127,7 +130,54 @@ export default [
       // General code quality
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'no-debugger': 'error',
-      'no-duplicate-imports': 'error',
+      'import-x/order': [
+        'error',
+        {
+          groups: [
+            'builtin', // Node.js built-ins (fs, path, etc.)
+            'external', // npm packages (@nestjs/*, typia, rxjs, etc.)
+            'internal', // Workspace aliases (@nestkit-x/*, @zerly/*)
+            'parent', // Parent imports (../)
+            'sibling', // Sibling imports (./)
+            'index', // Index imports (./)
+            'type', // Type-only imports
+          ],
+          pathGroups: [
+            {
+              pattern: '@nestjs/**',
+              group: 'external',
+              position: 'before',
+            },
+            {
+              pattern: '@nestia/**',
+              group: 'external',
+              position: 'before',
+            },
+            {
+              pattern: '@nestkit-x/**',
+              group: 'internal',
+              position: 'before',
+            },
+            {
+              pattern: '@zerly/**',
+              group: 'internal',
+              position: 'before',
+            },
+          ],
+          pathGroupsExcludedImportTypes: ['builtin', 'type'],
+          'newlines-between': 'always',
+          alphabetize: {
+            order: 'asc',
+            caseInsensitive: true,
+          },
+        },
+      ],
+      'import-x/newline-after-import': ['error', { count: 1 }],
+      'import-x/no-duplicates': 'error',
+
+      // Remove the base no-duplicate-imports since import-x/no-duplicates replaces it
+      'no-duplicate-imports': 'off',
+
       'no-multiple-empty-lines': ['error', { max: 1, maxBOF: 0, maxEOF: 1 }],
       'no-useless-constructor': 'error',
       'no-useless-return': 'error',

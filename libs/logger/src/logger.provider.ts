@@ -1,7 +1,9 @@
 import { INestApplication, Inject, Injectable } from '@nestjs/common';
+
 import { Logger } from 'nestjs-pino';
-import { APP_STATE_SERVICE, IAppStateService } from '@zerly/kernel';
+
 import { LoadPriority } from '@zerly/config';
+import { APP_STATE_SERVICE, IAppStateService } from '@zerly/kernel';
 
 @Injectable()
 export class LoggerProvider {

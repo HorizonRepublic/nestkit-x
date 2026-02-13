@@ -1,7 +1,10 @@
 import { Entity, Opt, Property, t } from '@mikro-orm/core';
-import { IUserResource } from '../resources/user.resource';
-import { UserRepository } from './user.repository';
+
 import { BaseEntity } from '@zerly/db';
+
+import { IUserResource } from '../resources/user.resource';
+
+import { UserRepository } from './user.repository';
 
 @Entity({ tableName: 'users', repository: () => UserRepository })
 export class UserEntity extends BaseEntity implements IUserResource {

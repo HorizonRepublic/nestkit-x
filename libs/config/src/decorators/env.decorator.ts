@@ -1,5 +1,5 @@
-import { EnumType, EnvTypeConstructor, IEnvFieldMetadata, IEnvOptions } from '../types';
 import { ENV_METADATA_KEY } from '../tokens';
+import { EnumType, EnvTypeConstructor, IEnvFieldMetadata, IEnvOptions } from '../types';
 
 /**
  * Property decorator for mapping environment variables to class properties.
@@ -21,7 +21,7 @@ import { ENV_METADATA_KEY } from '../tokens';
  * }
  * ```
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
+
 export const Env =
   <TType extends EnumType | EnvTypeConstructor = typeof String>(
     key: string,

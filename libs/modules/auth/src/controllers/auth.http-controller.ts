@@ -1,8 +1,9 @@
 import { Controller, NotImplementedException } from '@nestjs/common';
-import { IAuthController } from '../types';
+
 import { TypedRoute } from '@nestia/core';
+
 import { IUserRegisterRequest } from '../resources/user-register.request';
-import { UserEntity } from '../db/user.entity';
+import { IAuthController } from '../types';
 
 @Controller()
 export class AuthHttpController implements IAuthController {
@@ -12,7 +13,6 @@ export class AuthHttpController implements IAuthController {
 
   @TypedRoute.Post('auth/register')
   public register(data: IUserRegisterRequest): never {
-    console.log('UserEntityMeta', UserEntity.columns().id);
     throw new NotImplementedException();
   }
 

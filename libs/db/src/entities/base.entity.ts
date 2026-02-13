@@ -1,7 +1,9 @@
 import { Entity, EntityMetadata, MetadataStorage, Opt, Property, t, Utils } from '@mikro-orm/core';
 import { v7 } from 'uuid';
-import { TimestampType } from '../db-types';
+
 import { IBaseResource } from '@zerly/core';
+
+import { TimestampType } from '../db-types';
 
 // Описуємо конструктор для коректної типізації this у статичних методах
 type EntityConstructor<T> = new (...args: unknown[]) => T;

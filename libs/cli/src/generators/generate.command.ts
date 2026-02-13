@@ -1,4 +1,5 @@
 import { Command, CommandRunner } from 'nest-commander';
+
 import { GenDockerComposeCommand } from './sub/gen-docker-compose.command';
 
 @Command({
@@ -11,7 +12,7 @@ import { GenDockerComposeCommand } from './sub/gen-docker-compose.command';
   ],
 })
 export class GenerateCommand extends CommandRunner {
-  async run(): Promise<void> {
+  public async run(): Promise<void> {
     console.log('Please specify a resource to generate. Example: zerly g docker');
   }
 }

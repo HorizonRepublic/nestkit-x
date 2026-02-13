@@ -1,11 +1,13 @@
 import { DynamicModule, Module, Provider, Type } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
+
+import { ConfigModule } from '@zerly/config';
+
+import { appConfig } from './config/app.config';
+import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { KernelProvider } from './providers/kernel.provider';
 import { AppRefService } from './services/app-ref.service';
 import { AppStateService } from './services/app-state.service';
-import { ConfigModule } from '@zerly/config';
-import { appConfig } from './config/app.config';
-import { APP_FILTER } from '@nestjs/core';
-import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { APP_REF_SERVICE, APP_STATE_SERVICE } from './tokens';
 import { IAppRefService, IAppStateService } from './types';
 

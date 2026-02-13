@@ -5,10 +5,11 @@ import { dirname, join, normalize, resolve, sep } from 'path';
 
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { APP_CONFIG } from '../tokens/index';
+
 import { catchError, defer, EMPTY, from, map, Observable, of, switchMap, tap } from 'rxjs';
 
 import { ENV_METADATA_KEY } from '../tokens';
+import { APP_CONFIG } from '../tokens/index';
 import { EnumType, EnvTypeConstructor, IAppConfig, IEnvFieldMetadata } from '../types';
 
 interface IFormattedLine {
@@ -129,8 +130,7 @@ export class EnvExampleProvider implements OnModuleInit {
 
       const value = this.determineVariableValue(options, instanceValue);
 
-      const defaultValueForComment =
-        options.default !== undefined ? options.default : instanceValue;
+      const defaultValueForComment = options.default ?? instanceValue;
 
       const commentsParts = [
         options.comment,

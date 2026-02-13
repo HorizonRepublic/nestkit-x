@@ -1,7 +1,8 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigFactory, ConfigModule as BaseConfigModule } from '@nestjs/config';
-import { EnvExampleProvider } from './providers/env-example.provider';
 import { ConfigModuleOptions } from '@nestjs/config/dist/interfaces/config-module-options.interface';
+
+import { EnvExampleProvider } from './providers/env-example.provider';
 
 @Module({})
 export class ConfigModule {

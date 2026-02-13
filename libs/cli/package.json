@@ -7,6 +7,8 @@
   },
   "dependencies": {
     "tslib": "^2.3.0",
-    "@zerly/kernel": "workspace:*"
+    "@zerly/kernel": "workspace:*",
+    "@nestjs/common": "^11.1.12",
+    "nest-commander": "^3.20.1"
   }
 }

@@ -3,9 +3,9 @@ import { Logger, Type } from '@nestjs/common';
 import { registerAs } from '@nestjs/config';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
 
+import { ENV_METADATA_KEY } from '../tokens';
 import { EnumType, EnvTypeConstructor, IEnvFieldMetadata } from '../types';
 import { ConfigFactory, ConfigFactoryKeyHost } from '../types/config-factory.type';
-import { ENV_METADATA_KEY } from '../tokens';
 
 /**
  * Builder class for fluent configuration creation.

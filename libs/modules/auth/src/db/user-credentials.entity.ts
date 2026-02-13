@@ -1,7 +1,10 @@
-import { BaseEntity } from '@zerly/core';
 import { Entity, Enum, ManyToOne, Opt, Property, t } from '@mikro-orm/core';
-import { UserEntity } from './user.entity';
+
+import { BaseEntity } from '@zerly/core';
+
 import { AuthProvider } from '../enum/index';
+
+import { UserEntity } from './user.entity';
 
 @Entity({ tableName: 'user_credentials' })
 export class UserCredentialEntity extends BaseEntity {

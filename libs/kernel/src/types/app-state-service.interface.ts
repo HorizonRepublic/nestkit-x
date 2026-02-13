@@ -1,6 +1,8 @@
 import { INestApplication } from '@nestjs/common';
+
 import { Observable } from 'rxjs';
-import { AppState } from '../../../config/src/enums/kernel.enum';
+
+import { AppState } from '@zerly/config';
 
 /**
  * Service for managing application lifecycle states and executing callbacks

@@ -1,4 +1,5 @@
 import { DynamicModule, Module } from '@nestjs/common';
+
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 
 @Module({})

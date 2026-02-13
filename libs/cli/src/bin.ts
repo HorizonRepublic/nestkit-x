@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Kernel } from '@zerly/kernel';
+
 import { CliModule } from './cli.module';
 
 Kernel.standalone(CliModule).subscribe({

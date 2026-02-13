@@ -1,5 +1,6 @@
-import { APP_CONFIG, ConfigBuilder, Env, Environment, IAppConfig, LogLevel } from '@zerly/config';
 import typia from 'typia';
+
+import { APP_CONFIG, ConfigBuilder, Env, Environment, IAppConfig, LogLevel } from '@zerly/config';
 
 class AppConfig implements IAppConfig {
   @Env('APP_NAME', {

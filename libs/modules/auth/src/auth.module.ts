@@ -1,8 +1,9 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { AuthHttpController } from './controllers/auth.http-controller';
-import { IAuthModuleOptions } from './types';
-import { AUTH_SERVICE } from './tokens';
+
 import { AuthService } from './auth.service';
+import { AuthHttpController } from './controllers/auth.http-controller';
+import { AUTH_SERVICE } from './tokens';
+import { IAuthModuleOptions } from './types';
 
 @Module({})
 export class AuthModule {
