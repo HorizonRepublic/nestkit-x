@@ -1,36 +1,43 @@
-import { APP_CONFIG, Environment, IAppConfig } from '@zerly/core';
-import { ConfigBuilder, Env } from '@zerly/config';
 import typia from 'typia';
-import { LevelWithSilent } from 'pino';
+
+import { APP_CONFIG, ConfigBuilder, Env, Environment, IAppConfig, LogLevel } from '@zerly/config';
 
 class AppConfig implements IAppConfig {
-  @Env('APP_ENV', {
-    type: Environment,
-    comment: 'App environment',
-  })
-  public readonly env: Environment = Environment.Prod;
-
-  @Env('APP_HOST')
-  public readonly host: string = '0.0.0.0';
-
   @Env('APP_NAME', {
     comment: 'kebab-case is recommended',
   })
   public readonly name: string = 'example-app';
 
+  @Env('APP_ENV', {
+    type: Environment,
+    comment: 'App environment',
+    default: Environment.Production,
+  })
+  public readonly env!: Environment;
+
+  @Env('APP_HOST', {
+    default: '0.0.0.0',
+  })
+  public readonly host!: string;
+
   @Env('APP_PORT', {
     type: Number,
+    default: 3000,
   })
-  public readonly port: number = 3000;
+  public readonly port!: number;
+
+  @Env('APP_LOG_LEVEL', {
+    type: LogLevel,
+    default: LogLevel.Info,
+  })
+  public logLever: LogLevel = LogLevel.Info;
 
   @Env('APP_GENERATE_ENV_EXAMPLE', {
     type: Boolean,
     comment: 'Use false in production',
+    default: true,
   })
-  public generateEnvExample = true;
-
-  @Env('APP_LOG_LEVEL')
-  public logLever: LevelWithSilent = 'info';
+  public generateEnvExample!: boolean;
 }
 
 export const appConfig = ConfigBuilder.from(AppConfig, APP_CONFIG)

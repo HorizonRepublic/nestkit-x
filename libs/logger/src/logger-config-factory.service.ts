@@ -1,12 +1,16 @@
+import { randomUUID } from 'node:crypto';
+
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { APP_CONFIG, Environment, IAppConfig } from '@zerly/core';
+
 import { Params as PinoParams } from 'nestjs-pino/params';
-import type { LoggerOptions } from 'pino';
 import * as pino from 'pino';
 
+import { APP_CONFIG, Environment, IAppConfig } from '@zerly/config';
+
 import { REDACTED_MSG, redactedPaths } from './const';
-import { randomUUID } from 'node:crypto';
+
+import type { LoggerOptions } from 'pino';
 
 @Injectable()
 export class LoggerConfigFactory {
@@ -17,7 +21,7 @@ export class LoggerConfigFactory {
   }
 
   public get(): PinoParams {
-    const isProduction = this.config.env === Environment.Prod;
+    const isProduction = this.config.env === Environment.Production;
 
     const baseConfig: LoggerOptions = {
       level: isProduction ? 'info' : 'debug',

@@ -1,7 +1,11 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { APP_CONFIG, APP_STATE_SERVICE, IAppConfig, IAppStateService } from '@zerly/core';
+
+import { APP_CONFIG, IAppConfig } from '@zerly/config';
+
 import { getRuntime, getRuntimeVersion } from '../helpers/get-runtime.helper';
+import { APP_STATE_SERVICE } from '../tokens';
+import { IAppStateService } from '../types';
 
 @Injectable()
 export class KernelProvider {

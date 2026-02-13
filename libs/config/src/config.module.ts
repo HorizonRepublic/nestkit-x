@@ -1,16 +1,17 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { ConfigFactory, ConfigModule } from '@nestjs/config';
-import { EnvExampleProvider } from './providers/env-example.provider';
+import { ConfigFactory, ConfigModule as BaseConfigModule } from '@nestjs/config';
 import { ConfigModuleOptions } from '@nestjs/config/dist/interfaces/config-module-options.interface';
 
+import { EnvExampleProvider } from './providers/env-example.provider';
+
 @Module({})
-export class ZerlyConfigModule {
+export class ConfigModule {
   public static forRoot(load: ConfigModuleOptions['load'] = []): DynamicModule {
     return {
-      module: ZerlyConfigModule,
+      module: ConfigModule,
       global: false,
       imports: [
-        ConfigModule.forRoot({
+        BaseConfigModule.forRoot({
           cache: true,
           isGlobal: true,
           expandVariables: true,
@@ -18,15 +19,15 @@ export class ZerlyConfigModule {
         }),
       ],
       providers: [EnvExampleProvider],
-      exports: [ConfigModule],
+      exports: [BaseConfigModule],
     };
   }
 
   public static forFeature(config: ConfigFactory): DynamicModule {
     return {
-      module: ZerlyConfigModule,
-      imports: [ConfigModule.forFeature(config)],
-      exports: [ConfigModule],
+      module: ConfigModule,
+      imports: [BaseConfigModule.forFeature(config)],
+      exports: [BaseConfigModule],
     };
   }
 }

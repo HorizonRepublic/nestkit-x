@@ -1,3 +1,5 @@
+export * from './app-config.interface';
+
 /**
  * Maps TypeScript constructor types to their corresponding primitive types.
  */

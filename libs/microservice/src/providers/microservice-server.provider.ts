@@ -1,12 +1,14 @@
 import { INestApplication, Inject, Injectable, Logger } from '@nestjs/common';
-import { APP_STATE_SERVICE, IAppStateService } from '@zerly/core';
+import { CustomStrategy } from '@nestjs/microservices';
+
+import { getJetStreamTransportToken } from '@horizon-republic/nestjs-jetstream';
+import { DebugEvents, Events } from 'nats';
 import { from, map, Observable } from 'rxjs';
+
+import { APP_STATE_SERVICE, IAppStateService } from '@zerly/core';
 
 import { MICROSERVICE_OPTIONS } from '../const';
 import { IMicroserviceModuleOptions } from '../types/microservice-module.options';
-import { CustomStrategy } from '@nestjs/microservices';
-import { DebugEvents, Events } from 'nats';
-import { getJetStreamTransportToken } from '@horizon-republic/nestjs-jetstream';
 
 @Injectable()
 export class MicroserviceServerProvider {

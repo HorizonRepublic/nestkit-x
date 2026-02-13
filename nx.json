@@ -35,10 +35,15 @@
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["default", "^default"]
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/{projectRoot}"
+      }
     }
   },
   "release": {
-    "projects": ["libs/*"],
+    "projects": ["libs/*", "auth"],
     "projectsRelationship": "fixed",
     "releaseTag": {
       "pattern": "v{version}",
@@ -46,7 +51,15 @@
     },
     "version": {
       "preVersionCommand": "pnpm dlx nx run-many -t build",
-      "conventionalCommits": true
+      "preserveLocalDependencyProtocols": false,
+      "conventionalCommits": true,
+      "manifestRootsToUpdate": [
+        "{projectRoot}",
+        {
+          "path": "dist/{projectRoot}",
+          "preserveLocalDependencyProtocols": false
+        }
+      ]
     },
     "changelog": {
       "workspaceChangelog": {

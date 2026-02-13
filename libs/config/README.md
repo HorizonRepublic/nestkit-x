@@ -93,7 +93,7 @@ For feature modules:
 
 ```typescript
 @Module({
-  imports: [NestKitConfigModule.forFeature(featureConfig)],
+  imports: [ZerlyConfigModule.forFeature(featureConfig)],
 })
 export class FeatureModule {}
 ```
@@ -129,7 +129,7 @@ export class DatabaseService {
 
 ## API Reference
 
-### `NestKitConfigModule.forRoot(options)`
+### `ZerlyConfigModule.forRoot(options)`
 
 Registers the configuration module globally with the specified options.
 
@@ -151,13 +151,13 @@ interface IConfigModuleOptions {
 }
 ```
 
-### `NestKitConfigModule.forFeature(config)`
+### `ZerlyConfigModule.forFeature(config)`
 
 Registers additional configuration for a specific feature module.
 
 ```typescript
 @Module({
-  imports: [NestKitConfigModule.forFeature(featureConfig)],
+  imports: [ZerlyConfigModule.forFeature(featureConfig)],
 })
 export class FeatureModule {}
 ```
@@ -303,7 +303,7 @@ The `.env.example` file is generated only when:
 To disable generation entirely:
 
 ```typescript
-NestKitConfigModule.forRoot({
+ZerlyConfigModule.forRoot({
   load: [appConfig],
   exampleGenerationEnv: false,
 });

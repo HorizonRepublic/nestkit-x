@@ -5,13 +5,13 @@
   "dependencies": {
     "@nestia/core": "^10.0.2",
     "@nestjs/common": "^11.1.12",
-    "@zerly/core": "workspace:*",
     "@zerly/kernel": "workspace:*",
     "@zerly/logger": "workspace:*"
   },
   "devDependencies": {
     "@darraghor/eslint-plugin-nestjs-typed": "^7.1.16",
     "tslib": "^2.8.1",
-    "typia": "^11.0.1"
+    "typia": "^11.0.1",
+    "webpack": "^5.105.2"
   }
 }

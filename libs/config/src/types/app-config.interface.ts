@@ -1,8 +1,9 @@
-import { tags } from 'typia';
-import { Environment } from '../enums';
-import { Pattern } from 'typia/lib/tags/Pattern';
-import { Default } from 'typia/lib/tags/Default';
 import { LevelWithSilent } from 'pino';
+import { tags } from 'typia';
+import { Default } from 'typia/lib/tags/Default';
+import { Pattern } from 'typia/lib/tags/Pattern';
+
+import { Environment } from '../enums/kernel.enum';
 
 export interface IAppConfig {
   readonly env: Environment;

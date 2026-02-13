@@ -1,6 +1,7 @@
 import { INestApplication, Injectable, Logger } from '@nestjs/common';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
-import { IAppRefService } from '@zerly/core';
+
+import { IAppRefService } from '../types';
 
 @Injectable()
 export class AppRefService implements IAppRefService {
