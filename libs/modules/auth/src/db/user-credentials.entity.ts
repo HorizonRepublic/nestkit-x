@@ -1,6 +1,6 @@
 import { Entity, Enum, ManyToOne, Opt, Property, t } from '@mikro-orm/core';
 
-import { BaseEntity } from '@zerly/core';
+import { BaseEntity } from '@zerly/db';
 
 import { AuthProvider } from '../enum/index';
 
