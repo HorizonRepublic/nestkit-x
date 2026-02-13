@@ -438,6 +438,9 @@ importers:
       '@zerly/core':
         specifier: workspace:*
         version: link:../core
+      '@zerly/kernel':
+        specifier: workspace:*
+        version: link:../kernel
       nats:
         specifier: ^2.29.3
         version: 2.29.3
