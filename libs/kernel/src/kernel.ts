@@ -1,8 +1,8 @@
 import 'reflect-metadata';
-import { INestApplication, Logger, NestApplicationOptions, Type } from '@nestjs/common';
+import { Logger, NestApplicationOptions, Type } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { FastifyAdapter } from '@nestjs/platform-fastify';
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 
 import { CommandFactory } from 'nest-commander';
 import { CommandFactoryRunOptions } from 'nest-commander/src/command-factory.interface';
@@ -190,6 +190,7 @@ export class Kernel {
       keepAliveTimeout: 65000, // 65 sec
       disableRequestLogging: true,
       exposeHeadRoutes: true,
+      forceCloseConnections: false,
       routerOptions: {
         ignoreDuplicateSlashes: true,
         ignoreTrailingSlash: true,
@@ -198,9 +199,14 @@ export class Kernel {
     });
 
     return from(
-      NestFactory.create(KernelModule.forServe(appModule), adapter, this.defaultOptions),
+      NestFactory.create<NestFastifyApplication>(
+        KernelModule.forServe(appModule),
+        adapter,
+        this.defaultOptions,
+      ),
     ).pipe(
       tap((app) => {
+        app.enableShutdownHooks();
         this.registerKernelServices(app);
       }),
       mergeMap(() => this.appState.setState$(AppState.Created)),
@@ -245,7 +251,7 @@ export class Kernel {
    * @private
    * @param {any} app - The NestJS application instance.
    */
-  private registerKernelServices(app: INestApplication): void {
+  private registerKernelServices(app: NestFastifyApplication): void {
     this.appRef = app.get(APP_REF_SERVICE);
     this.appState = app.get(APP_STATE_SERVICE);
     this.appRef.set(app);
