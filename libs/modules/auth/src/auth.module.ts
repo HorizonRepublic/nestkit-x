@@ -42,7 +42,7 @@ export class AuthModule {
   public static forMicroservice(): DynamicModule {
     return {
       module: AuthModule,
-      global: false,
+      global: true,
     };
   }
 }

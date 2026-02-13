@@ -12,7 +12,7 @@ export class AuthHttpController implements IAuthController {
    */
 
   @TypedRoute.Post('auth/register')
-  public register(data: IUserRegisterRequest): never {
+  public register(_: IUserRegisterRequest): never {
     throw new NotImplementedException();
   }
 

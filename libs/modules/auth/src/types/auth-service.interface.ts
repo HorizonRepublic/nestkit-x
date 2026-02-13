@@ -1,1 +1,3 @@
-export interface IAuthService {}
+export interface IAuthService {
+  register(): never;
+}
