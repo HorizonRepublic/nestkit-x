@@ -2,6 +2,41 @@ import { Injectable, Logger, VERSION_NEUTRAL } from '@nestjs/common';
 import { PATH_METADATA, VERSION_METADATA } from '@nestjs/common/constants';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 
+// Internal constants from @nestjs/microservices to avoid hard dependency
+const PATTERN_METADATA = 'microservices:pattern';
+const TRANSPORT_METADATA = 'microservices:transport';
+const PATTERN_HANDLER_METADATA = 'microservices:handler_type'; // 1 = Event, 0 = Message
+
+type RouteTree = Record<string, Record<string, string[]>>;
+type VersionMeta = string | string[] | typeof VERSION_NEUTRAL | undefined;
+
+// Supported route kinds
+type RouteKind = 'HTTP' | 'RPC';
+
+interface RouteDefinition {
+  kind: RouteKind;
+  method: string; // HTTP Verb (GET, POST) or RPC Type (CMD, EVT)
+  pathOrPattern: string; // URL path or JSON pattern
+  version?: VersionMeta; // Version is usually relevant for HTTP
+}
+
+const ANSI = {
+  reset: '\x1b[0m',
+  gray: '\x1b[90m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  red: '\x1b[31m',
+} as const;
+
+/**
+ * Service responsible for inspecting and logging all registered routes (HTTP and RPC).
+ *
+ * It provides a hierarchical view:
+ * Module -> Controller -> [HTTP Routes & RPC Handlers]
+ */
 @Injectable()
 export class RoutesInspectorProvider {
   private readonly logger = new Logger('RoutesInspector');
@@ -12,98 +47,225 @@ export class RoutesInspectorProvider {
     private readonly reflector: Reflector,
   ) {}
 
+  /**
+   * Scans the application for registered controllers and prints the route tree.
+   */
   public inspect(): void {
+    const tree = this.buildRouteTree();
+
+    if (this.isEmptyTree(tree)) {
+      return;
+    }
+
+    this.printTree(tree);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Tree building
+  // ---------------------------------------------------------------------------
+
+  private buildRouteTree(): RouteTree {
     const controllers = this.discoveryService.getControllers();
-    // ModuleName -> ControllerName -> Routes[]
-    const tree: Record<string, Record<string, string[]>> = {};
+    const tree: RouteTree = {};
 
-    controllers.forEach((wrapper) => {
-      const { instance, name, host } = wrapper;
+    for (const wrapper of controllers) {
+      const context = this.getControllerContext(wrapper);
 
-      if (!instance || !name) return;
+      if (!context) continue;
 
-      const moduleName = host?.name ?? 'UnknownModule';
+      const routes = this.collectControllerRoutes(context);
 
-      const controllerPath =
-        this.reflector.get<string | string[]>(PATH_METADATA, instance.constructor) || '';
-      const version = this.reflector.get<string | string[] | typeof VERSION_NEUTRAL>(
-        VERSION_METADATA,
-        instance.constructor,
-      );
+      if (routes.length === 0) continue;
 
-      const safeControllerPath = Array.isArray(controllerPath) ? controllerPath[0] : controllerPath;
-      const basePath = this.normalizePath(safeControllerPath);
+      this.putRoutes(tree, context.moduleName, context.controllerName, routes);
+    }
 
-      const prototype = Object.getPrototypeOf(instance);
-      const methods = this.metadataScanner.getAllMethodNames(prototype);
+    return tree;
+  }
 
-      const routes: string[] = [];
+  private putRoutes(
+    tree: RouteTree,
+    moduleName: string,
+    controllerName: string,
+    routes: string[],
+  ): void {
+    tree[moduleName] ??= {};
+    tree[moduleName][controllerName] = routes;
+  }
 
-      methods.forEach((methodName) => {
-        const methodRef = instance[methodName];
-        const path = this.reflector.get<string | string[]>(PATH_METADATA, methodRef);
-        const requestMethod = this.reflector.get<number>('method', methodRef);
-        const methodVersion = this.reflector.get<string | string[] | typeof VERSION_NEUTRAL>(
-          VERSION_METADATA,
-          methodRef,
-        );
+  private isEmptyTree(tree: RouteTree): boolean {
+    return Object.keys(tree).length === 0;
+  }
 
-        if (path !== undefined && requestMethod !== undefined) {
-          const methodStr = this.mapMethodIdToString(requestMethod);
-          const safePath = Array.isArray(path) ? path[0] : path;
-          const routePath = this.normalizePath(safePath);
-          const fullPath = `/${basePath}/${routePath}`.replace(/\/+/g, '/').replace(/\/$/, '');
+  // ---------------------------------------------------------------------------
+  // Metadata Extraction
+  // ---------------------------------------------------------------------------
 
-          // Визначаємо ефективну версію
+  /**
+   * Extracts context information about a controller wrapper.
+   */
+  private getControllerContext(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    wrapper: any,
+  ): {
+    instance: object;
+    controllerName: string;
+    moduleName: string;
+    basePath: string;
+    controllerVersion: VersionMeta;
+  } | null {
+    const instance = wrapper?.instance as object | undefined;
+    const controllerName = wrapper?.name as string | undefined;
 
-          const effectiveVersion = methodVersion !== undefined ? methodVersion : version;
-          const versionStr = this.formatVersion(effectiveVersion);
+    if (!instance || !controllerName) return null;
 
-          routes.push(`${versionStr}${this.colorMethod(methodStr)} ${fullPath || '/'}`);
-        }
-      });
+    const moduleName = (wrapper?.host?.name as string) ?? 'UnknownModule';
 
-      if (routes.length > 0) {
-        if (!tree[moduleName]) {
-          tree[moduleName] = {};
-        }
+    // HTTP specific: Controller-level path
+    const basePath = this.normalizePath(
+      this.pickFirst(this.reflector.get<string | string[]>(PATH_METADATA, instance.constructor)) ??
+        '',
+    );
 
-        tree[moduleName][name] = routes;
+    // HTTP specific: Controller-level version
+    const controllerVersion = this.reflector.get<VersionMeta>(
+      VERSION_METADATA,
+      instance.constructor,
+    );
+
+    return { instance, controllerName, moduleName, basePath, controllerVersion };
+  }
+
+  /**
+   * Iterates over all methods of a controller to find HTTP and RPC handlers.
+   */
+  private collectControllerRoutes(context: {
+    instance: object;
+    basePath: string;
+    controllerVersion: VersionMeta;
+  }): string[] {
+    const prototype = Object.getPrototypeOf(context.instance);
+    const methodNames = this.metadataScanner.getAllMethodNames(prototype);
+
+    const renderedRoutes: string[] = [];
+
+    for (const methodName of methodNames) {
+      const methodRef = (context.instance as Record<string, unknown>)[methodName];
+
+      // 1. Try to extract HTTP definition
+      const httpRoute = this.extractHttpDefinition(methodRef, context);
+
+      if (httpRoute) {
+        renderedRoutes.push(this.formatRoute(httpRoute));
       }
-    });
 
-    if (Object.keys(tree).length > 0) {
-      this.logger.log('Mapped Routes:');
+      // 2. Try to extract RPC definition (Microservices)
+      const rpcRoute = this.extractRpcDefinition(methodRef);
 
-      Object.entries(tree).forEach(([moduleName, controllersMap]) => {
-        // Module Name
-        this.logger.log(`\x1b[35m[Module] ${moduleName}\x1b[0m`);
+      if (rpcRoute) {
+        renderedRoutes.push(this.formatRoute(rpcRoute));
+      }
+    }
 
-        Object.entries(controllersMap).forEach(([controllerName, routes]) => {
-          // Controller Name
-          this.logger.log(`  \x1b[36m${controllerName}\x1b[0m`);
+    return renderedRoutes;
+  }
 
-          routes.forEach((route, index) => {
-            const isLast = index === routes.length - 1;
-            const prefix = isLast ? '└──' : '├──';
+  // --- HTTP Extraction ---
 
-            this.logger.log(`   ${prefix} ${route}`);
-          });
+  private extractHttpDefinition(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    methodRef: any,
+    context: { basePath: string; controllerVersion: VersionMeta },
+  ): RouteDefinition | null {
+    const pathMeta = this.reflector.get<string | string[] | undefined>(PATH_METADATA, methodRef);
+    const methodId = this.reflector.get<number | undefined>('method', methodRef);
+
+    if (typeof pathMeta === 'undefined' || typeof methodId === 'undefined') {
+      return null;
+    }
+
+    const methodVersion = this.reflector.get<VersionMeta>(VERSION_METADATA, methodRef);
+    const effectiveVersion = methodVersion ?? context.controllerVersion;
+
+    const path = this.normalizePath(this.pickFirst(pathMeta) ?? '');
+    const fullPath = this.buildFullPath(context.basePath, path);
+
+    return {
+      kind: 'HTTP',
+      method: this.mapHttpMethodToString(methodId),
+      pathOrPattern: fullPath,
+      version: effectiveVersion,
+    };
+  }
+
+  // --- RPC Extraction ---
+
+  private extractRpcDefinition(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    methodRef: any,
+  ): RouteDefinition | null {
+    const pattern = this.reflector.get<object | string | undefined>(PATTERN_METADATA, methodRef);
+
+    if (typeof pattern === 'undefined') {
+      return null;
+    }
+
+    const handlerType = this.reflector.get<number | undefined>(PATTERN_HANDLER_METADATA, methodRef);
+    const transport = this.reflector.get<number | undefined>(TRANSPORT_METADATA, methodRef);
+
+    // 1 = EventPattern, 0 (or undefined) = MessagePattern
+    const isEvent = handlerType === 2; // NestJS internals: 2 is Event, 1 is RequestResponse usually, but check depends on version.
+    // Actually simpler: typically we just distinguish "Event" vs "CMD" for visualization.
+    // Let's assume generic RPC if unsure.
+
+    const methodLabel = isEvent ? 'EVT' : 'RPC';
+    const transportLabel = transport !== undefined ? `[T:${transport}]` : ''; // Optional transport info
+
+    return {
+      kind: 'RPC',
+      method: `${methodLabel}${transportLabel}`, // e.g., "RPC" or "RPC[T:1]"
+      pathOrPattern: JSON.stringify(pattern),
+      version: undefined, // RPC usually doesn't use @Version
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Output Formatting
+  // ---------------------------------------------------------------------------
+
+  private formatRoute(def: RouteDefinition): string {
+    const methodColored = this.colorizeMethod(def.method, def.kind);
+    const versionStr = def.version ? this.formatVersion(def.version) : '';
+
+    return `${versionStr}${methodColored} ${def.pathOrPattern}`;
+  }
+
+  private printTree(tree: RouteTree): void {
+    this.logger.log('Mapped Routes:');
+
+    for (const [moduleName, controllers] of Object.entries(tree)) {
+      this.logger.log(`${ANSI.magenta}[Module] ${moduleName}${ANSI.reset}`);
+
+      for (const [controllerName, routes] of Object.entries(controllers)) {
+        this.logger.log(`  ${ANSI.cyan}${controllerName}${ANSI.reset}`);
+
+        routes.forEach((route, index) => {
+          const prefix = index === routes.length - 1 ? '└──' : '├──';
+
+          this.logger.log(`   ${prefix} ${route}`);
         });
-      });
+      }
     }
   }
 
-  // --- Helpers ---
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private formatVersion(version: any): string {
-    if (version === undefined || version === null) return '';
-    if (version === VERSION_NEUTRAL) return '\x1b[90m[Neutral]\x1b[0m ';
+  private buildFullPath(basePath: string, routePath: string): string {
+    const joined = `/${basePath}/${routePath}`.replace(/\/+/g, '/').replace(/\/$/, '');
 
-    const versionContent = Array.isArray(version) ? version.join(',') : String(version);
-
-    return `\x1b[90m[v${versionContent}]\x1b[0m `;
+    return joined.length === 0 ? '/' : joined;
   }
 
   private normalizePath(path: string | undefined): string {
@@ -111,7 +273,19 @@ export class RoutesInspectorProvider {
     return path.startsWith('/') ? path.slice(1) : path;
   }
 
-  private mapMethodIdToString(id: number): string {
+  private pickFirst<T>(value: T | T[] | undefined): T | undefined {
+    return Array.isArray(value) ? value[0] : value;
+  }
+
+  private formatVersion(version: VersionMeta): string {
+    if (!version) return '';
+    if (version === VERSION_NEUTRAL) return `${ANSI.gray}[Neutral]${ANSI.reset} `;
+    const content = Array.isArray(version) ? version.join(',') : String(version);
+
+    return `${ANSI.gray}[v${content}]${ANSI.reset} `;
+  }
+
+  private mapHttpMethodToString(id: number): string {
     switch (id) {
       case 0:
         return 'GET';
@@ -134,20 +308,26 @@ export class RoutesInspectorProvider {
     }
   }
 
-  private colorMethod(method: string): string {
+  private colorizeMethod(method: string, kind: RouteKind): string {
+    // Special handling for RPC
+    if (kind === 'RPC') {
+      return `${ANSI.blue}${method}${ANSI.reset}`;
+    }
+
+    // Standard HTTP coloring
     switch (method) {
       case 'GET':
-        return `\x1b[32m${method}\x1b[0m`;
+        return `${ANSI.green}${method}${ANSI.reset}`;
       case 'POST':
-        return `\x1b[33m${method}\x1b[0m`;
+        return `${ANSI.yellow}${method}${ANSI.reset}`;
       case 'PUT':
-        return `\x1b[34m${method}\x1b[0m`;
+        return `${ANSI.blue}${method}${ANSI.reset}`;
       case 'DELETE':
-        return `\x1b[31m${method}\x1b[0m`;
+        return `${ANSI.red}${method}${ANSI.reset}`;
       case 'PATCH':
-        return `\x1b[35m${method}\x1b[0m`;
+        return `${ANSI.magenta}${method}${ANSI.reset}`;
       default:
-        return method;
+        return `${ANSI.reset}${method}${ANSI.reset}`;
     }
   }
 }

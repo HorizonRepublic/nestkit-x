@@ -1,4 +1,5 @@
 import { Controller, NotImplementedException } from '@nestjs/common';
+import { EventPattern, MessagePattern } from '@nestjs/microservices';
 
 import { TypedRoute } from '@nestia/core';
 
@@ -61,6 +62,16 @@ export class AuthHttpController implements IAuthController {
 
   @TypedRoute.Post('password/reset/:token')
   public reset(): never {
+    throw new Error('Method not implemented.');
+  }
+
+  @MessagePattern('test-pattern')
+  public test(): never {
+    throw new Error('Method not implemented.');
+  }
+
+  @EventPattern('test-event')
+  public test3(): never {
     throw new Error('Method not implemented.');
   }
 }

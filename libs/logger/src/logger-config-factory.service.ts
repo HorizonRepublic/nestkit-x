@@ -64,9 +64,7 @@ export class LoggerConfigFactory {
                 if (arg && typeof arg === 'object' && !Array.isArray(arg) && 'context' in arg) {
                   const context = (arg as Record<string, unknown>)['context'];
 
-                  if (context === 'RouterExplorer' || context === 'RoutesResolver') {
-                    return;
-                  }
+                  if (context === 'RouterExplorer' || context === 'RoutesResolver') return;
                 }
               }
 
